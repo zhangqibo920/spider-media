@@ -16,14 +16,6 @@
             size="large"
           />
         </el-form-item>
-        <el-form-item prop="email">
-          <el-input
-            v-model="form.email"
-            placeholder="请输入邮箱"
-            :prefix-icon="Message"
-            size="large"
-          />
-        </el-form-item>
         <el-form-item prop="password">
           <el-input
             v-model="form.password"
@@ -62,7 +54,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { User, Lock, Message } from '@element-plus/icons-vue'
+import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
@@ -75,7 +67,6 @@ const loading = ref(false)
 
 const form = reactive({
   username: '',
-  email: '',
   password: '',
   confirmPassword: '',
 })
@@ -90,10 +81,6 @@ const validateConfirmPassword = (_rule: any, value: string, callback: Function) 
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
-  ],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
@@ -107,7 +94,7 @@ const handleRegister = async () => {
 
   loading.value = true
   try {
-    await userStore.handleRegister(form.username, form.password, form.email)
+    await userStore.handleRegister(form.username, form.password)
     ElMessage.success('注册成功，请登录')
     router.push('/login')
   } catch (error) {
@@ -124,18 +111,22 @@ const handleRegister = async () => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
 
   .register-card {
     width: 400px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(30, 64, 175, 0.1);
 
     .card-header {
       text-align: center;
 
       h2 {
         margin: 0;
-        font-size: 24px;
-        color: #303133;
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e40af;
       }
     }
   }
@@ -143,10 +134,10 @@ const handleRegister = async () => {
   .register-footer {
     text-align: center;
     font-size: 14px;
-    color: #909399;
+    color: #94a3b8;
 
     a {
-      color: #409eff;
+      color: #1e40af;
       text-decoration: none;
 
       &:hover {

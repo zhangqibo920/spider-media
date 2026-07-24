@@ -3,7 +3,7 @@
     <el-card class="login-card">
       <template #header>
         <div class="card-header">
-          <h2>蜘蛛自媒体运营中台</h2>
+          <h2>SpiderMedia</h2>
           <p>Spider Media</p>
         </div>
       </template>
@@ -91,23 +91,27 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
 
   .login-card {
     width: 400px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(30, 64, 175, 0.1);
 
     .card-header {
       text-align: center;
 
       h2 {
         margin: 0;
-        font-size: 24px;
-        color: #303133;
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e40af;
       }
 
       p {
         margin: 8px 0 0;
-        color: #909399;
+        color: #94a3b8;
         font-size: 14px;
       }
     }
@@ -116,10 +120,10 @@ const handleLogin = async () => {
   .login-footer {
     text-align: center;
     font-size: 14px;
-    color: #909399;
+    color: #94a3b8;
 
     a {
-      color: #409eff;
+      color: #1e40af;
       text-decoration: none;
 
       &:hover {

@@ -2,7 +2,7 @@
   <el-container class="main-layout">
     <el-aside :width="sidebarCollapsed ? '64px' : '220px'" class="sidebar">
       <div class="logo">
-        <span v-if="!sidebarCollapsed" class="logo-text">蜘蛛中台</span>
+        <span v-if="!sidebarCollapsed" class="logo-text">SpiderMedia</span>
         <span v-else class="logo-icon">S</span>
       </div>
       <el-menu
@@ -110,31 +110,88 @@ onMounted(() => {
 }
 
 .sidebar {
-  background-color: #304156;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e8f4fd 100%);
   transition: width 0.3s;
   overflow: hidden;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
 
   .logo {
-    height: 60px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-size: 20px;
-    font-weight: bold;
-    border-bottom: 1px solid #3d4a5a;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    position: relative;
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #1e40af;
+    }
 
     .logo-icon {
-      font-size: 24px;
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e40af;
     }
   }
 
   .sidebar-menu {
     border-right: none;
-    background-color: #304156;
+    background: transparent;
+    padding: 12px 8px;
 
     &:not(.el-menu--collapse) {
       width: 220px;
+    }
+
+    :deep(.el-menu-item) {
+      height: 48px;
+      line-height: 48px;
+      margin: 4px 0;
+      border-radius: 8px;
+      color: #4b5563;
+      font-size: 14px;
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: #dbeafe;
+        color: #1e40af;
+
+        .el-icon {
+          color: #1e40af;
+        }
+      }
+
+      &.is-active {
+        background: #dbeafe;
+        color: #1e40af;
+        font-weight: 600;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 24px;
+          border-radius: 0 3px 3px 0;
+          background: #1e40af;
+        }
+
+        .el-icon {
+          color: #1e40af;
+        }
+      }
+
+      .el-icon {
+        font-size: 18px;
+        transition: color 0.25s ease;
+      }
     }
   }
 }
@@ -151,8 +208,11 @@ onMounted(() => {
     .collapse-btn {
       font-size: 20px;
       cursor: pointer;
+      transition: all 0.25s ease;
+
       &:hover {
         color: #409eff;
+        transform: scale(1.1);
       }
     }
   }
@@ -162,10 +222,18 @@ onMounted(() => {
       display: flex;
       align-items: center;
       cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: background 0.25s ease;
+
+      &:hover {
+        background: #f5f7fa;
+      }
 
       .username {
         margin-left: 8px;
         font-size: 14px;
+        color: #303133;
       }
     }
   }

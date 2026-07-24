@@ -73,7 +73,7 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   NProgress.start()
-  document.title = `${to.meta.title || '蜘蛛自媒体'} - Spider Media`
+  document.title = `${to.meta.title || 'SpiderMedia'} - SpiderMedia`
 
   const userStore = useUserStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth !== false)

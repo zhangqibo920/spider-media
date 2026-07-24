@@ -16,7 +16,7 @@ import java.util.List;
  * 数据采集Controller
  */
 @RestController
-@RequestMapping("/collection")
+@RequestMapping("/api/collection")
 public class DcTargetAccountController extends BaseController {
 
     private final IDcTargetAccountService targetAccountService;

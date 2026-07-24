@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.system.mapper.SysConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.system.entity.SysConfig">
+        <id column="id" property="id"/>
+        <result column="config_name" property="configName"/>
+        <result column="config_key" property="configKey"/>
+        <result column="config_value" property="configValue"/>
+        <result column="config_type" property="configType"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectByGroup" resultMap="BaseResultMap">
+        SELECT * FROM sys_config
+        WHERE del_flag = '0'
+        <if test="configKey != null and configKey != ''">
+            AND config_key LIKE CONCAT(#{configKey}, '%')
+        </if>
+        ORDER BY id
+    </select>
+
+    <select id="selectByKey" resultMap="BaseResultMap">
+        SELECT * FROM sys_config
+        WHERE config_key = #{configKey} AND del_flag = '0'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_config (config_name, config_key, config_value, config_type,
+                                create_by, create_time)
+        VALUES (#{configName}, #{configKey}, #{configValue}, #{configType},
+                #{createBy}, #{createTime})
+    </insert>
+
+    <update id="update">
+        UPDATE sys_config
+        SET config_value = #{configValue},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        WHERE id = #{id} AND del_flag = '0'
+    </update>
+
+    <update id="deleteById">
+        UPDATE sys_config SET del_flag = '2' WHERE id = #{id}
+    </update>
+
+</mapper>

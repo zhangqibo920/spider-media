@@ -186,7 +186,7 @@ const loadTasks = async () => {
   loadingTasks.value = true
   try {
     const res = await getPublishTasks()
-    tasks.value = res.data.records
+    tasks.value = res.data.list
   } finally {
     loadingTasks.value = false
   }

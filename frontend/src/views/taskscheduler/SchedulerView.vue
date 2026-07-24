@@ -90,7 +90,7 @@ const loadTasks = async () => {
   loading.value = true
   try {
     const res = await getScheduledTasks()
-    tasks.value = res.data.records
+    tasks.value = res.data.list
   } finally {
     loading.value = false
   }

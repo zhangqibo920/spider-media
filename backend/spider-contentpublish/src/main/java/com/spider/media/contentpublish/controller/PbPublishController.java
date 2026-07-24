@@ -19,7 +19,7 @@ import java.util.Map;
  * 内容发布Controller
  */
 @RestController
-@RequestMapping("/publish")
+@RequestMapping("/api/publish")
 public class PbPublishController extends BaseController {
 
     private final IPbPlatformAccountService platformAccountService;

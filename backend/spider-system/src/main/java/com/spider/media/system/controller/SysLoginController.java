@@ -40,8 +40,7 @@ public class SysLoginController {
     public R<SysUser> register(@RequestBody Map<String, String> registerBody) {
         SysUser user = userService.register(
                 registerBody.get("username"),
-                registerBody.get("password"),
-                registerBody.get("email")
+                registerBody.get("password")
         );
         return R.ok(user);
     }

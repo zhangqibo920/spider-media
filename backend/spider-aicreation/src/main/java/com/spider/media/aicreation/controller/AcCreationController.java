@@ -18,7 +18,7 @@ import java.util.Map;
  * AI创作Controller
  */
 @RestController
-@RequestMapping("/ai")
+@RequestMapping("/api/ai")
 public class AcCreationController extends BaseController {
 
     private final IAcHotTopicService hotTopicService;
@@ -34,7 +34,7 @@ public class AcCreationController extends BaseController {
      * 抓取热点话题
      */
     @PostMapping("/hotTopic/fetch")
-    public R<Void> fetchHotTopics(@RequestParam String platform) {
+    public R<Void> fetchHotTopics(@RequestParam(value = "platform") String platform) {
         Long userId = LoginUser.getUserId();
         hotTopicService.fetchHotTopics(platform, userId);
         return ok();

@@ -4,8 +4,16 @@ export function getSystemConfigs(group: string) {
   return request.get('/admin/config', { params: { group } })
 }
 
-export function updateSystemConfig(key: string, value: string) {
-  return request.put('/admin/config', { key, value })
+export function addSystemConfig(data: any) {
+  return request.post('/admin/config', data)
+}
+
+export function updateSystemConfig(config: any) {
+  return request.put('/admin/config', config)
+}
+
+export function deleteSystemConfig(id: number) {
+  return request.delete(`/admin/config/${id}`)
 }
 
 export function getOperationLogs(page = 1, size = 20) {

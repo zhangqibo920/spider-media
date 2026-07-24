@@ -10,7 +10,7 @@ public interface ISysUserService {
     /**
      * 注册用户
      */
-    SysUser register(String userName, String password, String email);
+    SysUser register(String userName, String password);
 
     /**
      * 登录

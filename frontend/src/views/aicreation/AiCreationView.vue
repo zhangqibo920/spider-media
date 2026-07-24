@@ -85,7 +85,7 @@ const loadArticles = async () => {
   loadingArticles.value = true
   try {
     const res = await getGeneratedArticles()
-    articles.value = res.data.records
+    articles.value = res.data.list
   } finally {
     loadingArticles.value = false
   }

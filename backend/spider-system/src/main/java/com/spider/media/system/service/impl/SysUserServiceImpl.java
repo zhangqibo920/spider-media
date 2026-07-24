@@ -26,7 +26,7 @@ public class SysUserServiceImpl implements ISysUserService {
     }
 
     @Override
-    public SysUser register(String userName, String password, String email) {
+    public SysUser register(String userName, String password) {
         if (selectUserByUserName(userName) != null) {
             throw new ServiceException(ErrorCodeEnums.SYS_USERNAME_ALREADY_EXISTS);
         }
@@ -35,7 +35,6 @@ public class SysUserServiceImpl implements ISysUserService {
         user.setUserName(userName);
         user.setNickName(userName);
         user.setPassword(SecurityUtils.encryptPassword(password));
-        user.setEmail(email);
         user.setStatus("0");
         user.setRole("USER");
         user.setCreateBy(userName);

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
  * 任务调度Controller
  */
 @RestController
-@RequestMapping("/scheduler")
+@RequestMapping("/api/scheduler")
 public class TsSchedulerController extends BaseController {
 
     private final ITsScheduledTaskService scheduledTaskService;

@@ -14,8 +14,8 @@ export const useUserStore = defineStore('user', () => {
     await fetchUserInfo()
   }
 
-  async function handleRegister(username: string, password: string, email: string) {
-    await register(username, password, email)
+  async function handleRegister(username: string, password: string) {
+    await register(username, password)
   }
 
   async function fetchUserInfo() {
