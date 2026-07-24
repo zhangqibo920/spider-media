@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.contentpublish.mapper.PbPublishTaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.contentpublish.entity.PbPublishTask">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="platform_account_id" property="platformAccountId"/>
+        <result column="article_id" property="articleId"/>
+        <result column="platform" property="platform"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="summary" property="summary"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="status" property="status"/>
+        <result column="scheduled_time" property="scheduledTime"/>
+        <result column="published_time" property="publishedTime"/>
+        <result column="publish_result" property="publishResult"/>
+        <result column="retry_count" property="retryCount"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM pb_publish_task
+        <where>
+            del_flag = '0'
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="platform != null and platform != ''">
+                AND platform = #{platform}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM pb_publish_task WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pb_publish_task (user_id, platform_account_id, article_id, platform, title,
+                                     content, summary, cover_image, status, scheduled_time,
+                                     create_by, create_time)
+        VALUES (#{userId}, #{platformAccountId}, #{articleId}, #{platform}, #{title},
+                #{content}, #{summary}, #{coverImage}, #{status}, #{scheduledTime},
+                #{createBy}, #{createTime})
+    </insert>
+
+    <update id="updateById">
+        UPDATE pb_publish_task
+        SET status = #{status},
+            <if test="scheduledTime != null">scheduled_time = #{scheduledTime},</if>
+            <if test="publishedTime != null">published_time = #{publishedTime},</if>
+            <if test="publishResult != null">publish_result = #{publishResult},</if>
+            <if test="retryCount != null">retry_count = #{retryCount},</if>
+            update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.taskscheduler.mapper.TsScheduledTaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.taskscheduler.entity.TsScheduledTask">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="task_name" property="taskName"/>
+        <result column="task_type" property="taskType"/>
+        <result column="cron_expression" property="cronExpression"/>
+        <result column="status" property="status"/>
+        <result column="last_run_time" property="lastRunTime"/>
+        <result column="next_run_time" property="nextRunTime"/>
+        <result column="run_count" property="runCount"/>
+        <result column="fail_count" property="failCount"/>
+        <result column="config" property="config"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM ts_scheduled_task
+        <where>
+            del_flag = '0'
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND task_name LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM ts_scheduled_task WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ts_scheduled_task (user_id, task_name, task_type, cron_expression,
+                                       status, run_count, fail_count, config,
+                                       create_by, create_time)
+        VALUES (#{userId}, #{taskName}, #{taskType}, #{cronExpression},
+                #{status}, #{runCount}, #{failCount}, #{config},
+                #{createBy}, #{createTime})
+    </insert>
+
+    <update id="updateById">
+        UPDATE ts_scheduled_task
+        SET status = #{status},
+            <if test="runCount != null">run_count = #{runCount},</if>
+            <if test="failCount != null">fail_count = #{failCount},</if>
+            <if test="lastRunTime != null">last_run_time = #{lastRunTime},</if>
+            <if test="nextRunTime != null">next_run_time = #{nextRunTime},</if>
+            update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

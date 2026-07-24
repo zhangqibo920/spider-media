@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.contentpublish.mapper.PbPlatformAccountMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.contentpublish.entity.PbPlatformAccount">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="platform" property="platform"/>
+        <result column="account_name" property="accountName"/>
+        <result column="account_id" property="accountId"/>
+        <result column="access_token" property="accessToken"/>
+        <result column="refresh_token" property="refreshToken"/>
+        <result column="token_expire_time" property="tokenExpireTime"/>
+        <result column="status" property="status"/>
+        <result column="group_name" property="groupName"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM pb_platform_account
+        WHERE del_flag = '0' AND user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO pb_platform_account (user_id, platform, account_name, account_id,
+                                         access_token, refresh_token, token_expire_time,
+                                         status, group_name, create_by, create_time)
+        VALUES (#{userId}, #{platform}, #{accountName}, #{accountId},
+                #{accessToken}, #{refreshToken}, #{tokenExpireTime},
+                #{status}, #{groupName}, #{createBy}, #{createTime})
+    </insert>
+
+    <update id="deleteById">
+        UPDATE pb_platform_account SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
+    </update>
+
+</mapper>

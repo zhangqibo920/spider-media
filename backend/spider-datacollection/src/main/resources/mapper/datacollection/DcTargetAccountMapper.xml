@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.datacollection.mapper.DcTargetAccountMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.datacollection.entity.DcTargetAccount">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="platform" property="platform"/>
+        <result column="account_name" property="accountName"/>
+        <result column="account_id" property="accountId"/>
+        <result column="account_url" property="accountUrl"/>
+        <result column="group_name" property="groupName"/>
+        <result column="status" property="status"/>
+        <result column="description" property="description"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <sql id="selectCondition">
+        <where>
+            del_flag = '0'
+            AND user_id = #{userId}
+            <if test="platform != null and platform != ''">
+                AND platform = #{platform}
+            </if>
+            <if test="groupName != null and groupName != ''">
+                AND group_name = #{groupName}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT * FROM dc_target_account
+        <include refid="selectCondition"/>
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO dc_target_account (user_id, platform, account_name, account_id, account_url,
+                                       group_name, status, description, create_by, create_time)
+        VALUES (#{userId}, #{platform}, #{accountName}, #{accountId}, #{accountUrl},
+                #{groupName}, #{status}, #{description}, #{createBy}, #{createTime})
+    </insert>
+
+    <update id="deleteById">
+        UPDATE dc_target_account SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
+    </update>
+
+</mapper>

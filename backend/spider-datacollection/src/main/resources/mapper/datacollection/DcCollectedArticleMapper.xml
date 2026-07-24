@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.datacollection.mapper.DcCollectedArticleMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.datacollection.entity.DcCollectedArticle">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="target_account_id" property="targetAccountId"/>
+        <result column="platform" property="platform"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="summary" property="summary"/>
+        <result column="url" property="url"/>
+        <result column="author" property="author"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="share_count" property="shareCount"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="collected_time" property="collectedTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM dc_collected_article
+        <where>
+            del_flag = '0'
+            <if test="targetAccountId != null">
+                AND target_account_id = #{targetAccountId}
+            </if>
+            <if test="platform != null and platform != ''">
+                AND platform = #{platform}
+            </if>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+        </where>
+        ORDER BY collected_time DESC
+    </select>
+
+</mapper>

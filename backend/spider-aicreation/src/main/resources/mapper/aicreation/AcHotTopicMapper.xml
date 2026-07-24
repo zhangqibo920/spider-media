@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.aicreation.mapper.AcHotTopicMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.aicreation.entity.AcHotTopic">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="platform" property="platform"/>
+        <result column="title" property="title"/>
+        <result column="description" property="description"/>
+        <result column="hot_score" property="hotScore"/>
+        <result column="url" property="url"/>
+        <result column="category" property="category"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM ac_hot_topic WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM ac_hot_topic
+        WHERE del_flag = '0' AND user_id = #{userId}
+        ORDER BY hot_score DESC
+    </select>
+
+</mapper>

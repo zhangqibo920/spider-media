@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.aicreation.mapper.AcGeneratedArticleMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.aicreation.entity.AcGeneratedArticle">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="hot_topic_id" property="hotTopicId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="summary" property="summary"/>
+        <result column="model_used" property="modelUsed"/>
+        <result column="word_count" property="wordCount"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM ac_generated_article
+        <where>
+            del_flag = '0'
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ac_generated_article (user_id, hot_topic_id, title, content, summary,
+                                          model_used, word_count, status, create_by, create_time)
+        VALUES (#{userId}, #{hotTopicId}, #{title}, #{content}, #{summary},
+                #{modelUsed}, #{wordCount}, #{status}, #{createBy}, #{createTime})
+    </insert>
+
+</mapper>

@@ -1,0 +1,79 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: spider-media
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/spider_media?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:your-password-here}
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+# Token配置
+token:
+  secret: ${JWT_SECRET:your-jwt-secret-key-at-least-32-chars}
+  expireTime: 86400000
+
+# AI模型配置
+ai:
+  models:
+    zhipu:
+      api-key: your-zhipu-api-key
+      base-url: https://open.bigmodel.cn/api/paas/v4
+    deepseek:
+      api-key: your-deepseek-api-key
+      base-url: https://api.deepseek.com
+    qwen:
+      api-key: your-qwen-api-key
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+
+logging:
+  level:
+    com.spider.media: debug
+    org.springframework.security: info
