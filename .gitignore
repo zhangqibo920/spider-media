@@ -55,3 +55,7 @@ application-local.yml
 # Database
 *.db
 *.sqlite
+
+# Internal docs
+*.md
+!README.md
