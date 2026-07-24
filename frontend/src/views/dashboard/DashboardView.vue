@@ -80,6 +80,9 @@
               <el-tag type="success">正常运行</el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="AI模型">DeepSeek / 智谱</el-descriptions-item>
+            <el-descriptions-item label="热点话题">{{ stats.hotTopics }} 条</el-descriptions-item>
+            <el-descriptions-item label="发布账号">{{ stats.publishAccounts }} 个</el-descriptions-item>
+            <el-descriptions-item label="定时任务">{{ stats.scheduledTasks }} 个</el-descriptions-item>
           </el-descriptions>
         </el-card>
       </el-col>
@@ -88,13 +91,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getDashboardStats } from '@/api/dashboard'
 
 const stats = ref({
   targetAccounts: 0,
   articles: 0,
   aiGenerated: 0,
   published: 0,
+  hotTopics: 0,
+  publishAccounts: 0,
+  scheduledTasks: 0,
+})
+
+onMounted(async () => {
+  try {
+    const res = await getDashboardStats()
+    stats.value = res.data
+  } catch {
+    // keep defaults
+  }
 })
 </script>
 

@@ -32,4 +32,19 @@
                 #{createBy}, #{createTime})
     </insert>
 
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT * FROM sys_user WHERE del_flag = '0' ORDER BY create_time DESC
+    </select>
+
+    <update id="update">
+        UPDATE sys_user
+        SET nick_name = #{nickName}, email = #{email}, phonenumber = #{phonenumber},
+            status = #{status}, role = #{role}, update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="deleteById">
+        UPDATE sys_user SET del_flag = '2' WHERE user_id = #{userId}
+    </update>
+
 </mapper>

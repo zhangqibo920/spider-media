@@ -43,4 +43,29 @@
         ORDER BY collected_time DESC
     </select>
 
+    <select id="selectByUrl" resultMap="BaseResultMap">
+        SELECT * FROM dc_collected_article WHERE url = #{url} AND del_flag = '0' LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO dc_collected_article (user_id, target_account_id, platform, title, content, summary,
+                                          url, author, view_count, like_count, comment_count, share_count,
+                                          publish_time, collected_time, create_by, create_time)
+        VALUES (#{userId}, #{targetAccountId}, #{platform}, #{title}, #{content}, #{summary},
+                #{url}, #{author}, #{viewCount}, #{likeCount}, #{commentCount}, #{shareCount},
+                #{publishTime}, #{collectedTime}, #{createBy}, #{createTime})
+    </insert>
+
+    <insert id="batchInsert">
+        INSERT INTO dc_collected_article (user_id, target_account_id, platform, title, content, summary,
+                                          url, author, view_count, like_count, comment_count, share_count,
+                                          publish_time, collected_time, create_by, create_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.targetAccountId}, #{item.platform}, #{item.title}, #{item.content}, #{item.summary},
+             #{item.url}, #{item.author}, #{item.viewCount}, #{item.likeCount}, #{item.commentCount}, #{item.shareCount},
+             #{item.publishTime}, #{item.collectedTime}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
 </mapper>

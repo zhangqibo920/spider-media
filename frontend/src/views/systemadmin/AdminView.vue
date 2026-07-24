@@ -6,7 +6,7 @@
           <template #header>
             <div class="card-header">
               <span>系统配置</span>
-              <el-button type="primary" @click="showAddDialog = true">
+              <el-button type="primary" @click="showAddConfigDialog = true">
                 <el-icon><Plus /></el-icon> 添加配置
               </el-button>
             </div>
@@ -17,12 +17,12 @@
             <el-table-column prop="configValue" label="配置值">
               <template #default="{ row }">
                 <el-input
-                  v-show="editingId === row.id"
-                  v-model="editingValue"
+                  v-show="editingConfigId === row.id"
+                  v-model="editingConfigValue"
                   size="small"
                   @keyup.enter="handleSaveConfig(row)"
                 />
-                <span v-show="editingId !== row.id" @click="startEdit(row)" style="cursor: pointer">
+                <span v-show="editingConfigId !== row.id" @click="startEditConfig(row)" style="cursor: pointer">
                   {{ row.configValue || '-' }}
                 </span>
               </template>
@@ -36,14 +36,49 @@
             </el-table-column>
             <el-table-column label="操作" width="160">
               <template #default="{ row }">
-                <el-button v-show="editingId === row.id" type="success" link @click="handleSaveConfig(row)">
+                <el-button v-show="editingConfigId === row.id" type="success" link @click="handleSaveConfig(row)">
                   保存
                 </el-button>
-                <el-button v-show="editingId === row.id" type="info" link @click="cancelEdit">
+                <el-button v-show="editingConfigId === row.id" type="info" link @click="cancelEditConfig">
                   取消
                 </el-button>
-                <el-button v-show="editingId !== row.id" type="primary" link @click="startEdit(row)">编辑</el-button>
-                <el-button v-show="editingId !== row.id" type="danger" link @click="handleDeleteConfig(row)">删除</el-button>
+                <el-button v-show="editingConfigId !== row.id" type="primary" link @click="startEditConfig(row)">编辑</el-button>
+                <el-button v-show="editingConfigId !== row.id" type="danger" link @click="handleDeleteConfig(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-tab-pane>
+
+      <el-tab-pane label="用户管理" name="users">
+        <el-card>
+          <template #header>
+            <span>用户管理</span>
+          </template>
+          <el-table :data="users" v-loading="loadingUsers" stripe>
+            <el-table-column prop="userId" label="ID" width="60" />
+            <el-table-column prop="userName" label="用户名" width="120" />
+            <el-table-column prop="nickName" label="昵称" width="120" />
+            <el-table-column prop="email" label="邮箱" />
+            <el-table-column prop="role" label="角色" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.role === 'ADMIN' ? 'danger' : 'info'" size="small">
+                  {{ row.role === 'ADMIN' ? '管理员' : '普通用户' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="status" label="状态" width="80">
+              <template #default="{ row }">
+                <el-tag :type="row.status === '0' ? 'success' : 'danger'" size="small">
+                  {{ row.status === '0' ? '正常' : '停用' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="创建时间" width="180" />
+            <el-table-column label="操作" width="160">
+              <template #default="{ row }">
+                <el-button type="primary" link @click="startEditUser(row)">编辑</el-button>
+                <el-button type="danger" link @click="handleDeleteUser(row)" :disabled="row.userId === 1">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -72,30 +107,57 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog v-model="showAddDialog" title="添加配置" width="480px">
-      <el-form :model="addForm" label-width="80px">
+    <el-dialog v-model="showAddConfigDialog" title="添加配置" width="480px">
+      <el-form :model="addConfigForm" label-width="80px">
         <el-form-item label="配置名称">
-          <el-input v-model="addForm.configName" placeholder="请输入配置名称" />
+          <el-input v-model="addConfigForm.configName" placeholder="请输入配置名称" />
         </el-form-item>
         <el-form-item label="配置键">
-          <el-input v-model="addForm.configKey" placeholder="请输入配置键" />
+          <el-input v-model="addConfigForm.configKey" placeholder="请输入配置键" />
         </el-form-item>
         <el-form-item label="配置值">
-          <el-input v-model="addForm.configValue" type="textarea" :rows="3" placeholder="请输入配置值" />
+          <el-input v-model="addConfigForm.configValue" type="textarea" :rows="3" placeholder="请输入配置值" />
         </el-form-item>
         <el-form-item label="类型">
-          <el-radio-group v-model="addForm.configType">
+          <el-radio-group v-model="addConfigForm.configType">
             <el-radio value="N">自定义</el-radio>
             <el-radio value="Y">内置</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="addForm.remark" placeholder="可选" />
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddConfigDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleAddConfig">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="showEditUserDialog" title="编辑用户" width="480px">
+      <el-form :model="editUserForm" label-width="80px">
+        <el-form-item label="用户名">
+          <el-input v-model="editUserForm.userName" disabled />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="editUserForm.nickName" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="editUserForm.email" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="editUserForm.role">
+            <el-option label="普通用户" value="USER" />
+            <el-option label="管理员" value="ADMIN" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="editUserForm.status">
+            <el-radio value="0">正常</el-radio>
+            <el-radio value="1">停用</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleAddConfig">确定</el-button>
+        <el-button @click="showEditUserDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveUser">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -105,36 +167,43 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig, getOperationLogs } from '@/api/admin'
+import {
+  getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig,
+  getUsers, updateUser, deleteUser, getOperationLogs
+} from '@/api/admin'
 
 const activeTab = ref('config')
 const loadingConfigs = ref(false)
+const loadingUsers = ref(false)
 const loadingLogs = ref(false)
 const configs = ref<any[]>([])
+const users = ref<any[]>([])
 const logs = ref<any[]>([])
 const logPage = ref(1)
 const logTotal = ref(0)
 
-const editingId = ref<number | null>(null)
-const editingValue = ref('')
+const editingConfigId = ref<number | null>(null)
+const editingConfigValue = ref('')
+const showAddConfigDialog = ref(false)
+const addConfigForm = reactive({ configName: '', configKey: '', configValue: '', configType: 'N' })
 
-const showAddDialog = ref(false)
-const addForm = reactive({
-  configName: '',
-  configKey: '',
-  configValue: '',
-  configType: 'N',
-  remark: '',
-})
+const showEditUserDialog = ref(false)
+const editUserForm = reactive({ userId: 0, userName: '', nickName: '', email: '', role: 'USER', status: '0' })
 
 const loadConfigs = async () => {
   loadingConfigs.value = true
   try {
     const res = await getSystemConfigs('')
     configs.value = res.data
-  } finally {
-    loadingConfigs.value = false
-  }
+  } finally { loadingConfigs.value = false }
+}
+
+const loadUsers = async () => {
+  loadingUsers.value = true
+  try {
+    const res = await getUsers()
+    users.value = res.data
+  } finally { loadingUsers.value = false }
 }
 
 const loadLogs = async () => {
@@ -143,79 +212,63 @@ const loadLogs = async () => {
     const res = await getOperationLogs(logPage.value)
     logs.value = res.data.list
     logTotal.value = res.data.total
-  } finally {
-    loadingLogs.value = false
-  }
+  } finally { loadingLogs.value = false }
 }
 
-const startEdit = (row: any) => {
-  editingId.value = row.id
-  editingValue.value = row.configValue || ''
-}
-
-const cancelEdit = () => {
-  editingId.value = null
-  editingValue.value = ''
-}
-
+const startEditConfig = (row: any) => { editingConfigId.value = row.id; editingConfigValue.value = row.configValue || '' }
+const cancelEditConfig = () => { editingConfigId.value = null; editingConfigValue.value = '' }
 const handleSaveConfig = async (row: any) => {
   try {
-    await updateSystemConfig({ id: row.id, configValue: editingValue.value })
+    await updateSystemConfig({ id: row.id, configValue: editingConfigValue.value })
     ElMessage.success('保存成功')
-    cancelEdit()
+    cancelEditConfig()
     loadConfigs()
-  } catch {
-    ElMessage.error('保存失败')
-  }
+  } catch { ElMessage.error('保存失败') }
 }
-
 const handleAddConfig = async () => {
-  if (!addForm.configKey) {
-    ElMessage.warning('请输入配置键')
-    return
-  }
+  if (!addConfigForm.configKey) { ElMessage.warning('请输入配置键'); return }
   try {
-    await addSystemConfig(addForm)
+    await addSystemConfig(addConfigForm)
     ElMessage.success('添加成功')
-    showAddDialog.value = false
-    addForm.configName = ''
-    addForm.configKey = ''
-    addForm.configValue = ''
-    addForm.configType = 'N'
-    addForm.remark = ''
+    showAddConfigDialog.value = false
+    addConfigForm.configName = ''; addConfigForm.configKey = ''; addConfigForm.configValue = ''; addConfigForm.configType = 'N'
     loadConfigs()
-  } catch {
-    ElMessage.error('添加失败')
-  }
+  } catch { ElMessage.error('添加失败') }
 }
-
 const handleDeleteConfig = async (row: any) => {
   try {
     await ElMessageBox.confirm('确定删除该配置吗？', '提示', { type: 'warning' })
     await deleteSystemConfig(row.id)
     ElMessage.success('删除成功')
     loadConfigs()
-  } catch {
-    // cancelled
-  }
+  } catch {}
 }
 
-onMounted(() => {
-  loadConfigs()
-  loadLogs()
-})
+const startEditUser = (row: any) => {
+  Object.assign(editUserForm, { userId: row.userId, userName: row.userName, nickName: row.nickName, email: row.email, role: row.role, status: row.status })
+  showEditUserDialog.value = true
+}
+const handleSaveUser = async () => {
+  try {
+    await updateUser(editUserForm)
+    ElMessage.success('保存成功')
+    showEditUserDialog.value = false
+    loadUsers()
+  } catch { ElMessage.error('保存失败') }
+}
+const handleDeleteUser = async (row: any) => {
+  try {
+    await ElMessageBox.confirm('确定删除该用户吗？', '提示', { type: 'warning' })
+    await deleteUser(row.userId)
+    ElMessage.success('删除成功')
+    loadUsers()
+  } catch {}
+}
+
+onMounted(() => { loadConfigs(); loadUsers(); loadLogs() })
 </script>
 
 <style scoped lang="scss">
-.system-admin {
-  :deep(.el-tabs__content) {
-    padding: 0;
-  }
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.system-admin { :deep(.el-tabs__content) { padding: 0; } }
+.card-header { display: flex; align-items: center; justify-content: space-between; }
 </style>

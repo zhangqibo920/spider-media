@@ -16,6 +16,18 @@ export function deleteSystemConfig(id: number) {
   return request.delete(`/admin/config/${id}`)
 }
 
+export function getUsers() {
+  return request.get('/admin/users')
+}
+
+export function updateUser(user: any) {
+  return request.put('/admin/users', user)
+}
+
+export function deleteUser(userId: number) {
+  return request.delete(`/admin/users/${userId}`)
+}
+
 export function getOperationLogs(page = 1, size = 20) {
   return request.get('/admin/logs', { params: { page, size } })
 }

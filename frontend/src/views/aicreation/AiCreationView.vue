@@ -16,14 +16,11 @@
               </el-button>
             </div>
           </template>
-
           <el-table :data="hotTopics" v-loading="loadingTopics" max-height="400">
             <el-table-column prop="title" label="热点话题" show-overflow-tooltip />
             <el-table-column prop="hotScore" label="热度" width="80" />
             <el-table-column prop="platform" label="平台" width="80">
-              <template #default="{ row }">
-                <el-tag size="small">{{ row.platform }}</el-tag>
-              </template>
+              <template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template>
             </el-table-column>
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
@@ -36,25 +33,42 @@
 
       <el-col :span="12">
         <el-card>
-          <template #header>
-            <span>AI生成文章</span>
-          </template>
-
+          <template #header><span>AI生成文章</span></template>
           <el-table :data="articles" v-loading="loadingArticles" max-height="400">
             <el-table-column prop="title" label="标题" show-overflow-tooltip />
             <el-table-column prop="modelUsed" label="模型" width="100" />
             <el-table-column prop="wordCount" label="字数" width="80" />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === 'COMPLETED' ? 'success' : 'warning'" size="small">
-                  {{ row.status }}
-                </el-tag>
+                <el-tag :type="row.status === 'COMPLETED' ? 'success' : 'warning'" size="small">{{ row.status }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="80">
+              <template #default="{ row }">
+                <el-button type="primary" link @click="showArticleDetail(row)">查看</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-card>
       </el-col>
     </el-row>
+
+    <el-dialog v-model="showDetailDialog" title="文章详情" width="700px" top="5vh">
+      <div v-if="currentArticle">
+        <h3>{{ currentArticle.title }}</h3>
+        <el-descriptions :column="2" border style="margin: 16px 0">
+          <el-descriptions-item label="模型">{{ currentArticle.modelUsed }}</el-descriptions-item>
+          <el-descriptions-item label="字数">{{ currentArticle.wordCount }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ currentArticle.status }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ currentArticle.createTime }}</el-descriptions-item>
+        </el-descriptions>
+        <div v-if="currentArticle.summary" style="margin-bottom: 12px">
+          <strong>摘要：</strong>{{ currentArticle.summary }}
+        </div>
+        <el-divider />
+        <div class="article-content" v-html="currentArticle.content || '暂无内容'"></div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -62,69 +76,37 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles } from '@/api/ai'
-import type { HotTopic, GeneratedArticle } from '@/types'
 
 const selectedPlatform = ref('douyin')
 const loadingTopics = ref(false)
 const loadingArticles = ref(false)
 const fetching = ref(false)
-const hotTopics = ref<HotTopic[]>([])
-const articles = ref<GeneratedArticle[]>([])
+const hotTopics = ref<any[]>([])
+const articles = ref<any[]>([])
+const showDetailDialog = ref(false)
+const currentArticle = ref<any>(null)
 
 const loadHotTopics = async () => {
   loadingTopics.value = true
-  try {
-    const res = await getHotTopics()
-    hotTopics.value = res.data
-  } finally {
-    loadingTopics.value = false
-  }
+  try { const res = await getHotTopics(); hotTopics.value = res.data } finally { loadingTopics.value = false }
 }
-
 const loadArticles = async () => {
   loadingArticles.value = true
-  try {
-    const res = await getGeneratedArticles()
-    articles.value = res.data.list
-  } finally {
-    loadingArticles.value = false
-  }
+  try { const res = await getGeneratedArticles(); articles.value = res.data.list } finally { loadingArticles.value = false }
 }
-
 const handleFetchHot = async () => {
   fetching.value = true
-  try {
-    await fetchHotTopics(selectedPlatform.value)
-    ElMessage.success('热点抓取任务已触发')
-    loadHotTopics()
-  } catch {
-    ElMessage.error('抓取失败')
-  } finally {
-    fetching.value = false
-  }
+  try { await fetchHotTopics(selectedPlatform.value); ElMessage.success('热点抓取任务已触发'); loadHotTopics() } catch { ElMessage.error('抓取失败') } finally { fetching.value = false }
 }
-
 const handleGenerate = async (topicId: number) => {
-  try {
-    await generateArticle(topicId)
-    ElMessage.success('AI创作任务已触发')
-    loadArticles()
-  } catch {
-    ElMessage.error('生成失败')
-  }
+  try { await generateArticle(topicId); ElMessage.success('AI创作任务已触发'); loadArticles() } catch { ElMessage.error('生成失败') }
 }
+const showArticleDetail = (article: any) => { currentArticle.value = article; showDetailDialog.value = true }
 
-onMounted(() => {
-  loadHotTopics()
-  loadArticles()
-})
+onMounted(() => { loadHotTopics(); loadArticles() })
 </script>
 
 <style scoped lang="scss">
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
+.card-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.article-content { line-height: 1.8; color: #303133; white-space: pre-wrap; }
 </style>

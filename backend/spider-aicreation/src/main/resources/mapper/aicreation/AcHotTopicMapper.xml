@@ -29,4 +29,16 @@
         ORDER BY hot_score DESC
     </select>
 
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ac_hot_topic (user_id, platform, title, description, hot_score, url, category,
+                                  create_by, create_time)
+        VALUES (#{userId}, #{platform}, #{title}, #{description}, #{hotScore}, #{url}, #{category},
+                #{createBy}, #{createTime})
+    </insert>
+
+    <update id="deleteByUserId">
+        UPDATE ac_hot_topic SET del_flag = '2'
+        WHERE user_id = #{userId} AND platform = #{platform}
+    </update>
+
 </mapper>

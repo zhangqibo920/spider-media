@@ -12,4 +12,8 @@ public interface AcHotTopicMapper {
     AcHotTopic selectById(@Param("id") Long id);
 
     List<AcHotTopic> selectByUserId(@Param("userId") Long userId);
+
+    int insert(AcHotTopic topic);
+
+    int deleteByUserId(@Param("userId") Long userId, @Param("platform") String platform);
 }

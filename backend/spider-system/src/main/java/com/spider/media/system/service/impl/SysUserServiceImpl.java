@@ -10,10 +10,8 @@ import com.spider.media.system.service.ISysUserService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * 用户Service实现
- */
 @Service
 public class SysUserServiceImpl implements ISysUserService {
 
@@ -61,5 +59,21 @@ public class SysUserServiceImpl implements ISysUserService {
     @Override
     public SysUser selectUserByUserName(String userName) {
         return userMapper.selectByUserName(userName);
+    }
+
+    @Override
+    public List<SysUser> selectUserList() {
+        return userMapper.selectList();
+    }
+
+    @Override
+    public int updateUser(SysUser user) {
+        user.setUpdateTime(LocalDateTime.now());
+        return userMapper.update(user);
+    }
+
+    @Override
+    public int deleteUser(Long userId) {
+        return userMapper.deleteById(userId);
     }
 }

@@ -44,4 +44,11 @@
                 #{modelUsed}, #{wordCount}, #{status}, #{createBy}, #{createTime})
     </insert>
 
+    <update id="update">
+        UPDATE ac_generated_article
+        SET title = #{title}, content = #{content}, summary = #{summary},
+            word_count = #{wordCount}, status = #{status}
+        WHERE id = #{id}
+    </update>
+
 </mapper>

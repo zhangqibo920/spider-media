@@ -12,4 +12,10 @@ public interface DcCollectedArticleMapper {
     List<DcCollectedArticle> selectPage(@Param("targetAccountId") Long targetAccountId,
                                         @Param("platform") String platform,
                                         @Param("title") String title);
+
+    int insert(DcCollectedArticle article);
+
+    int batchInsert(@Param("list") List<DcCollectedArticle> articles);
+
+    DcCollectedArticle selectByUrl(@Param("url") String url);
 }

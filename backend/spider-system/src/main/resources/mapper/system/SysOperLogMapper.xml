@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.system.mapper.SysOperLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.system.entity.SysOperLog">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="module" property="module"/>
+        <result column="action" property="action"/>
+        <result column="description" property="description"/>
+        <result column="ip" property="ip"/>
+        <result column="method" property="method"/>
+        <result column="params" property="params"/>
+        <result column="status" property="status"/>
+        <result column="error_msg" property="errorMsg"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_oper_log (username, module, action, description, ip, method, params,
+                                  status, error_msg, create_time)
+        VALUES (#{username}, #{module}, #{action}, #{description}, #{ip}, #{method}, #{params},
+                #{status}, #{errorMsg}, #{createTime})
+    </insert>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM sys_oper_log
+        <where>
+            <if test="username != null and username != ''">
+                AND username = #{username}
+            </if>
+            <if test="module != null and module != ''">
+                AND module = #{module}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{pageSize} OFFSET #{pageNo}
+    </select>
+
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM sys_oper_log
+        <where>
+            <if test="username != null and username != ''">
+                AND username = #{username}
+            </if>
+            <if test="module != null and module != ''">
+                AND module = #{module}
+            </if>
+        </where>
+    </select>
+
+</mapper>

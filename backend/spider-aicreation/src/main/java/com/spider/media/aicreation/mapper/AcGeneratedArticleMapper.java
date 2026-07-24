@@ -14,4 +14,6 @@ public interface AcGeneratedArticleMapper {
                                         @Param("title") String title);
 
     int insert(AcGeneratedArticle article);
+
+    int update(AcGeneratedArticle article);
 }
