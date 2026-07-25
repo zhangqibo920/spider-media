@@ -18,12 +18,27 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+/**
+ * 发布任务业务层实现类
+ *
+ * <p>实现发布任务的完整生命周期管理：
+ * <ul>
+ *   <li>创建任务（草稿状态）</li>
+ *   <li>立即发布（异步调用平台 API）</li>
+ *   <li>设置定时发布</li>
+ *   <li>分页查询</li>
+ * </ul></p>
+ *
+ * <p>发布流程：查找平台账号 → 验证账号有效性 → 调用平台 API → 更新任务状态和结果。</p>
+ */
 @Service
 public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
 
     private static final Logger log = LoggerFactory.getLogger(PbPublishTaskServiceImpl.class);
 
+    /** 发布任务数据访问对象 */
     private final PbPublishTaskMapper publishTaskMapper;
+    /** 平台账号数据访问对象（用于查找发布所需的授权账号） */
     private final PbPlatformAccountMapper platformAccountMapper;
 
     public PbPublishTaskServiceImpl(PbPublishTaskMapper publishTaskMapper,
@@ -32,6 +47,9 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         this.platformAccountMapper = platformAccountMapper;
     }
 
+    /**
+     * 创建发布任务（初始状态为草稿）
+     */
     @Override
     public PbPublishTask createTask(PbPublishTask task) {
         task.setStatus(0);
@@ -41,6 +59,20 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         return task;
     }
 
+    /**
+     * 异步立即发布任务
+     *
+     * <p>发布流程：
+     * <ol>
+     *   <li>查询发布任务，校验是否存在</li>
+     *   <li>将状态更新为"发布中"</li>
+     *   <li>查找关联的平台账号</li>
+     *   <li>调用平台 API 发布内容</li>
+     *   <li>根据结果更新状态为"已发布"或"失败"</li>
+     * </ol></p>
+     *
+     * @param taskId 任务ID
+     */
     @Override
     @Async
     public void publishNow(Long taskId) {
@@ -48,6 +80,7 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         if (task == null) {
             throw new ServiceException(ErrorCodeEnums.PB_TASK_NOT_FOUND);
         }
+        // 更新状态为发布中
         task.setStatus(1);
         task.setUpdateBy(LoginUser.getUsername());
         task.setUpdateTime(LocalDateTime.now());
@@ -56,6 +89,7 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         log.info("开始发布任务, taskId={}, platform={}", taskId, task.getPlatform());
 
         try {
+            // 查找平台账号
             PbPlatformAccount account = platformAccountMapper.selectById(task.getPlatformAccountId());
             if (account == null) {
                 task.setStatus(3);
@@ -64,6 +98,7 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
                 return;
             }
 
+            // 调用平台 API 发布
             boolean success = publishToPlatform(task, account);
 
             if (success) {
@@ -87,6 +122,11 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         publishTaskMapper.updateById(task);
     }
 
+    /**
+     * 设置定时发布时间
+     *
+     * @throws ServiceException 任务不存在时抛出异常
+     */
     @Override
     public void schedulePublish(Long taskId, LocalDateTime scheduledTime) {
         PbPublishTask task = publishTaskMapper.selectById(taskId);
@@ -111,6 +151,13 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         );
     }
 
+    /**
+     * 模拟发布到平台（实际项目中替换为真实的平台 API 调用）
+     *
+     * @param task    发布任务
+     * @param account 发布使用的平台账号
+     * @return 发布是否成功
+     */
     private boolean publishToPlatform(PbPublishTask task, PbPlatformAccount account) {
         String platform = task.getPlatform();
         log.info("模拟发布到{}平台, 账号: {}", platform, account.getAccountName());

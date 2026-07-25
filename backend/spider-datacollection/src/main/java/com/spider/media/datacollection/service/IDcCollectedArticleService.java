@@ -7,17 +7,28 @@ import com.spider.media.datacollection.entity.DcCollectedArticle;
 import java.util.List;
 
 /**
- * 采集文章Service接口
+ * 采集文章业务层接口
+ *
+ * <p>定义采集文章的查询和触发采集任务的操作。
+ * 由 {@link com.spider.media.datacollection.service.impl.DcCollectedArticleServiceImpl} 提供具体实现。</p>
  */
 public interface IDcCollectedArticleService {
 
     /**
-     * 查询采集文章分页列表
+     * 分页查询采集文章列表
+     *
+     * @param pageReqVO 分页查询参数（对标账号ID、平台、标题）
+     * @return 文章分页结果
      */
     PageResult<DcCollectedArticle> selectArticlePage(DcCollectedArticlePageReqVO pageReqVO);
 
     /**
-     * 触发采集任务
+     * 触发对标账号的文章采集任务（异步执行）
+     *
+     * <p>根据对标账号的主页链接，抓取文章列表并保存到数据库。
+     * 通过 URL 去重避免重复采集同一篇文章。</p>
+     *
+     * @param targetAccountId 对标账号ID
      */
     void collectArticles(Long targetAccountId);
 }

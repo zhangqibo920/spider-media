@@ -5,36 +5,39 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 对标账号表
+ * 对标账号实体类
+ *
+ * <p>对应数据库表 dc_target_account，存储用户配置的对标账号信息。
+ * 对标账号是用户希望采集其内容的自媒体账号，系统会定期抓取对标账号发布的文章。</p>
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class DcTargetAccount extends BaseEntity {
 
-    /** 账号ID */
+    /** 账号主键ID */
     private Long id;
 
-    /** 用户ID */
+    /** 所属用户ID */
     private Long userId;
 
-    /** 平台类型 */
+    /** 平台类型（如 "weibo"、"douyin"、"zhihu"） */
     private String platform;
 
-    /** 账号名称 */
+    /** 对标账号的显示名称 */
     private String accountName;
 
-    /** 账号ID */
+    /** 对标账号的唯一ID */
     private String accountId;
 
-    /** 账号链接 */
+    /** 对标账号的主页链接（用于采集文章） */
     private String accountUrl;
 
-    /** 分组名称 */
+    /** 分组名称（用于按业务维度分类管理对标账号） */
     private String groupName;
 
-    /** 状态（0正常 1停用） */
+    /** 账号状态：'0'=正常，'1'=停用 */
     private String status;
 
-    /** 描述 */
+    /** 对标账号的描述/备注信息 */
     private String description;
 }

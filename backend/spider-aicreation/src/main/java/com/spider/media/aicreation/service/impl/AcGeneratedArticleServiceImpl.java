@@ -21,27 +21,49 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * AI 生成文章业务层实现类
+ *
+ * <p>根据热点话题调用 AI 大模型（DeepSeek / 智谱）生成自媒体文章。
+ * 支持多模型切换，文章生成后自动保存到数据库。</p>
+ *
+ * <p>生成流程：
+ * <ol>
+ *   <li>根据 hotTopicId 查询热点话题信息</li>
+ *   <li>构建针对自媒体平台的 Prompt</li>
+ *   <li>调用指定 AI 模型的 API 获取生成内容</li>
+ *   <li>将结果保存到 ac_generated_article 表</li>
+ * </ol></p>
+ */
 @Service
 public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService {
 
     private static final Logger log = LoggerFactory.getLogger(AcGeneratedArticleServiceImpl.class);
+    /** JSON 序列化工具 */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** AI 生成文章数据访问对象 */
     private final AcGeneratedArticleMapper generatedArticleMapper;
+    /** 热点话题数据访问对象 */
     private final AcHotTopicMapper hotTopicMapper;
+    /** HTTP 客户端（用于调用 AI API） */
     private final WebClient webClient = WebClient.builder()
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
             .build();
 
+    /** DeepSeek API 密钥 */
     @Value("${ai.models.deepseek.api-key:}")
     private String deepseekApiKey;
 
+    /** DeepSeek API 基础地址 */
     @Value("${ai.models.deepseek.base-url:https://api.deepseek.com}")
     private String deepseekBaseUrl;
 
+    /** 智谱 API 密钥 */
     @Value("${ai.models.zhipu.api-key:}")
     private String zhipuApiKey;
 
+    /** 智谱 API 基础地址 */
     @Value("${ai.models.zhipu.base-url:https://open.bigmodel.cn/api/paas/v4}")
     private String zhipuBaseUrl;
 
@@ -51,6 +73,14 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
         this.hotTopicMapper = hotTopicMapper;
     }
 
+    /**
+     * 根据热点话题生成 AI 文章
+     *
+     * @param hotTopicId 热点话题ID
+     * @param userId     用户ID
+     * @param model      AI 模型标识（"deepseek" 或 "zhipu"）
+     * @return 生成的文章实体
+     */
     @Override
     public AcGeneratedArticle generateArticle(Long hotTopicId, Long userId, String model) {
         AcHotTopic hotTopic = hotTopicMapper.selectById(hotTopicId);
@@ -58,6 +88,7 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
             throw new ServiceException(ErrorCodeEnums.AC_HOT_TOPIC_NOT_FOUND);
         }
 
+        // 创建文章记录（状态为 GENERATING）
         AcGeneratedArticle article = new AcGeneratedArticle();
         article.setUserId(userId);
         article.setHotTopicId(hotTopicId);
@@ -98,6 +129,12 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
         );
     }
 
+    /**
+     * 构建自媒体文章生成的 Prompt
+     *
+     * @param topic 热点话题
+     * @return 完整的 Prompt 字符串
+     */
     private String buildPrompt(AcHotTopic topic) {
         return "你是一位专业的自媒体内容创作者。请根据以下热点话题撰写一篇高质量的自媒体文章。\n\n" +
                 "话题：" + topic.getTitle() + "\n" +
@@ -113,6 +150,13 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
                 "请直接输出文章内容，不需要额外说明。";
     }
 
+    /**
+     * 根据模型标识调用对应的 AI API
+     *
+     * @param prompt 完整的 Prompt
+     * @param model  模型标识
+     * @return AI 生成的文本内容
+     */
     private String callLLM(String prompt, String model) {
         if ("zhipu".equalsIgnoreCase(model)) {
             return callZhipu(prompt);
@@ -120,6 +164,12 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
         return callDeepseek(prompt);
     }
 
+    /**
+     * 调用 DeepSeek API 生成文章
+     *
+     * @param prompt 完整的 Prompt
+     * @return AI 生成的文本内容
+     */
     private String callDeepseek(String prompt) {
         try {
             Map<String, Object> body = Map.of(
@@ -146,6 +196,12 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
         }
     }
 
+    /**
+     * 调用智谱 API 生成文章
+     *
+     * @param prompt 完整的 Prompt
+     * @return AI 生成的文本内容
+     */
     private String callZhipu(String prompt) {
         try {
             Map<String, Object> body = Map.of(

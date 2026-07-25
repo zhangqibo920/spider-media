@@ -23,13 +23,30 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 采集文章业务层实现类
+ *
+ * <p>实现对标账号文章的异步采集功能。通过 HTTP 请求获取对标账号主页 HTML，
+ * 使用 Jsoup 解析页面提取文章链接，再逐个抓取文章正文内容并保存到数据库。</p>
+ *
+ * <p>采集策略：
+ * <ul>
+ *   <li>通过 URL 去重避免重复采集</li>
+ *   <li>每个对标账号最多采集 20 篇文章</li>
+ *   <li>使用 Jsoup CSS 选择器提取正文段落</li>
+ *   <li>自动截取前 200 字作为摘要</li>
+ * </ul></p>
+ */
 @Service
 public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService {
 
     private static final Logger log = LoggerFactory.getLogger(DcCollectedArticleServiceImpl.class);
 
+    /** 采集文章数据访问对象 */
     private final DcCollectedArticleMapper collectedArticleMapper;
+    /** 对标账号数据访问对象 */
     private final DcTargetAccountMapper targetAccountMapper;
+    /** HTTP 客户端（用于抓取网页内容） */
     private final WebClient webClient = WebClient.builder()
             .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
@@ -52,6 +69,20 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
         );
     }
 
+    /**
+     * 异步采集对标账号的文章
+     *
+     * <p>采集流程：
+     * <ol>
+     *   <li>根据 targetAccountId 查询对标账号信息</li>
+     *   <li>获取对标账号的主页 URL</li>
+     *   <li>抓取主页 HTML 并解析文章链接列表</li>
+     *   <li>逐个抓取文章详情页，提取正文内容</li>
+     *   <li>通过 URL 去重后保存到数据库</li>
+     * </ol></p>
+     *
+     * @param targetAccountId 对标账号ID
+     */
     @Override
     @Async
     public void collectArticles(Long targetAccountId) {
@@ -72,6 +103,7 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
                 return;
             }
 
+            // 抓取主页 HTML
             String html = webClient.get().uri(url)
                     .retrieve().bodyToMono(String.class).block();
 
@@ -80,6 +112,7 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
                 return;
             }
 
+            // 解析文章列表并逐个采集
             Document doc = Jsoup.parse(html, url);
             List<DcCollectedArticle> articles = parseArticles(doc, target);
             int saved = 0;
@@ -96,6 +129,13 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
         }
     }
 
+    /**
+     * 解析 HTML 页面中的文章链接并逐个抓取详情
+     *
+     * @param doc    Jsoup 解析后的主页文档
+     * @param target 对标账号实体
+     * @return 采集到的文章列表（最多20篇）
+     */
     private List<DcCollectedArticle> parseArticles(Document doc, DcTargetAccount target) {
         List<DcCollectedArticle> articles = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
@@ -105,6 +145,7 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
         for (Element link : links) {
             String href = link.absUrl("href");
             String title = link.text().trim();
+            // 过滤无效链接：空标题、空链接、指向主页的链接、标题长度异常
             if (title.isEmpty() || href.isEmpty() || href.equals(target.getAccountUrl())) {
                 continue;
             }
@@ -115,6 +156,7 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
                 continue;
             }
 
+            // 构建文章实体
             DcCollectedArticle article = new DcCollectedArticle();
             article.setUserId(userId);
             article.setTargetAccountId(target.getId());
@@ -130,6 +172,7 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
             article.setCreateBy(target.getAccountName());
             article.setCreateTime(now);
 
+            // 尝试抓取文章详情页的正文内容
             try {
                 String articleHtml = webClient.get().uri(href)
                         .retrieve().bodyToMono(String.class).block();

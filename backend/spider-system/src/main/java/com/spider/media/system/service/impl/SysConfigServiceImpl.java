@@ -10,9 +10,16 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 系统配置业务层实现类
+ *
+ * <p>实现系统配置的增删查改操作。新增时会检查配置键的唯一性，
+ * 防止重复键导致配置覆盖问题。</p>
+ */
 @Service
 public class SysConfigServiceImpl implements ISysConfigService {
 
+    /** 配置数据访问对象 */
     private final SysConfigMapper configMapper;
 
     public SysConfigServiceImpl(SysConfigMapper configMapper) {
@@ -29,6 +36,11 @@ public class SysConfigServiceImpl implements ISysConfigService {
         return configMapper.selectByKey(configKey);
     }
 
+    /**
+     * 新增配置（检查配置键唯一性）
+     *
+     * @throws ServiceException 配置键已存在时抛出异常
+     */
     @Override
     public int insertConfig(SysConfig config) {
         if (configMapper.selectByKey(config.getConfigKey()) != null) {
@@ -38,6 +50,9 @@ public class SysConfigServiceImpl implements ISysConfigService {
         return configMapper.insert(config);
     }
 
+    /**
+     * 更新配置（自动填充更新时间）
+     */
     @Override
     public int updateConfig(SysConfig config) {
         config.setUpdateTime(LocalDateTime.now());

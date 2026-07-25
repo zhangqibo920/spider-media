@@ -15,13 +15,24 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 热点话题业务层实现类
+ *
+ * <p>从各主流平台（微博、抖音、知乎、头条）异步抓取热搜榜单数据，
+ * 解析 JSON 响应并保存到数据库。支持按平台分别抓取，每次抓取前会清理旧数据。</p>
+ *
+ * <p>使用 @Async 注解实现异步执行，避免阻塞前端请求。
+ * 使用 WebClient（响应式 HTTP 客户端）发起网络请求。</p>
+ */
 @Service
 public class AcHotTopicServiceImpl implements IAcHotTopicService {
 
     private static final Logger log = LoggerFactory.getLogger(AcHotTopicServiceImpl.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** 热点话题数据访问对象 */
     private final AcHotTopicMapper hotTopicMapper;
+    /** HTTP 客户端（用于抓取各平台热搜 API） */
     private final WebClient webClient = WebClient.builder()
             .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
@@ -31,6 +42,15 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         this.hotTopicMapper = hotTopicMapper;
     }
 
+    /**
+     * 异步抓取指定平台的热点话题
+     *
+     * <p>根据平台类型调用对应的抓取方法，抓取后先删除旧数据再保存新数据。
+     * 每个平台最多保存 30 条热点话题。</p>
+     *
+     * @param platform 平台类型（weibo/douyin/zhihu/toutiao）
+     * @param userId   用户ID
+     */
     @Override
     @Async
     public void fetchHotTopics(String platform, Long userId) {
@@ -55,8 +75,10 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
                     break;
             }
 
+            // 先删除该用户在该平台的旧热点数据
             hotTopicMapper.deleteByUserId(userId, platform);
 
+            // 保存新抓取的热点数据
             LocalDateTime now = LocalDateTime.now();
             int saved = 0;
             for (AcHotTopic topic : topics) {
@@ -82,6 +104,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         return hotTopicMapper.selectByUserId(userId);
     }
 
+    /**
+     * 抓取微博热搜榜（最多30条）
+     */
     private List<AcHotTopic> fetchWeiboHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {
@@ -111,6 +136,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         return topics;
     }
 
+    /**
+     * 抓取抖音热搜榜（最多30条）
+     */
     private List<AcHotTopic> fetchDouyinHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {
@@ -140,6 +168,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         return topics;
     }
 
+    /**
+     * 抓取知乎热榜（最多30条）
+     */
     private List<AcHotTopic> fetchZhihuHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {
@@ -169,6 +200,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         return topics;
     }
 
+    /**
+     * 抓取今日头条热榜（最多30条）
+     */
     private List<AcHotTopic> fetchToutiaoHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {

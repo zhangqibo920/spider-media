@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    PbPlatformAccountMapper.xml - 平台账号表的 SQL 映射文件
+
+    namespace 指向对应的 Mapper 接口全限定名，MyBatis 通过此映射将 SQL 语句与接口方法绑定。
+    所有查询均包含 del_flag = '0' 条件，确保不返回已逻辑删除的记录。
+-->
 <mapper namespace="com.spider.media.contentpublish.mapper.PbPlatformAccountMapper">
 
+    <!--
+        BaseResultMap - 通用结果映射
+
+        将数据库字段（下划线命名）映射到 Java 实体属性（驼峰命名）。
+        id 标签指定主键列，result 标签指定普通列。
+        所有 SELECT 查询共用此 resultMap，避免重复定义。
+    -->
     <resultMap id="BaseResultMap" type="com.spider.media.contentpublish.entity.PbPlatformAccount">
         <id column="id" property="id"/>
         <result column="user_id" property="userId"/>
@@ -21,12 +34,36 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!--
+        selectById - 根据主键ID查询单条记录
+
+        仅查询未逻辑删除的记录（del_flag = '0'），已删除的记录不会被返回。
+        返回结果通过 BaseResultMap 映射为 PbPlatformAccount 对象。
+    -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM pb_platform_account
+        WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <!--
+        selectByUserId - 查询指定用户的所有平台账号
+
+        按创建时间倒序排列（最新的账号排在前面）。
+        用于用户绑定管理页面，展示该用户已授权的所有平台账号。
+    -->
     <select id="selectByUserId" resultMap="BaseResultMap">
         SELECT * FROM pb_platform_account
         WHERE del_flag = '0' AND user_id = #{userId}
         ORDER BY create_time DESC
     </select>
 
+    <!--
+        insert - 新增平台账号记录
+
+        useGeneratedKeys="true" 开启主键自增回填，插入后自动将生成的 ID 设置到实体的 id 属性。
+        keyProperty="id" 指定回填到实体的 id 字段。
+        仅插入业务字段，通用字段（create_by、create_time 等）由 Service 层设置后传入。
+    -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO pb_platform_account (user_id, platform, account_name, account_id,
                                          access_token, refresh_token, token_expire_time,
@@ -36,6 +73,13 @@
                 #{status}, #{groupName}, #{createBy}, #{createTime})
     </insert>
 
+    <!--
+        deleteById - 逻辑删除平台账号
+
+        采用逻辑删除策略：不物理删除数据，而是将 del_flag 从 '0' 更新为 '2'。
+        条件中包含 del_flag = '0'，防止重复删除已删除的记录。
+        这样做可以保留历史数据，便于审计和数据恢复。
+    -->
     <update id="deleteById">
         UPDATE pb_platform_account SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
     </update>

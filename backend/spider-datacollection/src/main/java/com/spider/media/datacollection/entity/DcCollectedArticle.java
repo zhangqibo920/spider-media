@@ -7,37 +7,40 @@ import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 /**
- * 采集文章表
+ * 采集文章实体类
+ *
+ * <p>对应数据库表 dc_collected_article，存储从对标账号采集到的文章数据。
+ * 包含文章的基本信息（标题、内容、链接）和互动数据（阅读、点赞、评论、分享）。</p>
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class DcCollectedArticle extends BaseEntity {
 
-    /** 文章ID */
+    /** 文章主键ID */
     private Long id;
 
-    /** 用户ID */
+    /** 所属用户ID */
     private Long userId;
 
-    /** 对标账号ID */
+    /** 来源对标账号ID */
     private Long targetAccountId;
 
-    /** 平台类型 */
+    /** 来源平台类型 */
     private String platform;
 
     /** 文章标题 */
     private String title;
 
-    /** 文章内容 */
+    /** 文章正文内容 */
     private String content;
 
-    /** 摘要 */
+    /** 文章摘要（取正文前200字） */
     private String summary;
 
-    /** 文章链接 */
+    /** 文章原始链接 */
     private String url;
 
-    /** 作者 */
+    /** 文章作者（即对标账号名称） */
     private String author;
 
     /** 阅读量 */
@@ -52,9 +55,9 @@ public class DcCollectedArticle extends BaseEntity {
     /** 分享量 */
     private Integer shareCount;
 
-    /** 发布时间 */
+    /** 文章在平台上的发布时间 */
     private LocalDateTime publishTime;
 
-    /** 采集时间 */
+    /** 文章被采集到系统的时间 */
     private LocalDateTime collectedTime;
 }

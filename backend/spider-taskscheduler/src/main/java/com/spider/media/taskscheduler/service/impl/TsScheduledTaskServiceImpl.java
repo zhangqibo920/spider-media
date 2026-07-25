@@ -16,19 +16,29 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 /**
- * 定时任务Service实现
+ * 定时任务业务层实现类
+ *
+ * <p>实现定时任务的创建、启用、停用、分页查询等操作。
+ * 创建时初始化执行次数和失败次数为 0，状态默认为停止。
+ * 启用/停用时会校验任务是否存在。</p>
  */
 @Service
 public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
 
     private static final Logger log = LoggerFactory.getLogger(TsScheduledTaskServiceImpl.class);
 
+    /** 定时任务数据访问对象 */
     private final TsScheduledTaskMapper scheduledTaskMapper;
 
     public TsScheduledTaskServiceImpl(TsScheduledTaskMapper scheduledTaskMapper) {
         this.scheduledTaskMapper = scheduledTaskMapper;
     }
 
+    /**
+     * 创建定时任务
+     *
+     * <p>初始化任务状态为停止（0），执行次数和失败次数为 0。</p>
+     */
     @Override
     public TsScheduledTask createTask(TsScheduledTask task) {
         task.setStatus(0);
@@ -40,6 +50,11 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         return task;
     }
 
+    /**
+     * 启用定时任务
+     *
+     * @throws ServiceException 任务不存在时抛出异常
+     */
     @Override
     public void enableTask(Long taskId) {
         TsScheduledTask task = scheduledTaskMapper.selectById(taskId);
@@ -53,6 +68,11 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         log.info("启用任务: {}", task.getTaskName());
     }
 
+    /**
+     * 停用定时任务
+     *
+     * @throws ServiceException 任务不存在时抛出异常
+     */
     @Override
     public void disableTask(Long taskId) {
         TsScheduledTask task = scheduledTaskMapper.selectById(taskId);
