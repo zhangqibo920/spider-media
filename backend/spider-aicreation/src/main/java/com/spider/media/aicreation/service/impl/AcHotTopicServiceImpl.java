@@ -34,7 +34,10 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
     private final AcHotTopicMapper hotTopicMapper;
     /** HTTP 客户端（用于抓取各平台热搜 API） */
     private final WebClient webClient = WebClient.builder()
-            .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .defaultHeader("Accept", "application/json, text/plain, */*")
+            .defaultHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
+            .defaultHeader("Referer", "https://www.douyin.com/")
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
 
@@ -145,8 +148,14 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
             String json = webClient.get()
                     .uri("https://www.douyin.com/aweme/v1/web/hot/search/list/")
                     .retrieve().bodyToMono(String.class).block();
+            log.debug("抖音热搜API返回: {}", json != null ? json.substring(0, Math.min(json.length(), 500)) : "null");
             if (json != null) {
                 JsonNode root = objectMapper.readTree(json);
+                int statusCode = root.path("status_code").asInt(-1);
+                if (statusCode != 0) {
+                    log.warn("抖音热搜API返回错误状态码: {}", statusCode);
+                    return topics;
+                }
                 JsonNode data = root.path("data").path("word_list");
                 if (data.isArray()) {
                     int rank = 1;
