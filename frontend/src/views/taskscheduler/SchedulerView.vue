@@ -20,8 +20,8 @@
         <el-table-column prop="cronExpression" label="Cron表达式" width="150" />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'">
-              {{ row.status === 1 ? '运行中' : '已停止' }}
+            <el-tag :type="getScheduledTaskStatusType(row.status)">
+              {{ getScheduledTaskStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -36,7 +36,6 @@
       </el-table>
     </el-card>
 
-    <!-- Create Task Dialog -->
     <el-dialog v-model="showCreateDialog" title="创建定时任务" width="500px" @closed="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="任务名称" prop="taskName">
@@ -67,11 +66,11 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getScheduledTasks, createScheduledTask, enableTask, disableTask } from '@/api/scheduler'
-import type { ScheduledTask } from '@/types'
+import { getScheduledTaskStatusLabel, getScheduledTaskStatusType } from '@/constants'
 
 const loading = ref(false)
 const showCreateDialog = ref(false)
-const tasks = ref<ScheduledTask[]>([])
+const tasks = ref<any[]>([])
 const formRef = ref<FormInstance>()
 
 const form = reactive({

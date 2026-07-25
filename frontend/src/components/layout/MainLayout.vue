@@ -50,9 +50,9 @@
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" :src="userInfo?.avatar">
-                {{ userInfo?.nickname?.charAt(0) || 'U' }}
+                {{ userInfo?.nickName?.charAt(0) || 'U' }}
               </el-avatar>
-              <span class="username">{{ userInfo?.nickname || userInfo?.username || '用户' }}</span>
+              <span class="username">{{ userInfo?.nickName || userInfo?.userName || '用户' }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>

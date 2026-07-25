@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { login, register, getCurrentUser } from '@/api/auth'
-import type { User } from '@/types/user'
+import type { User } from '@/types'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')

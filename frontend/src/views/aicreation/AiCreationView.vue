@@ -7,9 +7,7 @@
             <div class="card-header">
               <span>全网热点</span>
               <el-select v-model="selectedPlatform" placeholder="选择平台" size="small" style="width: 120px">
-                <el-option label="抖音" value="douyin" />
-                <el-option label="微博" value="weibo" />
-                <el-option label="网易" value="netease" />
+                <el-option v-for="p in HOT_TOPIC_PLATFORMS" :key="p.value" :label="p.label" :value="p.value" />
               </el-select>
               <el-button type="primary" size="small" @click="handleFetchHot" :loading="fetching">
                 抓取热点
@@ -40,7 +38,9 @@
             <el-table-column prop="wordCount" label="字数" width="80" />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === 'COMPLETED' ? 'success' : 'warning'" size="small">{{ row.status }}</el-tag>
+                <el-tag :type="getAiArticleStatusType(row.status)" size="small">
+                  {{ getAiArticleStatusLabel(row.status) }}
+                </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="操作" width="80">
@@ -59,14 +59,14 @@
         <el-descriptions :column="2" border style="margin: 16px 0">
           <el-descriptions-item label="模型">{{ currentArticle.modelUsed }}</el-descriptions-item>
           <el-descriptions-item label="字数">{{ currentArticle.wordCount }}</el-descriptions-item>
-          <el-descriptions-item label="状态">{{ currentArticle.status }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ getAiArticleStatusLabel(currentArticle.status) }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ currentArticle.createTime }}</el-descriptions-item>
         </el-descriptions>
         <div v-if="currentArticle.summary" style="margin-bottom: 12px">
           <strong>摘要：</strong>{{ currentArticle.summary }}
         </div>
         <el-divider />
-        <div class="article-content" v-html="currentArticle.content || '暂无内容'"></div>
+        <div class="article-content" style="max-height: 400px; overflow-y: auto">{{ currentArticle.content || '暂无内容' }}</div>
       </div>
     </el-dialog>
   </div>
@@ -76,6 +76,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles } from '@/api/ai'
+import { getAiArticleStatusLabel, getAiArticleStatusType, HOT_TOPIC_PLATFORMS } from '@/constants'
 
 const selectedPlatform = ref('douyin')
 const loadingTopics = ref(false)

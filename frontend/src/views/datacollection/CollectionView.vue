@@ -21,8 +21,8 @@
         <el-table-column prop="groupName" label="分组" width="120" />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'">
-              {{ row.status === 1 ? '监控中' : '已暂停' }}
+            <el-tag :type="getTargetAccountStatusType(row.status)" size="small">
+              {{ getTargetAccountStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -44,12 +44,7 @@
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="平台" prop="platform">
           <el-select v-model="form.platform" placeholder="选择平台">
-            <el-option label="微信公众号" value="wechat" />
-            <el-option label="百家号" value="baijia" />
-            <el-option label="头条号" value="toutiao" />
-            <el-option label="小红书" value="xiaohongshu" />
-            <el-option label="抖音" value="douyin" />
-            <el-option label="知乎" value="zhihu" />
+            <el-option v-for="p in COLLECTION_PLATFORMS" :key="p.value" :label="p.label" :value="p.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="账号名称" prop="accountName">
@@ -99,7 +94,7 @@
           <el-link type="primary" :href="currentArticle.url" target="_blank">查看原文</el-link>
         </div>
         <el-divider />
-        <div class="article-content" v-html="currentArticle.content || '暂无内容'"></div>
+        <div class="article-content" style="max-height: 400px; overflow-y: auto">{{ currentArticle.content || '暂无内容' }}</div>
       </div>
     </el-dialog>
   </div>
@@ -110,6 +105,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getTargetAccounts, addTargetAccount, deleteTargetAccount, triggerCollect, getCollectedArticles } from '@/api/collection'
+import { getTargetAccountStatusLabel, getTargetAccountStatusType, COLLECTION_PLATFORMS } from '@/constants'
 
 const loading = ref(false)
 const showAddDialog = ref(false)

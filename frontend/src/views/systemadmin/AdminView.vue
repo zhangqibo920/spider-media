@@ -29,8 +29,8 @@
             </el-table-column>
             <el-table-column prop="configType" label="类型" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.configType === 'Y' ? 'danger' : 'info'" size="small">
-                  {{ row.configType === 'Y' ? '内置' : '自定义' }}
+                <el-tag :type="getConfigTypeTagType(row.configType)" size="small">
+                  {{ getConfigTypeLabel(row.configType) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -62,15 +62,15 @@
             <el-table-column prop="email" label="邮箱" />
             <el-table-column prop="role" label="角色" width="100">
               <template #default="{ row }">
-                <el-tag :type="row.role === 'ADMIN' ? 'danger' : 'info'" size="small">
-                  {{ row.role === 'ADMIN' ? '管理员' : '普通用户' }}
+                <el-tag :type="getUserRoleType(row.role)" size="small">
+                  {{ getUserRoleLabel(row.role) }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === '0' ? 'success' : 'danger'" size="small">
-                  {{ row.status === '0' ? '正常' : '停用' }}
+                <el-tag :type="getUserStatusType(row.status)" size="small">
+                  {{ getUserStatusLabel(row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -166,11 +166,15 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
 import {
   getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig,
   getUsers, updateUser, deleteUser, getOperationLogs
 } from '@/api/admin'
+import {
+  getUserStatusLabel, getUserStatusType,
+  getUserRoleLabel, getUserRoleType,
+  getConfigTypeLabel, getConfigTypeTagType,
+} from '@/constants'
 
 const activeTab = ref('config')
 const loadingConfigs = ref(false)

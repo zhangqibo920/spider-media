@@ -18,8 +18,8 @@
             <el-table-column prop="accountName" label="账号名称" />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-                  {{ row.status === 1 ? '在线' : '离线' }}
+                <el-tag :type="getPlatformAccountStatusType(row.status)" size="small">
+                  {{ getPlatformAccountStatusLabel(row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -51,7 +51,9 @@
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="getStatusType(row.status)" size="small">{{ getStatusText(row.status) }}</el-tag>
+                <el-tag :type="getPublishTaskStatusType(row.status)" size="small">
+                  {{ getPublishTaskStatusLabel(row.status) }}
+                </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="操作" width="150">
@@ -69,10 +71,7 @@
       <el-form ref="accountFormRef" :model="accountForm" :rules="accountRules" label-width="80px">
         <el-form-item label="平台" prop="platform">
           <el-select v-model="accountForm.platform" placeholder="选择平台">
-            <el-option label="微信公众号" value="wechat" />
-            <el-option label="今日头条" value="toutiao" />
-            <el-option label="百家号" value="baijia" />
-            <el-option label="小红书" value="xiaohongshu" />
+            <el-option v-for="p in PUBLISH_PLATFORMS" :key="p.value" :label="p.label" :value="p.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="账号名称" prop="accountName">
@@ -127,6 +126,11 @@ import {
   getPlatformAccounts, addPlatformAccount, deletePlatformAccount,
   getPublishTasks, createPublishTask, publishNow, schedulePublish
 } from '@/api/publish'
+import {
+  getPublishTaskStatusLabel, getPublishTaskStatusType,
+  getPlatformAccountStatusLabel, getPlatformAccountStatusType,
+  PUBLISH_PLATFORMS,
+} from '@/constants'
 
 const loadingAccounts = ref(false)
 const loadingTasks = ref(false)
@@ -151,9 +155,6 @@ const taskRules = {
   title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
   content: [{ required: true, message: '请输入内容', trigger: 'blur' }],
 }
-
-const getStatusType = (s: number) => ({ 0: 'info', 1: 'warning', 2: 'success', 3: 'primary', 4: 'danger' }[s] || 'info') as any
-const getStatusText = (s: number) => ({ 0: '草稿', 1: '发布中', 2: '已发布', 3: '定时中', 4: '失败' }[s] || '未知')
 
 const loadAccounts = async () => {
   loadingAccounts.value = true
