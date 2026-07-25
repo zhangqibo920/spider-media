@@ -1,10 +1,8 @@
 package com.spider.media.system.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.spider.media.common.base.BaseEntity;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 /**
  * 字典数据实体类
@@ -23,9 +21,8 @@ import java.time.LocalDateTime;
  * </ul></p>
  */
 @Data
-public class SysDictData implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+@EqualsAndHashCode(callSuper = true)
+public class SysDictData extends BaseEntity {
 
     /** 字典数据主键ID */
     private Long id;
@@ -56,8 +53,4 @@ public class SysDictData implements Serializable {
 
     /** 备注 */
     private String remark;
-
-    /** 创建时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createTime;
 }
