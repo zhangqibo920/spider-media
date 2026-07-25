@@ -1,12 +1,15 @@
 package com.spider.media.system.controller;
 
+import com.spider.media.common.controller.BaseController;
+import com.spider.media.common.pojo.PageResult;
 import com.spider.media.common.result.R;
 import com.spider.media.framework.security.LoginUser;
+import com.spider.media.system.aspect.OperLog;
 import com.spider.media.system.entity.SysConfig;
 import com.spider.media.system.entity.SysOperLog;
 import com.spider.media.system.entity.SysUser;
-import com.spider.media.system.mapper.SysOperLogMapper;
 import com.spider.media.system.service.ISysConfigService;
+import com.spider.media.system.service.ISysOperLogService;
 import com.spider.media.system.service.ISysUserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,21 +25,21 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/admin")
-public class SysAdminController {
+public class SysAdminController extends BaseController {
 
     /** 系统配置业务层服务 */
     private final ISysConfigService configService;
     /** 用户业务层服务 */
     private final ISysUserService userService;
-    /** 操作日志数据访问对象 */
-    private final SysOperLogMapper operLogMapper;
+    /** 操作日志业务层服务 */
+    private final ISysOperLogService operLogService;
 
     public SysAdminController(ISysConfigService configService,
                                ISysUserService userService,
-                               SysOperLogMapper operLogMapper) {
+                               ISysOperLogService operLogService) {
         this.configService = configService;
         this.userService = userService;
-        this.operLogMapper = operLogMapper;
+        this.operLogService = operLogService;
     }
 
     // ========== 配置管理 ==========
@@ -47,9 +50,10 @@ public class SysAdminController {
      * @param group 配置分组（configKey 前缀）
      * @return 该分组下的所有配置
      */
+    @OperLog(module = "配置管理", action = "查询")
     @GetMapping("/config")
     public R<List<SysConfig>> getConfig(@RequestParam(value = "group") String group) {
-        return R.ok(configService.selectConfigList(group));
+        return ok(configService.selectConfigList(group));
     }
 
     /**
@@ -58,11 +62,12 @@ public class SysAdminController {
      * @param config 待新增的配置实体
      * @return 操作结果
      */
+    @OperLog(module = "配置管理", action = "新增")
     @PostMapping("/config")
     public R<Void> addConfig(@RequestBody SysConfig config) {
         config.setCreateBy(LoginUser.getUsername());
         configService.insertConfig(config);
-        return R.ok();
+        return ok();
     }
 
     /**
@@ -71,11 +76,12 @@ public class SysAdminController {
      * @param config 待更新的配置实体（必须包含 id）
      * @return 操作结果
      */
+    @OperLog(module = "配置管理", action = "修改")
     @PutMapping("/config")
     public R<Void> updateConfig(@RequestBody SysConfig config) {
         config.setUpdateBy(LoginUser.getUsername());
         configService.updateConfig(config);
-        return R.ok();
+        return ok();
     }
 
     /**
@@ -84,10 +90,11 @@ public class SysAdminController {
      * @param id 配置主键ID
      * @return 操作结果
      */
+    @OperLog(module = "配置管理", action = "删除")
     @DeleteMapping("/config/{id}")
     public R<Void> deleteConfig(@PathVariable Long id) {
         configService.deleteConfig(id);
-        return R.ok();
+        return ok();
     }
 
     // ========== 用户管理 ==========
@@ -97,9 +104,10 @@ public class SysAdminController {
      *
      * @return 用户列表
      */
+    @OperLog(module = "用户管理", action = "查询")
     @GetMapping("/users")
     public R<List<SysUser>> getUsers() {
-        return R.ok(userService.selectUserList());
+        return ok(userService.selectUserList());
     }
 
     /**
@@ -108,11 +116,12 @@ public class SysAdminController {
      * @param user 待更新的用户实体
      * @return 操作结果
      */
+    @OperLog(module = "用户管理", action = "修改")
     @PutMapping("/users")
     public R<Void> updateUser(@RequestBody SysUser user) {
         user.setUpdateBy(LoginUser.getUsername());
         userService.updateUser(user);
-        return R.ok();
+        return ok();
     }
 
     /**
@@ -121,10 +130,11 @@ public class SysAdminController {
      * @param userId 用户ID
      * @return 操作结果
      */
+    @OperLog(module = "用户管理", action = "删除")
     @DeleteMapping("/users/{userId}")
     public R<Void> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
-        return R.ok();
+        return ok();
     }
 
     // ========== 操作日志 ==========
@@ -138,14 +148,15 @@ public class SysAdminController {
      * @param size 每页条数（默认 20）
      * @return 包含日志列表和总数的分页结果
      */
+    @OperLog(module = "日志管理", action = "查询")
     @GetMapping("/logs")
     public R<Map<String, Object>> getLogs(@RequestParam(value = "page", defaultValue = "1") int page,
                                            @RequestParam(value = "size", defaultValue = "20") int size) {
-        List<SysOperLog> logs = operLogMapper.selectPage(null, null, (page - 1) * size, size);
-        long total = operLogMapper.selectCount(null, null);
+        List<SysOperLog> logs = operLogService.selectLogPage(null, null, (page - 1) * size, size);
+        long total = operLogService.selectLogCount(null, null);
         Map<String, Object> result = new HashMap<>();
         result.put("list", logs);
         result.put("total", total);
-        return R.ok(result);
+        return ok(result);
     }
 }

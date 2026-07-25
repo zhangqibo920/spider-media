@@ -1,7 +1,9 @@
 package com.spider.media.system.controller;
 
+import com.spider.media.common.controller.BaseController;
 import com.spider.media.common.result.R;
 import com.spider.media.framework.security.LoginUser;
+import com.spider.media.system.aspect.OperLog;
 import com.spider.media.system.entity.SysUser;
 import com.spider.media.system.service.ISysUserService;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +19,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/auth")
-public class SysLoginController {
+public class SysLoginController extends BaseController {
 
     /** 用户业务层服务 */
     private final ISysUserService userService;
@@ -35,12 +37,13 @@ public class SysLoginController {
      * @param loginBody 包含 username 和 password 的 JSON 请求体
      * @return 包含 token 的响应数据
      */
+    @OperLog(module = "认证管理", action = "登录")
     @PostMapping("/login")
     public R<Map<String, Object>> login(@RequestBody Map<String, String> loginBody) {
         String token = userService.login(loginBody.get("username"), loginBody.get("password"));
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
-        return R.ok(result);
+        return ok(result);
     }
 
     /**
@@ -51,13 +54,14 @@ public class SysLoginController {
      * @param registerBody 包含 username 和 password 的 JSON 请求体
      * @return 注册成功后的用户信息
      */
+    @OperLog(module = "认证管理", action = "注册")
     @PostMapping("/register")
     public R<SysUser> register(@RequestBody Map<String, String> registerBody) {
         SysUser user = userService.register(
                 registerBody.get("username"),
                 registerBody.get("password")
         );
-        return R.ok(user);
+        return ok(user);
     }
 
     /**
@@ -72,6 +76,6 @@ public class SysLoginController {
     public R<SysUser> getInfo() {
         String username = LoginUser.getUsername();
         SysUser user = userService.selectUserByUserName(username);
-        return R.ok(user);
+        return ok(user);
     }
 }

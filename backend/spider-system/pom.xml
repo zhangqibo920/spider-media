@@ -22,6 +22,11 @@
             <groupId>com.spider</groupId>
             <artifactId>spider-framework</artifactId>
         </dependency>
+        <!-- Spring AOP (for @Aspect / LogAspect) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
