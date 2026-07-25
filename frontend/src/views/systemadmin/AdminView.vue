@@ -107,6 +107,10 @@
       <el-tab-pane label="模型管理" name="models">
         <ModelManageView />
       </el-tab-pane>
+
+      <el-tab-pane label="字典管理" name="dict">
+        <DictManageView />
+      </el-tab-pane>
     </el-tabs>
 
     <!-- 添加配置对话框 -->
@@ -196,6 +200,7 @@ import {
 } from '@/api/admin'
 import DictTag from '@/components/DictTag.vue'
 import ModelManageView from './ModelManageView.vue'
+import DictManageView from './DictManageView.vue'
 
 const activeTab = ref('config')
 const loadingConfigs = ref(false)
