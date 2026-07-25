@@ -60,6 +60,12 @@ const router = createRouter({
           component: () => import('@/views/systemadmin/AdminView.vue'),
           meta: { title: '系统管理', icon: 'Setting' },
         },
+        {
+          path: 'profile',
+          name: 'Profile',
+          component: () => import('@/views/userauth/ProfileView.vue'),
+          meta: { title: '个人中心', icon: 'User' },
+        },
       ],
     },
     {
