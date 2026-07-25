@@ -8,11 +8,11 @@ import com.spider.media.aicreation.entity.AcHotTopic;
 import com.spider.media.aicreation.mapper.AcGeneratedArticleMapper;
 import com.spider.media.aicreation.mapper.AcHotTopicMapper;
 import com.spider.media.aicreation.service.IAcGeneratedArticleService;
+import com.spider.media.aicreation.service.IAiModelService;
 import com.spider.media.common.exception.ServiceException;
 import com.spider.media.common.mybatis.PageUtils;
 import com.spider.media.common.pojo.PageResult;
 import com.spider.media.common.result.ErrorCodeEnums;
-import com.spider.media.system.service.ISysConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,8 +54,8 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
     private final AcGeneratedArticleMapper generatedArticleMapper;
     /** 热点话题数据访问对象 */
     private final AcHotTopicMapper hotTopicMapper;
-    /** 系统配置服务（从数据库读取 AI 模型配置） */
-    private final ISysConfigService configService;
+    /** AI 模型服务（从数据库读取模型配置） */
+    private final IAiModelService aiModelService;
     /** HTTP 客户端（用于调用 AI API） */
     private final WebClient webClient = WebClient.builder()
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
@@ -63,10 +63,10 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
 
     public AcGeneratedArticleServiceImpl(AcGeneratedArticleMapper generatedArticleMapper,
                                           AcHotTopicMapper hotTopicMapper,
-                                          ISysConfigService configService) {
+                                          IAiModelService aiModelService) {
         this.generatedArticleMapper = generatedArticleMapper;
         this.hotTopicMapper = hotTopicMapper;
-        this.configService = configService;
+        this.aiModelService = aiModelService;
     }
 
     /**
@@ -167,14 +167,13 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
      * @return AI 生成的文本内容
      */
     private String callDeepseek(String prompt) {
-        String apiKey = configService.getConfigValueByKey("ai.deepseek.api-key", "");
-        String baseUrl = configService.getConfigValueByKey("ai.deepseek.base-url", "https://api.deepseek.com");
-        if (apiKey.isEmpty()) {
-            return "DeepSeek API密钥未配置，请在系统管理 > 系统配置中设置 ai.deepseek.api-key";
+        AiModel model = aiModelService.selectEnabledModel("deepseek-chat");
+        if (model == null) {
+            return "DeepSeek 模型未配置或未启用，请在系统管理 > 模型管理中配置";
         }
         try {
             Map<String, Object> body = Map.of(
-                    "model", "deepseek-chat",
+                    "model", model.getModelKey(),
                     "messages", new Object[]{
                             Map.of("role", "user", "content", prompt)
                     },
@@ -183,8 +182,8 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
             );
 
             String json = webClient.post()
-                    .uri(baseUrl + "/v1/chat/completions")
-                    .header("Authorization", "Bearer " + apiKey)
+                    .uri(model.getBaseUrl() + "/v1/chat/completions")
+                    .header("Authorization", "Bearer " + model.getApiKey())
                     .header("Content-Type", "application/json")
                     .bodyValue(body)
                     .retrieve().bodyToMono(String.class).block();
@@ -204,22 +203,21 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
      * @return AI 生成的文本内容
      */
     private String callZhipu(String prompt) {
-        String apiKey = configService.getConfigValueByKey("ai.zhipu.api-key", "");
-        String baseUrl = configService.getConfigValueByKey("ai.zhipu.base-url", "https://open.bigmodel.cn/api/paas/v4");
-        if (apiKey.isEmpty()) {
-            return "智谱 API密钥未配置，请在系统管理 > 系统配置中设置 ai.zhipu.api-key";
+        AiModel model = aiModelService.selectEnabledModel("glm-4");
+        if (model == null) {
+            return "智谱模型未配置或未启用，请在系统管理 > 模型管理中配置";
         }
         try {
             Map<String, Object> body = Map.of(
-                    "model", "glm-4",
+                    "model", model.getModelKey(),
                     "messages", new Object[]{
                             Map.of("role", "user", "content", prompt)
                     }
             );
 
             String json = webClient.post()
-                    .uri(baseUrl + "/chat/completions")
-                    .header("Authorization", "Bearer " + apiKey)
+                    .uri(model.getBaseUrl() + "/chat/completions")
+                    .header("Authorization", "Bearer " + model.getApiKey())
                     .header("Content-Type", "application/json")
                     .bodyValue(body)
                     .retrieve().bodyToMono(String.class).block();

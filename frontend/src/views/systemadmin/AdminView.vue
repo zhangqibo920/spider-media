@@ -100,6 +100,10 @@
           />
         </el-card>
       </el-tab-pane>
+
+      <el-tab-pane label="模型管理" name="models">
+        <ModelManageView />
+      </el-tab-pane>
     </el-tabs>
 
     <!-- 添加配置对话框 -->
@@ -188,6 +192,7 @@ import {
   getUsers, updateUser, deleteUser, getOperationLogs, resetPassword
 } from '@/api/admin'
 import DictTag from '@/components/DictTag.vue'
+import ModelManageView from './ModelManageView.vue'
 
 const activeTab = ref('config')
 const loadingConfigs = ref(false)

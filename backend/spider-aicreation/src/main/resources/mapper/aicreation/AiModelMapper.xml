@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.aicreation.mapper.AiModelMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.aicreation.entity.AiModel">
+        <id column="id" property="id"/>
+        <result column="model_key" property="modelKey"/>
+        <result column="model_name" property="modelName"/>
+        <result column="provider" property="provider"/>
+        <result column="api_key" property="apiKey"/>
+        <result column="base_url" property="baseUrl"/>
+        <result column="enabled" property="enabled"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="test_status" property="testStatus"/>
+        <result column="test_time" property="testTime"/>
+        <result column="test_message" property="testMessage"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM ai_model ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="selectByModelKey" resultMap="BaseResultMap">
+        SELECT * FROM ai_model WHERE model_key = #{modelKey} AND enabled = 'Y'
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM ai_model WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_model (model_key, model_name, provider, api_key, base_url, enabled, sort_order,
+                              test_status, test_time, test_message, create_by, create_time, remark)
+        VALUES (#{modelKey}, #{modelName}, #{provider}, #{apiKey}, #{baseUrl}, #{enabled}, #{sortOrder},
+                #{testStatus}, #{testTime}, #{testMessage}, #{createBy}, #{createTime}, #{remark})
+    </insert>
+
+    <update id="update">
+        UPDATE ai_model
+        SET model_key = #{modelKey}, model_name = #{modelName}, provider = #{provider},
+            api_key = #{apiKey}, base_url = #{baseUrl}, enabled = #{enabled}, sort_order = #{sortOrder},
+            update_by = #{updateBy}, update_time = #{updateTime}, remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateTestStatus">
+        UPDATE ai_model
+        SET test_status = #{testStatus}, test_message = #{testMessage}, test_time = NOW(), update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM ai_model WHERE id = #{id}
+    </delete>
+
+</mapper>
