@@ -55,6 +55,7 @@ application-local.yml
 # Database
 *.db
 *.sqlite
+backend/**/src/main/resources/db/*.sql
 
 # Internal docs
 *.md
