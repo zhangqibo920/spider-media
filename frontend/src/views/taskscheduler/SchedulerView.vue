@@ -20,9 +20,7 @@
         <el-table-column prop="cronExpression" label="Cron表达式" width="150" />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="getScheduledTaskStatusType(row.status)">
-              {{ getScheduledTaskStatusLabel(row.status) }}
-            </el-tag>
+            <DictTag dict-type="ts_task_status" :value="row.status" />
           </template>
         </el-table-column>
         <el-table-column prop="runCount" label="执行次数" width="80" />
@@ -66,7 +64,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getScheduledTasks, createScheduledTask, enableTask, disableTask } from '@/api/scheduler'
-import { getScheduledTaskStatusLabel, getScheduledTaskStatusType } from '@/constants'
+import DictTag from '@/components/DictTag.vue'
 
 const loading = ref(false)
 const showCreateDialog = ref(false)

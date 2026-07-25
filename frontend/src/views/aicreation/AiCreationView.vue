@@ -7,7 +7,7 @@
             <div class="card-header">
               <span>全网热点</span>
               <el-select v-model="selectedPlatform" placeholder="选择平台" size="small" style="width: 120px">
-                <el-option v-for="p in HOT_TOPIC_PLATFORMS" :key="p.value" :label="p.label" :value="p.value" />
+                <el-option v-for="p in platformDict" :key="p.dictValue" :label="p.dictLabel" :value="p.dictValue" />
               </el-select>
               <el-button type="primary" size="small" @click="handleFetchHot" :loading="fetching">
                 抓取热点
@@ -38,9 +38,7 @@
             <el-table-column prop="wordCount" label="字数" width="80" />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="getAiArticleStatusType(row.status)" size="small">
-                  {{ getAiArticleStatusLabel(row.status) }}
-                </el-tag>
+                <DictTag dict-type="ac_article_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
             <el-table-column label="操作" width="80">
@@ -59,7 +57,9 @@
         <el-descriptions :column="2" border style="margin: 16px 0">
           <el-descriptions-item label="模型">{{ currentArticle.modelUsed }}</el-descriptions-item>
           <el-descriptions-item label="字数">{{ currentArticle.wordCount }}</el-descriptions-item>
-          <el-descriptions-item label="状态">{{ getAiArticleStatusLabel(currentArticle.status) }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <DictTag dict-type="ac_article_status" :value="currentArticle.status" size="small" />
+          </el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ currentArticle.createTime }}</el-descriptions-item>
         </el-descriptions>
         <div v-if="currentArticle.summary" style="margin-bottom: 12px">
@@ -76,7 +76,10 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles } from '@/api/ai'
-import { getAiArticleStatusLabel, getAiArticleStatusType, HOT_TOPIC_PLATFORMS } from '@/constants'
+import { useDict } from '@/composables/useDict'
+import DictTag from '@/components/DictTag.vue'
+
+const { dict: platformDict } = useDict('hot_topic_platform')
 
 const selectedPlatform = ref('douyin')
 const loadingTopics = ref(false)

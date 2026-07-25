@@ -29,9 +29,7 @@
             </el-table-column>
             <el-table-column prop="configType" label="类型" width="80">
               <template #default="{ row }">
-                <el-tag :type="getConfigTypeTagType(row.configType)" size="small">
-                  {{ getConfigTypeLabel(row.configType) }}
-                </el-tag>
+                <DictTag dict-type="sys_config_type" :value="row.configType" size="small" />
               </template>
             </el-table-column>
             <el-table-column label="操作" width="160">
@@ -62,16 +60,12 @@
             <el-table-column prop="email" label="邮箱" />
             <el-table-column prop="role" label="角色" width="100">
               <template #default="{ row }">
-                <el-tag :type="getUserRoleType(row.role)" size="small">
-                  {{ getUserRoleLabel(row.role) }}
-                </el-tag>
+                <DictTag dict-type="sys_user_role" :value="row.role" size="small" />
               </template>
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="getUserStatusType(row.status)" size="small">
-                  {{ getUserStatusLabel(row.status) }}
-                </el-tag>
+                <DictTag dict-type="sys_user_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
             <el-table-column prop="createTime" label="创建时间" width="180" />
@@ -170,11 +164,7 @@ import {
   getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig,
   getUsers, updateUser, deleteUser, getOperationLogs
 } from '@/api/admin'
-import {
-  getUserStatusLabel, getUserStatusType,
-  getUserRoleLabel, getUserRoleType,
-  getConfigTypeLabel, getConfigTypeTagType,
-} from '@/constants'
+import DictTag from '@/components/DictTag.vue'
 
 const activeTab = ref('config')
 const loadingConfigs = ref(false)

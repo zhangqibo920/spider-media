@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.system.mapper.SysDictDataMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.system.entity.SysDictData">
+        <id column="id" property="id"/>
+        <result column="dict_sort" property="dictSort"/>
+        <result column="dict_label" property="dictLabel"/>
+        <result column="dict_value" property="dictValue"/>
+        <result column="dict_type" property="dictType"/>
+        <result column="css_class" property="cssClass"/>
+        <result column="list_class" property="listClass"/>
+        <result column="is_default" property="isDefault"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectByDictType" resultMap="BaseResultMap">
+        SELECT * FROM sys_dict_data
+        WHERE dict_type = #{dictType} AND status = '0'
+        ORDER BY dict_sort
+    </select>
+
+    <select id="selectByDictTypeAndValue" resultMap="BaseResultMap">
+        SELECT * FROM sys_dict_data
+        WHERE dict_type = #{dictType} AND dict_value = #{dictValue} AND status = '0'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_dict_data (dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, remark, create_time)
+        VALUES (#{dictSort}, #{dictLabel}, #{dictValue}, #{dictType}, #{cssClass}, #{listClass}, #{isDefault}, #{status}, #{remark}, #{createTime})
+    </insert>
+
+    <update id="update">
+        UPDATE sys_dict_data
+        SET dict_label = #{dictLabel}, dict_value = #{dictValue}, dict_sort = #{dictSort},
+            css_class = #{cssClass}, list_class = #{listClass}, remark = #{remark},
+            update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_dict_data WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByDictType">
+        DELETE FROM sys_dict_data WHERE dict_type = #{dictType}
+    </delete>
+
+</mapper>

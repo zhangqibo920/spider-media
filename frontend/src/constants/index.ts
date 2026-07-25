@@ -1,180 +1,52 @@
 /**
- * Status dictionary - centralized status definitions for the entire application
+ * Fallback dictionary data
  *
- * Each status group provides:
- * - A map from status code to display label
- * - A map from status code to Element Plus tag type
- * - A helper function to get label or tag type by code
+ * This file provides static fallback data in case the dictionary API is unavailable.
+ * The primary dictionary source is the database via useDict() composable.
+ *
+ * In production, the dictionary data comes from:
+ *   GET /api/dict/data/type/{dictType}
+ *
+ * These fallback values are only used if the API request fails or hasn't loaded yet.
  */
 
-// ========================
-// Target Account Status (dc_target_account.status: String '0'/'1')
-// ========================
-export const TARGET_ACCOUNT_STATUS = {
-  labels: { '0': '监控中', '1': '已暂停' } as Record<string, string>,
-  types: { '0': 'success', '1': 'info' } as Record<string, string>,
-  NORMAL: '0',
-  DISABLED: '1',
-} as const
+import type { DictData } from '@/composables/useDict'
 
-export function getTargetAccountStatusLabel(status: string): string {
-  return TARGET_ACCOUNT_STATUS.labels[status] ?? '未知'
-}
-export function getTargetAccountStatusType(status: string): string {
-  return TARGET_ACCOUNT_STATUS.types[status] ?? 'info'
-}
-
-// ========================
-// Publish Task Status (pb_publish_task.status: Integer 0-3)
-// ========================
-export const PUBLISH_TASK_STATUS = {
-  labels: { 0: '草稿', 1: '发布中', 2: '已发布', 3: '失败' } as Record<number, string>,
-  types: { 0: 'info', 1: 'warning', 2: 'success', 3: 'danger' } as Record<number, string>,
-  DRAFT: 0,
-  PUBLISHING: 1,
-  PUBLISHED: 2,
-  FAILED: 3,
-} as const
-
-export function getPublishTaskStatusLabel(status: number): string {
-  return PUBLISH_TASK_STATUS.labels[status] ?? '未知'
-}
-export function getPublishTaskStatusType(status: number): string {
-  return PUBLISH_TASK_STATUS.types[status] ?? 'info'
-}
-
-// ========================
-// Platform Account Status (pb_platform_account.status: String '0'/'1')
-// ========================
-export const PLATFORM_ACCOUNT_STATUS = {
-  labels: { '0': '在线', '1': '离线' } as Record<string, string>,
-  types: { '0': 'success', '1': 'info' } as Record<string, string>,
-  ONLINE: '0',
-  OFFLINE: '1',
-} as const
-
-export function getPlatformAccountStatusLabel(status: string): string {
-  return PLATFORM_ACCOUNT_STATUS.labels[status] ?? '未知'
-}
-export function getPlatformAccountStatusType(status: string): string {
-  return PLATFORM_ACCOUNT_STATUS.types[status] ?? 'info'
-}
-
-// ========================
-// Scheduled Task Status (ts_scheduled_task.status: Integer 0/1)
-// ========================
-export const SCHEDULED_TASK_STATUS = {
-  labels: { 0: '已停止', 1: '运行中' } as Record<number, string>,
-  types: { 0: 'info', 1: 'success' } as Record<number, string>,
-  STOPPED: 0,
-  RUNNING: 1,
-} as const
-
-export function getScheduledTaskStatusLabel(status: number): string {
-  return SCHEDULED_TASK_STATUS.labels[status] ?? '未知'
-}
-export function getScheduledTaskStatusType(status: number): string {
-  return SCHEDULED_TASK_STATUS.types[status] ?? 'info'
-}
-
-// ========================
-// User Account Status (sys_user.status: String '0'/'1')
-// ========================
-export const USER_STATUS = {
-  labels: { '0': '正常', '1': '停用' } as Record<string, string>,
-  types: { '0': 'success', '1': 'danger' } as Record<string, string>,
-  NORMAL: '0',
-  DISABLED: '1',
-} as const
-
-export function getUserStatusLabel(status: string): string {
-  return USER_STATUS.labels[status] ?? '未知'
-}
-export function getUserStatusType(status: string): string {
-  return USER_STATUS.types[status] ?? 'info'
-}
-
-// ========================
-// User Role (sys_user.role: String)
-// ========================
-export const USER_ROLE = {
-  labels: { USER: '普通用户', ADMIN: '管理员' } as Record<string, string>,
-  types: { USER: 'info', ADMIN: 'danger' } as Record<string, string>,
-  USER: 'USER',
-  ADMIN: 'ADMIN',
-} as const
-
-export function getUserRoleLabel(role: string): string {
-  return USER_ROLE.labels[role] ?? '未知'
-}
-export function getUserRoleType(role: string): string {
-  return USER_ROLE.types[role] ?? 'info'
-}
-
-// ========================
-// AI Generation Status (ac_generated_article.status: String)
-// ========================
-export const AI_ARTICLE_STATUS = {
-  labels: { GENERATING: '生成中', COMPLETED: '已完成', FAILED: '失败' } as Record<string, string>,
-  types: { GENERATING: 'warning', COMPLETED: 'success', FAILED: 'danger' } as Record<string, string>,
-  GENERATING: 'GENERATING',
-  COMPLETED: 'COMPLETED',
-  FAILED: 'FAILED',
-} as const
-
-export function getAiArticleStatusLabel(status: string): string {
-  return AI_ARTICLE_STATUS.labels[status] ?? '未知'
-}
-export function getAiArticleStatusType(status: string): string {
-  return AI_ARTICLE_STATUS.types[status] ?? 'info'
-}
-
-// ========================
-// Hot Topic Platforms
-// ========================
-export const HOT_TOPIC_PLATFORMS = [
-  { label: '微博', value: 'weibo' },
-  { label: '抖音', value: 'douyin' },
-  { label: '知乎', value: 'zhihu' },
-  { label: '头条', value: 'toutiao' },
-] as const
-
-// ========================
-// Publish Target Platforms
-// ========================
-export const PUBLISH_PLATFORMS = [
-  { label: '微信公众号', value: 'wechat' },
-  { label: '今日头条', value: 'toutiao' },
-  { label: '百家号', value: 'baijia' },
-  { label: '小红书', value: 'xiaohongshu' },
-  { label: '抖音', value: 'douyin' },
-] as const
-
-// ========================
-// Collection Target Platforms
-// ========================
-export const COLLECTION_PLATFORMS = [
-  { label: '微信公众号', value: 'wechat' },
-  { label: '百家号', value: 'baijia' },
-  { label: '头条号', value: 'toutiao' },
-  { label: '小红书', value: 'xiaohongshu' },
-  { label: '抖音', value: 'douyin' },
-  { label: '知乎', value: 'zhihu' },
-] as const
-
-// ========================
-// Config Type (sys_config.configType: String)
-// ========================
-export const CONFIG_TYPE = {
-  labels: { Y: '内置', N: '自定义' } as Record<string, string>,
-  types: { Y: 'danger', N: 'info' } as Record<string, string>,
-  BUILTIN: 'Y',
-  CUSTOM: 'N',
-} as const
-
-export function getConfigTypeLabel(type: string): string {
-  return CONFIG_TYPE.labels[type] ?? '未知'
-}
-export function getConfigTypeTagType(type: string): string {
-  return CONFIG_TYPE.types[type] ?? 'info'
+/** Minimal fallback for dictionary data when API is unavailable */
+export const DICT_FALLBACK: Record<string, DictData[]> = {
+  sys_user_status: [
+    { id: 1, dictSort: 1, dictLabel: '正常', dictValue: '0', dictType: 'sys_user_status', cssClass: 'success', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '停用', dictValue: '1', dictType: 'sys_user_status', cssClass: 'danger', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  sys_user_role: [
+    { id: 1, dictSort: 1, dictLabel: '普通用户', dictValue: 'USER', dictType: 'sys_user_role', cssClass: 'info', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '管理员', dictValue: 'ADMIN', dictType: 'sys_user_role', cssClass: 'danger', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  sys_config_type: [
+    { id: 1, dictSort: 1, dictLabel: '内置', dictValue: 'Y', dictType: 'sys_config_type', cssClass: 'danger', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '自定义', dictValue: 'N', dictType: 'sys_config_type', cssClass: 'info', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  pb_publish_status: [
+    { id: 1, dictSort: 1, dictLabel: '草稿', dictValue: '0', dictType: 'pb_publish_status', cssClass: 'info', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '发布中', dictValue: '1', dictType: 'pb_publish_status', cssClass: 'warning', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 3, dictSort: 3, dictLabel: '已发布', dictValue: '2', dictType: 'pb_publish_status', cssClass: 'success', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 4, dictSort: 4, dictLabel: '失败', dictValue: '3', dictType: 'pb_publish_status', cssClass: 'danger', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  pb_account_status: [
+    { id: 1, dictSort: 1, dictLabel: '在线', dictValue: '0', dictType: 'pb_account_status', cssClass: 'success', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '离线', dictValue: '1', dictType: 'pb_account_status', cssClass: 'info', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  dc_account_status: [
+    { id: 1, dictSort: 1, dictLabel: '监控中', dictValue: '0', dictType: 'dc_account_status', cssClass: 'success', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '已暂停', dictValue: '1', dictType: 'dc_account_status', cssClass: 'info', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  ts_task_status: [
+    { id: 1, dictSort: 1, dictLabel: '已停止', dictValue: '0', dictType: 'ts_task_status', cssClass: 'info', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '运行中', dictValue: '1', dictType: 'ts_task_status', cssClass: 'success', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
+  ac_article_status: [
+    { id: 1, dictSort: 1, dictLabel: '生成中', dictValue: 'GENERATING', dictType: 'ac_article_status', cssClass: 'warning', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 2, dictSort: 2, dictLabel: '已完成', dictValue: 'COMPLETED', dictType: 'ac_article_status', cssClass: 'success', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+    { id: 3, dictSort: 3, dictLabel: '失败', dictValue: 'FAILED', dictType: 'ac_article_status', cssClass: 'danger', listClass: '', isDefault: 'N', status: '0', remark: '', createTime: '' },
+  ],
 }

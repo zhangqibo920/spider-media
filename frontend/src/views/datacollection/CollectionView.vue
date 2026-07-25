@@ -21,9 +21,7 @@
         <el-table-column prop="groupName" label="分组" width="120" />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="getTargetAccountStatusType(row.status)" size="small">
-              {{ getTargetAccountStatusLabel(row.status) }}
-            </el-tag>
+            <DictTag dict-type="dc_account_status" :value="row.status" />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200">
@@ -44,7 +42,7 @@
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="平台" prop="platform">
           <el-select v-model="form.platform" placeholder="选择平台">
-            <el-option v-for="p in COLLECTION_PLATFORMS" :key="p.value" :label="p.label" :value="p.value" />
+            <el-option v-for="p in platformDict" :key="p.dictValue" :label="p.dictLabel" :value="p.dictValue" />
           </el-select>
         </el-form-item>
         <el-form-item label="账号名称" prop="accountName">
@@ -105,7 +103,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getTargetAccounts, addTargetAccount, deleteTargetAccount, triggerCollect, getCollectedArticles } from '@/api/collection'
-import { getTargetAccountStatusLabel, getTargetAccountStatusType, COLLECTION_PLATFORMS } from '@/constants'
+import { useDict } from '@/composables/useDict'
+import DictTag from '@/components/DictTag.vue'
+
+const { dict: platformDict } = useDict('collection_platform')
 
 const loading = ref(false)
 const showAddDialog = ref(false)

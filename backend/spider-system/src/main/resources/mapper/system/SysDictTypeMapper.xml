@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.system.mapper.SysDictTypeMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.system.entity.SysDictType">
+        <id column="id" property="id"/>
+        <result column="dict_name" property="dictName"/>
+        <result column="dict_type" property="dictType"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM sys_dict_type WHERE status = '0' ORDER BY id
+    </select>
+
+    <select id="selectByDictType" resultMap="BaseResultMap">
+        SELECT * FROM sys_dict_type WHERE dict_type = #{dictType} AND status = '0'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_dict_type (dict_name, dict_type, status, create_by, create_time, remark)
+        VALUES (#{dictName}, #{dictType}, #{status}, #{createBy}, #{createTime}, #{remark})
+    </insert>
+
+    <update id="update">
+        UPDATE sys_dict_type
+        SET dict_name = #{dictName}, remark = #{remark}, update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_dict_type WHERE id = #{id}
+    </delete>
+
+</mapper>

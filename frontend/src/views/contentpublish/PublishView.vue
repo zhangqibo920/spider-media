@@ -18,9 +18,7 @@
             <el-table-column prop="accountName" label="账号名称" />
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="getPlatformAccountStatusType(row.status)" size="small">
-                  {{ getPlatformAccountStatusLabel(row.status) }}
-                </el-tag>
+                <DictTag dict-type="pb_account_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
             <el-table-column label="操作" width="80">
@@ -51,9 +49,7 @@
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="getPublishTaskStatusType(row.status)" size="small">
-                  {{ getPublishTaskStatusLabel(row.status) }}
-                </el-tag>
+                <DictTag dict-type="pb_publish_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
             <el-table-column label="操作" width="150">
@@ -71,7 +67,7 @@
       <el-form ref="accountFormRef" :model="accountForm" :rules="accountRules" label-width="80px">
         <el-form-item label="平台" prop="platform">
           <el-select v-model="accountForm.platform" placeholder="选择平台">
-            <el-option v-for="p in PUBLISH_PLATFORMS" :key="p.value" :label="p.label" :value="p.value" />
+            <el-option v-for="p in platformDict" :key="p.dictValue" :label="p.dictLabel" :value="p.dictValue" />
           </el-select>
         </el-form-item>
         <el-form-item label="账号名称" prop="accountName">
@@ -126,11 +122,10 @@ import {
   getPlatformAccounts, addPlatformAccount, deletePlatformAccount,
   getPublishTasks, createPublishTask, publishNow, schedulePublish
 } from '@/api/publish'
-import {
-  getPublishTaskStatusLabel, getPublishTaskStatusType,
-  getPlatformAccountStatusLabel, getPlatformAccountStatusType,
-  PUBLISH_PLATFORMS,
-} from '@/constants'
+import { useDict } from '@/composables/useDict'
+import DictTag from '@/components/DictTag.vue'
+
+const { dict: platformDict } = useDict('publish_platform')
 
 const loadingAccounts = ref(false)
 const loadingTasks = ref(false)
