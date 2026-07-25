@@ -38,26 +38,26 @@
 
 ```
 spider-media/
-├── backend/
-│   ├── spider-admin/            # 启动模块（入口）
-│   ├── spider-common/           # 公共工具（分页、异常、结果封装、字典常量）
-│   ├── spider-framework/        # 框架配置（安全、JWT、跨域、全局异常处理）
-│   ├── spider-system/           # 系统管理（用户、配置、字典、操作日志）
-│   ├── spider-datacollection/   # 数据采集（对标账号、采集文章）
-│   ├── spider-aicreation/       # AI创作（热点话题、文章生成、模型管理）
-│   ├── spider-contentpublish/   # 内容发布（平台账号、发布任务）
-│   └── spider-taskscheduler/    # 任务调度（定时任务管理）
-├── frontend/
+├── spider-server/            # 后端服务（Java Spring Boot）
+│   ├── spider-admin/         # 启动模块（入口）
+│   ├── spider-common/        # 公共工具（分页、异常、结果封装、字典常量）
+│   ├── spider-framework/     # 框架配置（安全、JWT、跨域、全局异常处理）
+│   ├── spider-system/        # 系统管理（用户、配置、字典、操作日志）
+│   ├── spider-datacollection/# 数据采集（对标账号、采集文章）
+│   ├── spider-aicreation/    # AI创作（热点话题、文章生成、模型管理）
+│   ├── spider-contentpublish/# 内容发布（平台账号、发布任务）
+│   └── spider-taskscheduler/ # 任务调度（定时任务管理）
+├── spider-web/               # 前端应用（Vue 3 + TypeScript）
 │   └── src/
-│       ├── api/                 # API 接口定义
-│       ├── components/          # 公共组件（DictTag 字典标签）
-│       ├── composables/         # 组合式函数（useDict 字典加载）
-│       ├── constants/           # 字典 fallback 数据
-│       ├── views/               # 页面组件
-│       ├── stores/              # Pinia 状态管理
-│       ├── router/              # 路由配置
-│       ├── types/               # TypeScript 类型
-│       └── utils/               # 工具函数（请求封装）
+│       ├── api/              # API 接口定义
+│       ├── components/       # 公共组件（DictTag 字典标签）
+│       ├── composables/      # 组合式函数（useDict 字典加载）
+│       ├── constants/        # 字典 fallback 数据
+│       ├── views/            # 页面组件
+│       ├── stores/           # Pinia 状态管理
+│       ├── router/           # 路由配置
+│       ├── types/            # TypeScript 类型
+│       └── utils/            # 工具函数（请求封装）
 └── README.md
 ```
 
@@ -75,7 +75,7 @@ spider-media/
 CREATE DATABASE spider_media DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
-执行以下 SQL 脚本（位于 `backend/spider-admin/src/main/resources/db/`）：
+执行以下 SQL 脚本（位于 `spider-server/spider-admin/src/main/resources/db/`）：
 
 ```bash
 # 系统表（sys_user、sys_config、sys_oper_log）
@@ -91,7 +91,7 @@ mysql -u root -p spider_media < ai-model-init.sql
 ### 后端启动
 
 ```bash
-cd backend
+cd spider-server
 
 # 复制配置文件并修改数据库密码、JWT密钥等
 cp spider-admin/src/main/resources/application.yml.example \
@@ -109,7 +109,7 @@ java -jar spider-admin/target/spider-admin-1.0.0-SNAPSHOT.jar
 ### 前端启动
 
 ```bash
-cd frontend
+cd spider-web
 npm install
 npm run dev
 ```
