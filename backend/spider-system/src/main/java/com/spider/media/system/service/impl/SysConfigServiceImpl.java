@@ -37,6 +37,24 @@ public class SysConfigServiceImpl implements ISysConfigService {
     }
 
     /**
+     * 根据配置键查询配置值
+     */
+    @Override
+    public String getConfigValueByKey(String configKey) {
+        SysConfig config = configMapper.selectByKey(configKey);
+        return config != null ? config.getConfigValue() : null;
+    }
+
+    /**
+     * 根据配置键查询配置值（带默认值）
+     */
+    @Override
+    public String getConfigValueByKey(String configKey, String defaultValue) {
+        String value = getConfigValueByKey(configKey);
+        return value != null && !value.isEmpty() ? value : defaultValue;
+    }
+
+    /**
      * 新增配置（检查配置键唯一性）
      *
      * @throws ServiceException 配置键已存在时抛出异常

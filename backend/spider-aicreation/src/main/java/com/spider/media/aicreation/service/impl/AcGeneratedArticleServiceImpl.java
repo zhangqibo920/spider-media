@@ -12,9 +12,9 @@ import com.spider.media.common.exception.ServiceException;
 import com.spider.media.common.mybatis.PageUtils;
 import com.spider.media.common.pojo.PageResult;
 import com.spider.media.common.result.ErrorCodeEnums;
+import com.spider.media.system.service.ISysConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -26,6 +26,14 @@ import java.util.Map;
  *
  * <p>根据热点话题调用 AI 大模型（DeepSeek / 智谱）生成自媒体文章。
  * 支持多模型切换，文章生成后自动保存到数据库。</p>
+ *
+ * <p>AI 模型配置存储在 sys_config 表中，可通过管理后台动态修改：
+ * <ul>
+ *   <li>ai.deepseek.api-key - DeepSeek API 密钥</li>
+ *   <li>ai.deepseek.base-url - DeepSeek API 地址</li>
+ *   <li>ai.zhipu.api-key - 智谱 API 密钥</li>
+ *   <li>ai.zhipu.base-url - 智谱 API 地址</li>
+ * </ul></p>
  *
  * <p>生成流程：
  * <ol>
@@ -46,31 +54,19 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
     private final AcGeneratedArticleMapper generatedArticleMapper;
     /** 热点话题数据访问对象 */
     private final AcHotTopicMapper hotTopicMapper;
+    /** 系统配置服务（从数据库读取 AI 模型配置） */
+    private final ISysConfigService configService;
     /** HTTP 客户端（用于调用 AI API） */
     private final WebClient webClient = WebClient.builder()
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
             .build();
 
-    /** DeepSeek API 密钥 */
-    @Value("${ai.models.deepseek.api-key:}")
-    private String deepseekApiKey;
-
-    /** DeepSeek API 基础地址 */
-    @Value("${ai.models.deepseek.base-url:https://api.deepseek.com}")
-    private String deepseekBaseUrl;
-
-    /** 智谱 API 密钥 */
-    @Value("${ai.models.zhipu.api-key:}")
-    private String zhipuApiKey;
-
-    /** 智谱 API 基础地址 */
-    @Value("${ai.models.zhipu.base-url:https://open.bigmodel.cn/api/paas/v4}")
-    private String zhipuBaseUrl;
-
     public AcGeneratedArticleServiceImpl(AcGeneratedArticleMapper generatedArticleMapper,
-                                          AcHotTopicMapper hotTopicMapper) {
+                                          AcHotTopicMapper hotTopicMapper,
+                                          ISysConfigService configService) {
         this.generatedArticleMapper = generatedArticleMapper;
         this.hotTopicMapper = hotTopicMapper;
+        this.configService = configService;
     }
 
     /**
@@ -171,6 +167,11 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
      * @return AI 生成的文本内容
      */
     private String callDeepseek(String prompt) {
+        String apiKey = configService.getConfigValueByKey("ai.deepseek.api-key", "");
+        String baseUrl = configService.getConfigValueByKey("ai.deepseek.base-url", "https://api.deepseek.com");
+        if (apiKey.isEmpty()) {
+            return "DeepSeek API密钥未配置，请在系统管理 > 系统配置中设置 ai.deepseek.api-key";
+        }
         try {
             Map<String, Object> body = Map.of(
                     "model", "deepseek-chat",
@@ -182,8 +183,8 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
             );
 
             String json = webClient.post()
-                    .uri(deepseekBaseUrl + "/v1/chat/completions")
-                    .header("Authorization", "Bearer " + deepseekApiKey)
+                    .uri(baseUrl + "/v1/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
                     .bodyValue(body)
                     .retrieve().bodyToMono(String.class).block();
@@ -203,6 +204,11 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
      * @return AI 生成的文本内容
      */
     private String callZhipu(String prompt) {
+        String apiKey = configService.getConfigValueByKey("ai.zhipu.api-key", "");
+        String baseUrl = configService.getConfigValueByKey("ai.zhipu.base-url", "https://open.bigmodel.cn/api/paas/v4");
+        if (apiKey.isEmpty()) {
+            return "智谱 API密钥未配置，请在系统管理 > 系统配置中设置 ai.zhipu.api-key";
+        }
         try {
             Map<String, Object> body = Map.of(
                     "model", "glm-4",
@@ -212,8 +218,8 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
             );
 
             String json = webClient.post()
-                    .uri(zhipuBaseUrl + "/chat/completions")
-                    .header("Authorization", "Bearer " + zhipuApiKey)
+                    .uri(baseUrl + "/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
                     .bodyValue(body)
                     .retrieve().bodyToMono(String.class).block();

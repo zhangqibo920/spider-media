@@ -123,3 +123,13 @@ INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type
 (4, '小红书', 'xiaohongshu', 'collection_platform', '', '0', NOW()),
 (5, '抖音', 'douyin', 'collection_platform', '', '0', NOW()),
 (6, '知乎', 'zhihu', 'collection_platform', '', '0', NOW());
+
+-- =============================================
+-- 5. AI Model Configs (AI 模型配置)
+-- =============================================
+
+INSERT INTO `sys_config` (`config_name`, `config_key`, `config_value`, `config_type`, `status`, `create_by`, `create_time`, `remark`) VALUES
+('DeepSeek API密钥', 'ai.deepseek.api-key', '', 'N', '0', 'admin', NOW(), 'DeepSeek API 密钥，从 https://platform.deepseek.com 获取'),
+('DeepSeek API地址', 'ai.deepseek.base-url', 'https://api.deepseek.com', 'N', '0', 'admin', NOW(), 'DeepSeek API 基础地址'),
+('智谱 API密钥', 'ai.zhipu.api-key', '', 'N', '0', 'admin', NOW(), '智谱 API 密钥，从 https://open.bigmodel.cn 获取'),
+('智谱 API地址', 'ai.zhipu.base-url', 'https://open.bigmodel.cn/api/paas/v4', 'N', '0', 'admin', NOW(), '智谱 API 基础地址');

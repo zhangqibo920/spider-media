@@ -7,8 +7,8 @@ import java.util.List;
 /**
  * 系统配置业务层接口
  *
- * <p>定义系统配置的增删查改操作。
- * 由 {@link com.spider.media.system.service.impl.SysConfigServiceImpl} 提供具体实现。</p>
+ * <p>提供系统配置的增删查改操作，支持按分组查询和按配置键查询。
+ * 配置值存储在 sys_config 表中，可通过管理后台动态修改。</p>
  */
 public interface ISysConfigService {
 
@@ -27,6 +27,23 @@ public interface ISysConfigService {
      * @return 配置实体，不存在返回 null
      */
     SysConfig selectConfigByKey(String configKey);
+
+    /**
+     * 根据配置键查询配置值（便捷方法）
+     *
+     * @param configKey 配置键
+     * @return 配置值字符串，不存在返回 null
+     */
+    String getConfigValueByKey(String configKey);
+
+    /**
+     * 根据配置键查询配置值（带默认值）
+     *
+     * @param configKey     配置键
+     * @param defaultValue  默认值（配置不存在时返回）
+     * @return 配置值字符串
+     */
+    String getConfigValueByKey(String configKey, String defaultValue);
 
     /**
      * 新增系统配置（会检查配置键是否已存在）
