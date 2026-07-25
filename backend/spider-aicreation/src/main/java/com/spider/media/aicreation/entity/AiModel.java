@@ -4,6 +4,8 @@ import com.spider.media.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 /**
  * AI 模型实体类
  *

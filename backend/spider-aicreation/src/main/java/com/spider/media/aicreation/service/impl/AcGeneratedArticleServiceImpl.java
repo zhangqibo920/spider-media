@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spider.media.aicreation.controller.vo.AcGeneratedArticlePageReqVO;
 import com.spider.media.aicreation.entity.AcGeneratedArticle;
 import com.spider.media.aicreation.entity.AcHotTopic;
+import com.spider.media.aicreation.entity.AiModel;
 import com.spider.media.aicreation.mapper.AcGeneratedArticleMapper;
 import com.spider.media.aicreation.mapper.AcHotTopicMapper;
 import com.spider.media.aicreation.service.IAcGeneratedArticleService;

@@ -128,6 +128,10 @@ public class LogAspect {
         if (ip != null && ip.contains(",")) {
             ip = ip.substring(0, ip.indexOf(",")).trim();
         }
+        // 将 IPv6 回环地址转换为 IPv4 格式，便于阅读
+        if ("0:0:0:0:0:0:0:1".equals(ip)) {
+            ip = "127.0.0.1";
+        }
         return ip;
     }
 }
