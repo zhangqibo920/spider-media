@@ -138,18 +138,17 @@ public class SysAdminController extends BaseController {
     }
 
     /**
-     * 修改用户密码
+     * 重置用户密码（管理员操作，无需旧密码）
      *
-     * @param request 包含 userId、oldPassword、newPassword 的请求体
+     * @param request 包含 userId 和 newPassword 的请求体
      * @return 操作结果
      */
-    @OperLog(module = "用户管理", action = "修改密码")
+    @OperLog(module = "用户管理", action = "重置密码")
     @PutMapping("/users/password")
-    public R<Void> changePassword(@RequestBody java.util.Map<String, String> request) {
+    public R<Void> resetPassword(@RequestBody java.util.Map<String, String> request) {
         Long userId = Long.valueOf(request.get("userId"));
-        String oldPassword = request.get("oldPassword");
         String newPassword = request.get("newPassword");
-        userService.updatePassword(userId, oldPassword, newPassword);
+        userService.resetPassword(userId, newPassword);
         return ok();
     }
 

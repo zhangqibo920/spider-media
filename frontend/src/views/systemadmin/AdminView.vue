@@ -158,14 +158,11 @@
       </template>
     </el-dialog>
 
-    <!-- 修改密码对话框 -->
-    <el-dialog v-model="showChangePasswordDialog" title="修改密码" width="480px" @closed="resetPasswordForm">
+    <!-- 重置密码对话框 -->
+    <el-dialog v-model="showChangePasswordDialog" title="重置密码" width="480px" @closed="resetPasswordForm">
       <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="100px">
         <el-form-item label="当前用户">
           <el-input :model-value="passwordForm.userName" disabled />
-        </el-form-item>
-        <el-form-item label="旧密码" prop="oldPassword">
-          <el-input v-model="passwordForm.oldPassword" type="password" placeholder="请输入旧密码" show-password />
         </el-form-item>
         <el-form-item label="新密码" prop="newPassword">
           <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码" show-password />
@@ -188,7 +185,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import {
   getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig,
-  getUsers, updateUser, deleteUser, getOperationLogs, changePassword
+  getUsers, updateUser, deleteUser, getOperationLogs, resetPassword
 } from '@/api/admin'
 import DictTag from '@/components/DictTag.vue'
 
@@ -217,7 +214,6 @@ const passwordFormRef = ref<FormInstance>()
 const passwordForm = reactive({
   userId: 0,
   userName: '',
-  oldPassword: '',
   newPassword: '',
   confirmPassword: '',
 })
@@ -231,7 +227,6 @@ const validateConfirmPassword = (_rule: any, value: string, callback: Function) 
 }
 
 const passwordRules = {
-  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
     { min: 6, message: '密码长度不能少于6位', trigger: 'blur' },
@@ -245,7 +240,6 @@ const passwordRules = {
 const openChangePassword = (row: any) => {
   passwordForm.userId = row.userId
   passwordForm.userName = row.userName
-  passwordForm.oldPassword = ''
   passwordForm.newPassword = ''
   passwordForm.confirmPassword = ''
   showChangePasswordDialog.value = true
@@ -254,7 +248,6 @@ const openChangePassword = (row: any) => {
 const resetPasswordForm = () => {
   passwordForm.userId = 0
   passwordForm.userName = ''
-  passwordForm.oldPassword = ''
   passwordForm.newPassword = ''
   passwordForm.confirmPassword = ''
 }
@@ -265,11 +258,11 @@ const handleChangePassword = async () => {
 
   changingPassword.value = true
   try {
-    await changePassword(passwordForm.userId, passwordForm.oldPassword, passwordForm.newPassword)
-    ElMessage.success('密码修改成功')
+    await resetPassword(passwordForm.userId, passwordForm.newPassword)
+    ElMessage.success('密码重置成功')
     showChangePasswordDialog.value = false
   } catch {
-    ElMessage.error('密码修改失败，请检查旧密码是否正确')
+    ElMessage.error('密码重置失败')
   } finally {
     changingPassword.value = false
   }

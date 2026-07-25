@@ -111,20 +111,15 @@ public class SysUserServiceImpl implements ISysUserService {
     }
 
     /**
-     * 修改用户密码
+     * 重置用户密码（管理员操作，无需旧密码）
      *
-     * <p>验证旧密码后，使用新密码替换并加密存储。</p>
-     *
-     * @throws ServiceException 旧密码错误或用户不存在时抛出异常
+     * @throws ServiceException 用户不存在时抛出异常
      */
     @Override
-    public int updatePassword(Long userId, String oldPassword, String newPassword) {
+    public int resetPassword(Long userId, String newPassword) {
         SysUser user = userMapper.selectById(userId);
         if (user == null) {
             throw new ServiceException(ErrorCodeEnums.SYS_USER_NOT_FOUND);
-        }
-        if (!SecurityUtils.matchesPassword(oldPassword, user.getPassword())) {
-            throw new ServiceException(ErrorCodeEnums.SYS_PASSWORD_ERROR, "旧密码错误");
         }
         user.setPassword(SecurityUtils.encryptPassword(newPassword));
         user.setUpdateTime(LocalDateTime.now());

@@ -28,8 +28,8 @@ export function deleteUser(userId: number) {
   return request.delete(`/admin/users/${userId}`)
 }
 
-export function changePassword(userId: number, oldPassword: string, newPassword: string) {
-  return request.put('/admin/users/password', { userId: String(userId), oldPassword, newPassword })
+export function resetPassword(userId: number, newPassword: string) {
+  return request.put('/admin/users/password', { userId: String(userId), newPassword })
 }
 
 export function getOperationLogs(page = 1, size = 20) {
