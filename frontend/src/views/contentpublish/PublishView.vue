@@ -174,7 +174,22 @@ const handleCreateTask = async () => {
   try { await createPublishTask(taskForm); ElMessage.success('创建成功'); showCreateTaskDialog.value = false; loadTasks() } catch { ElMessage.error('创建失败') }
 }
 const handlePublish = async (id: number) => {
-  try { await publishNow(id); ElMessage.success('发布任务已触发'); loadTasks() } catch { ElMessage.error('发布失败') }
+  try {
+    await publishNow(id)
+    ElMessage.success('发布任务已触发，正在发布...')
+    // Poll for results since publish is async on backend
+    let attempts = 0
+    const maxAttempts = 10
+    const poll = async () => {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      await loadTasks()
+      attempts++
+      if (attempts < maxAttempts) {
+        poll()
+      }
+    }
+    poll()
+  } catch { ElMessage.error('发布失败') }
 }
 const openScheduleDialog = (id: number) => { scheduleTaskId.value = id; scheduleTime.value = null; showScheduleDialog.value = true }
 const handleSchedule = async () => {

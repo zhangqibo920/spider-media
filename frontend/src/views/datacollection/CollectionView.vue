@@ -157,7 +157,19 @@ const handleDelete = async (id: number) => {
 const handleCollect = async (id: number) => {
   try {
     await triggerCollect(id)
-    ElMessage.success('采集任务已触发，请稍后刷新查看')
+    ElMessage.success('采集任务已触发，正在获取数据...')
+    // Poll for results since collection is async on backend
+    let attempts = 0
+    const maxAttempts = 10
+    const poll = async () => {
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      await loadAccounts()
+      attempts++
+      if (attempts < maxAttempts) {
+        poll()
+      }
+    }
+    poll()
   } catch { ElMessage.error('触发失败') }
 }
 

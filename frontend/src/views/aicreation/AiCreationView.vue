@@ -100,7 +100,22 @@ const loadArticles = async () => {
 }
 const handleFetchHot = async () => {
   fetching.value = true
-  try { await fetchHotTopics(selectedPlatform.value); ElMessage.success('热点抓取任务已触发'); loadHotTopics() } catch { ElMessage.error('抓取失败') } finally { fetching.value = false }
+  try {
+    await fetchHotTopics(selectedPlatform.value)
+    ElMessage.success('热点抓取任务已触发，正在获取数据...')
+    // Poll for results since fetch is async on backend
+    let attempts = 0
+    const maxAttempts = 10
+    const poll = async () => {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      await loadHotTopics()
+      attempts++
+      if (hotTopics.value.length === 0 && attempts < maxAttempts) {
+        poll()
+      }
+    }
+    poll()
+  } catch { ElMessage.error('抓取失败') } finally { fetching.value = false }
 }
 const handleGenerate = async (topicId: number) => {
   try { await generateArticle(topicId); ElMessage.success('AI创作任务已触发'); loadArticles() } catch { ElMessage.error('生成失败') }
