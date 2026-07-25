@@ -7,7 +7,6 @@ import { DICT_FALLBACK } from '@/constants'
  *
  * Usage:
  *   const { dict } = useDict('sys_user_status')
- *   // dict.value = [{ dictLabel: '正常', dictValue: '0', cssClass: 'success', ... }]
  */
 
 export interface DictData {
@@ -24,67 +23,75 @@ export interface DictData {
   createTime: string
 }
 
-/** Global dictionary cache: dictType -> DictData[] */
+/** Global cache: dictType -> DictData[] */
 const dictCache = new Map<string, DictData[]>()
-
-/** Track which types are currently loading */
-const loadingSet = new Set<string>()
-
-/** Version counter for each dict type - increments on data change to trigger reactivity */
+/** Track loaded types to avoid duplicate API calls */
+const loadedSet = new Set<string>()
+/** Version counter for reactivity trigger */
 const versionMap = new Map<string, number>()
 
 /**
- * Load dictionary data by type (with cache + fallback)
- *
- * Strategy: immediately populate cache with fallback data (synchronous),
- * then fetch from API and update cache when response arrives.
- * This ensures dict data is always available on first render.
+ * Load dictionary data: fallback first (sync), then API update (async)
  */
 function loadDict(dictType: string): void {
-  if (loadingSet.has(dictType)) return
-
-  // Step 1: Immediately populate with fallback data if cache is empty
+  // Always ensure fallback is available immediately
   if (!dictCache.has(dictType)) {
-    const fallback = DICT_FALLBACK[dictType] || []
-    dictCache.set(dictType, fallback)
+    dictCache.set(dictType, DICT_FALLBACK[dictType] || [])
     versionMap.set(dictType, (versionMap.get(dictType) || 0) + 1)
   }
 
-  // Step 2: Fetch from API (skip if already loaded successfully)
-  if (dictCache.has(dictType) && dictCache.get(dictType)!.length > 0 && dictCache.get(dictType) !== DICT_FALLBACK[dictType]) {
-    return
-  }
+  // Skip API call if already loaded successfully
+  if (loadedSet.has(dictType)) return
 
-  loadingSet.add(dictType)
+  loadedSet.add(dictType)
 
   getDictDataByType(dictType)
     .then(res => {
-      const data = res.data || []
-      if (data.length > 0) {
-        dictCache.set(dictType, data)
+      const apiData = res.data || []
+      if (apiData.length > 0) {
+        dictCache.set(dictType, apiData)
+      } else {
+        // API returned empty - mark as loaded but keep fallback
+        console.warn(`Dict type "${dictType}" has no data in database, using fallback`)
       }
-      // Increment version to trigger watchers
       versionMap.set(dictType, (versionMap.get(dictType) || 0) + 1)
     })
-    .catch(() => {
-      // Fallback already populated, no action needed
-    })
-    .finally(() => {
-      loadingSet.delete(dictType)
+    .catch(err => {
+      console.warn(`Dict API failed for "${dictType}", using fallback:`, err.message)
+      // Fallback already in cache, no action needed
     })
 }
 
 /**
- * useDict composable - provides reactive dictionary data
+ * Force reload a dict type (e.g., after admin edits dict data)
+ */
+export function reloadDict(dictType: string): void {
+  loadedSet.delete(dictType)
+  dictCache.delete(dictType)
+  loadDict(dictType)
+}
+
+/**
+ * Reload all loaded dict types
+ */
+export function reloadAllDicts(): void {
+  const types = Array.from(loadedSet)
+  loadedSet.clear()
+  dictCache.clear()
+  types.forEach(t => loadDict(t))
+}
+
+/**
+ * useDict composable
  */
 export function useDict(dictType: string) {
-  // Initialize with whatever is in cache (fallback or API data)
+  // Initialize with fallback data (synchronous, always available)
   const dict = ref<DictData[]>(dictCache.get(dictType) || DICT_FALLBACK[dictType] || [])
 
-  // Load data (fallback is synchronous, API is async)
+  // Trigger load (fallback is sync, API is async)
   loadDict(dictType)
 
-  // Watch version counter changes to update dict reactively
+  // Watch for data updates
   const stopWatch = watch(
     () => versionMap.get(dictType),
     () => {
@@ -108,7 +115,7 @@ export function getDictLabel(dict: DictData[] | ReturnType<typeof ref<DictData[]
 }
 
 /**
- * Get dictionary CSS class (Element Plus Tag type) by value
+ * Get dictionary CSS class by value
  */
 export function getDictCssClass(dict: DictData[] | ReturnType<typeof ref<DictData[]>>, value: string, fallback = 'info'): string {
   const list = Array.isArray(dict) ? dict : dict.value

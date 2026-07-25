@@ -60,9 +60,7 @@
             </el-table-column>
             <el-table-column prop="status" label="状态" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === '0' ? 'success' : 'danger'" size="small">
-                  {{ row.status === '0' ? '正常' : '停用' }}
-                </el-tag>
+                <DictTag dict-type="sys_user_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
             <el-table-column prop="remark" label="备注" show-overflow-tooltip />
@@ -150,6 +148,8 @@ import {
   getDictTypeList, addDictType, updateDictType, deleteDictType,
   getDictDataByType, addDictData, updateDictData, deleteDictData
 } from '@/api/dictManage'
+import DictTag from '@/components/DictTag.vue'
+import { reloadDict } from '@/composables/useDict'
 
 // ========== Dict Type ==========
 const loadingTypes = ref(false)
@@ -266,6 +266,8 @@ const handleSaveData = async () => {
     }
     showDataDialog.value = false
     loadDictData()
+    // Reload dict cache so other pages see updated labels
+    reloadDict(currentType.value.dictType)
   } catch { ElMessage.error('操作失败') }
 }
 
@@ -274,6 +276,8 @@ const handleDeleteData = async (id: number) => {
     await deleteDictData(id)
     ElMessage.success('删除成功')
     loadDictData()
+    // Reload dict cache so other pages see updated labels
+    reloadDict(currentType.value.dictType)
   } catch { ElMessage.error('删除失败') }
 }
 
