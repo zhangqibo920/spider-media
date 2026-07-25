@@ -45,7 +45,14 @@ function loadDict(dictType: string): void {
 
   getDictDataByType(dictType)
     .then(res => {
-      dictCache.set(dictType, res.data || [])
+      const data = res.data || []
+      // If API returns empty data, use fallback
+      if (data.length === 0) {
+        const fallback = DICT_FALLBACK[dictType]
+        dictCache.set(dictType, fallback || [])
+      } else {
+        dictCache.set(dictType, data)
+      }
     })
     .catch(() => {
       // Use fallback data when API is unavailable
