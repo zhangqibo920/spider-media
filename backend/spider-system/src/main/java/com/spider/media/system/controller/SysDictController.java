@@ -47,7 +47,7 @@ public class SysDictController extends BaseController {
 
     /** 根据字典类型标识查询 */
     @GetMapping("/type/{dictType}")
-    public R<SysDictType> dictTypeByType(@PathVariable String dictType) {
+    public R<SysDictType> dictTypeByType(@PathVariable("dictType") String dictType) {
         return ok(dictTypeService.selectByDictType(dictType));
     }
 
@@ -70,7 +70,7 @@ public class SysDictController extends BaseController {
     /** 删除字典类型 */
     @OperLog(module = "字典管理", action = "删除字典类型")
     @DeleteMapping("/type/{id}")
-    public R<Void> deleteDictType(@PathVariable Long id) {
+    public R<Void> deleteDictType(@PathVariable("id") Long id) {
         dictTypeService.deleteDictTypeById(id);
         return ok();
     }
@@ -79,13 +79,13 @@ public class SysDictController extends BaseController {
 
     /** 根据字典类型查询字典数据列表（前端核心接口） */
     @GetMapping("/data/type/{dictType}")
-    public R<List<SysDictData>> dictDataByType(@PathVariable String dictType) {
+    public R<List<SysDictData>> dictDataByType(@PathVariable("dictType") String dictType) {
         return ok(dictDataService.selectDictDataByType(dictType));
     }
 
     /** 根据字典类型和字典值查询单条字典数据 */
     @GetMapping("/data/{dictType}/{dictValue}")
-    public R<SysDictData> dictDataByTypeAndValue(@PathVariable String dictType, @PathVariable String dictValue) {
+    public R<SysDictData> dictDataByTypeAndValue(@PathVariable("dictType") String dictType, @PathVariable("dictValue") String dictValue) {
         return ok(dictDataService.selectDictDataByTypeAndValue(dictType, dictValue));
     }
 
@@ -108,7 +108,7 @@ public class SysDictController extends BaseController {
     /** 删除字典数据 */
     @OperLog(module = "字典管理", action = "删除字典数据")
     @DeleteMapping("/data/{id}")
-    public R<Void> deleteDictData(@PathVariable Long id) {
+    public R<Void> deleteDictData(@PathVariable("id") Long id) {
         dictDataService.deleteDictDataById(id);
         return ok();
     }
