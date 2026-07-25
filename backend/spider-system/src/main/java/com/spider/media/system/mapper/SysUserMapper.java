@@ -53,4 +53,20 @@ public interface SysUserMapper {
      * @return 受影响的行数
      */
     int deleteById(@Param("userId") Long userId);
+
+    /**
+     * 根据用户ID查询用户
+     *
+     * @param userId 用户ID
+     * @return 用户实体，不存在返回 null
+     */
+    SysUser selectById(@Param("userId") Long userId);
+
+    /**
+     * 修改用户密码
+     *
+     * @param user 包含 userId 和新密码（加密后）的用户实体
+     * @return 受影响的行数
+     */
+    int updatePassword(SysUser user);
 }

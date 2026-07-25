@@ -69,9 +69,10 @@
               </template>
             </el-table-column>
             <el-table-column prop="createTime" label="创建时间" width="180" />
-            <el-table-column label="操作" width="160">
+            <el-table-column label="操作" width="200">
               <template #default="{ row }">
                 <el-button type="primary" link @click="startEditUser(row)">编辑</el-button>
+                <el-button type="warning" link @click="openChangePassword(row)">改密</el-button>
                 <el-button type="danger" link @click="handleDeleteUser(row)" :disabled="row.userId === 1">删除</el-button>
               </template>
             </el-table-column>
@@ -101,6 +102,7 @@
       </el-tab-pane>
     </el-tabs>
 
+    <!-- 添加配置对话框 -->
     <el-dialog v-model="showAddConfigDialog" title="添加配置" width="480px">
       <el-form :model="addConfigForm" label-width="80px">
         <el-form-item label="配置名称">
@@ -125,6 +127,7 @@
       </template>
     </el-dialog>
 
+    <!-- 编辑用户对话框 -->
     <el-dialog v-model="showEditUserDialog" title="编辑用户" width="480px">
       <el-form :model="editUserForm" label-width="80px">
         <el-form-item label="用户名">
@@ -154,15 +157,38 @@
         <el-button type="primary" @click="handleSaveUser">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog v-model="showChangePasswordDialog" title="修改密码" width="480px" @closed="resetPasswordForm">
+      <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="100px">
+        <el-form-item label="当前用户">
+          <el-input :model-value="passwordForm.userName" disabled />
+        </el-form-item>
+        <el-form-item label="旧密码" prop="oldPassword">
+          <el-input v-model="passwordForm.oldPassword" type="password" placeholder="请输入旧密码" show-password />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码" show-password />
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input v-model="passwordForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showChangePasswordDialog = false">取消</el-button>
+        <el-button type="primary" :loading="changingPassword" @click="handleChangePassword">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import {
   getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig,
-  getUsers, updateUser, deleteUser, getOperationLogs
+  getUsers, updateUser, deleteUser, getOperationLogs, changePassword
 } from '@/api/admin'
 import DictTag from '@/components/DictTag.vue'
 
@@ -184,6 +210,72 @@ const addConfigForm = reactive({ configName: '', configKey: '', configValue: '',
 const showEditUserDialog = ref(false)
 const editUserForm = reactive({ userId: 0, userName: '', nickName: '', email: '', role: 'USER', status: '0' })
 
+// ========== 修改密码 ==========
+const showChangePasswordDialog = ref(false)
+const changingPassword = ref(false)
+const passwordFormRef = ref<FormInstance>()
+const passwordForm = reactive({
+  userId: 0,
+  userName: '',
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+})
+
+const validateConfirmPassword = (_rule: any, value: string, callback: Function) => {
+  if (value !== passwordForm.newPassword) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
+
+const passwordRules = {
+  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' },
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认密码', trigger: 'blur' },
+    { validator: validateConfirmPassword, trigger: 'blur' },
+  ],
+}
+
+const openChangePassword = (row: any) => {
+  passwordForm.userId = row.userId
+  passwordForm.userName = row.userName
+  passwordForm.oldPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+  showChangePasswordDialog.value = true
+}
+
+const resetPasswordForm = () => {
+  passwordForm.userId = 0
+  passwordForm.userName = ''
+  passwordForm.oldPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+}
+
+const handleChangePassword = async () => {
+  const valid = await passwordFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  changingPassword.value = true
+  try {
+    await changePassword(passwordForm.userId, passwordForm.oldPassword, passwordForm.newPassword)
+    ElMessage.success('密码修改成功')
+    showChangePasswordDialog.value = false
+  } catch {
+    ElMessage.error('密码修改失败，请检查旧密码是否正确')
+  } finally {
+    changingPassword.value = false
+  }
+}
+
+// ========== 配置管理 ==========
 const loadConfigs = async () => {
   loadingConfigs.value = true
   try {
@@ -238,6 +330,7 @@ const handleDeleteConfig = async (row: any) => {
   } catch {}
 }
 
+// ========== 用户管理 ==========
 const startEditUser = (row: any) => {
   Object.assign(editUserForm, { userId: row.userId, userName: row.userName, nickName: row.nickName, email: row.email, role: row.role, status: row.status })
   showEditUserDialog.value = true

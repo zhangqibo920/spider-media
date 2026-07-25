@@ -132,8 +132,24 @@ public class SysAdminController extends BaseController {
      */
     @OperLog(module = "用户管理", action = "删除")
     @DeleteMapping("/users/{userId}")
-    public R<Void> deleteUser(@PathVariable Long userId) {
+    public R<Void> deleteUser(@PathVariable("userId") Long userId) {
         userService.deleteUser(userId);
+        return ok();
+    }
+
+    /**
+     * 修改用户密码
+     *
+     * @param request 包含 userId、oldPassword、newPassword 的请求体
+     * @return 操作结果
+     */
+    @OperLog(module = "用户管理", action = "修改密码")
+    @PutMapping("/users/password")
+    public R<Void> changePassword(@RequestBody java.util.Map<String, String> request) {
+        Long userId = Long.valueOf(request.get("userId"));
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+        userService.updatePassword(userId, oldPassword, newPassword);
         return ok();
     }
 

@@ -60,4 +60,14 @@ public interface ISysUserService {
      * @return 受影响的行数
      */
     int deleteUser(Long userId);
+
+    /**
+     * 修改用户密码
+     *
+     * @param userId    用户ID
+     * @param oldPassword 旧密码（明文）
+     * @param newPassword 新密码（明文）
+     * @return 受影响的行数
+     */
+    int updatePassword(Long userId, String oldPassword, String newPassword);
 }
