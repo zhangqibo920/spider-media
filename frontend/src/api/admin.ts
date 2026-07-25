@@ -32,6 +32,6 @@ export function resetPassword(userId: number, newPassword: string) {
   return request.put('/admin/users/password', { userId: String(userId), newPassword })
 }
 
-export function getOperationLogs(page = 1, size = 20) {
+export function getOperationLogs(page = 1, size = 10) {
   return request.get('/admin/logs', { params: { page, size } })
 }

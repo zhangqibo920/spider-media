@@ -83,6 +83,7 @@
       <el-tab-pane label="操作日志" name="logs">
         <el-card>
           <el-table :data="logs" v-loading="loadingLogs" stripe>
+            <el-table-column type="index" label="#" width="50" :index="(index: number) => (logPage - 1) * logSize + index + 1" />
             <el-table-column prop="username" label="用户" width="100" />
             <el-table-column prop="module" label="模块" width="100" />
             <el-table-column prop="action" label="操作" width="100" />
@@ -92,10 +93,12 @@
           </el-table>
           <el-pagination
             v-model:current-page="logPage"
-            :page-size="20"
+            v-model:page-size="logSize"
+            :page-sizes="[10, 20, 50, 100]"
             :total="logTotal"
-            layout="total, prev, pager, next"
+            layout="total, sizes, prev, pager, next"
             @current-change="loadLogs"
+            @size-change="handleLogSizeChange"
             style="margin-top: 16px; justify-content: flex-end"
           />
         </el-card>
@@ -202,6 +205,7 @@ const configs = ref<any[]>([])
 const users = ref<any[]>([])
 const logs = ref<any[]>([])
 const logPage = ref(1)
+const logSize = ref(10)
 const logTotal = ref(0)
 
 const editingConfigId = ref<number | null>(null)
@@ -293,10 +297,15 @@ const loadUsers = async () => {
 const loadLogs = async () => {
   loadingLogs.value = true
   try {
-    const res = await getOperationLogs(logPage.value)
+    const res = await getOperationLogs(logPage.value, logSize.value)
     logs.value = res.data.list
     logTotal.value = res.data.total
   } finally { loadingLogs.value = false }
+}
+
+const handleLogSizeChange = () => {
+  logPage.value = 1
+  loadLogs()
 }
 
 const startEditConfig = (row: any) => { editingConfigId.value = row.id; editingConfigValue.value = row.configValue || '' }
