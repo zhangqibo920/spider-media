@@ -16,17 +16,25 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, config_name, config_key, config_value, config_type,
+        create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectByGroup" resultMap="BaseResultMap">
-        SELECT * FROM sys_config
+        SELECT <include refid="Base_Column_List"/> FROM sys_config
         WHERE del_flag = '0'
         <if test="configKey != null and configKey != ''">
-            AND config_key LIKE CONCAT(#{configKey}, '%')
+            <!-- 前缀匹配：转义 LIKE 通配符（%、_、\），防止用户输入干扰查询语义 -->
+            <bind name="configKeyPattern" value="configKey.replaceAll('[%_\\\\]', '\\\\$0') + '%'" />
+            AND config_key LIKE #{configKeyPattern} ESCAPE '\\'
         </if>
         ORDER BY id
     </select>
 
     <select id="selectByKey" resultMap="BaseResultMap">
-        SELECT * FROM sys_config
+        SELECT <include refid="Base_Column_List"/> FROM sys_config
         WHERE config_key = #{configKey} AND del_flag = '0'
     </select>
 

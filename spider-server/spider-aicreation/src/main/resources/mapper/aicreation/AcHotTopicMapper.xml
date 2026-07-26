@@ -19,12 +19,18 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, user_id, platform, title, description, hot_score, url, category,
+        create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT * FROM ac_hot_topic WHERE id = #{id} AND del_flag = '0'
+        SELECT <include refid="Base_Column_List"/> FROM ac_hot_topic WHERE id = #{id} AND del_flag = '0'
     </select>
 
     <select id="selectByUserId" resultMap="BaseResultMap">
-        SELECT * FROM ac_hot_topic
+        SELECT <include refid="Base_Column_List"/> FROM ac_hot_topic
         WHERE del_flag = '0' AND user_id = #{userId}
         ORDER BY hot_score DESC
     </select>

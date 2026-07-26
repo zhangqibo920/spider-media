@@ -16,6 +16,12 @@
         <result column="create_time" property="createTime"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, username, module, action, description, ip, method, params,
+        status, error_msg, create_time
+    </sql>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO sys_oper_log (username, module, action, description, ip, method, params,
                                   status, error_msg, create_time)
@@ -24,7 +30,7 @@
     </insert>
 
     <select id="selectPage" resultMap="BaseResultMap">
-        SELECT * FROM sys_oper_log
+        SELECT <include refid="Base_Column_List"/> FROM sys_oper_log
         <where>
             <if test="username != null and username != ''">
                 AND username = #{username}

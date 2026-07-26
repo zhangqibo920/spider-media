@@ -12,6 +12,7 @@ import com.spider.media.taskscheduler.service.ITsScheduledTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -40,6 +41,7 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
      * <p>初始化任务状态为停止（0），执行次数和失败次数为 0。</p>
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public TsScheduledTask createTask(TsScheduledTask task) {
         task.setStatus(0);
         task.setRunCount(0);
@@ -56,6 +58,7 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
      * @throws ServiceException 任务不存在时抛出异常
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void enableTask(Long taskId) {
         TsScheduledTask task = scheduledTaskMapper.selectById(taskId);
         if (task == null) {
@@ -74,6 +77,7 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
      * @throws ServiceException 任务不存在时抛出异常
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void disableTask(Long taskId) {
         TsScheduledTask task = scheduledTaskMapper.selectById(taskId);
         if (task == null) {

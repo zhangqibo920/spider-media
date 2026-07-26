@@ -25,8 +25,15 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, user_id, platform_account_id, article_id, platform, title, content, summary,
+        cover_image, status, scheduled_time, published_time, publish_result, retry_count,
+        create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectPage" resultMap="BaseResultMap">
-        SELECT * FROM pb_publish_task
+        SELECT <include refid="Base_Column_List"/> FROM pb_publish_task
         <where>
             del_flag = '0'
             <if test="userId != null">
@@ -43,7 +50,7 @@
     </select>
 
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT * FROM pb_publish_task WHERE id = #{id} AND del_flag = '0'
+        SELECT <include refid="Base_Column_List"/> FROM pb_publish_task WHERE id = #{id} AND del_flag = '0'
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">

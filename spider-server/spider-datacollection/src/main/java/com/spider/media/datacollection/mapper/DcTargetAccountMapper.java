@@ -28,6 +28,14 @@ public interface DcTargetAccountMapper {
                                      @Param("groupName") String groupName);
 
     /**
+     * 根据主键ID查询对标账号
+     *
+     * @param id 对标账号主键ID
+     * @return 对标账号实体，不存在时返回 null
+     */
+    DcTargetAccount selectById(@Param("id") Long id);
+
+    /**
      * 新增对标账号
      *
      * @param account 待插入的对标账号实体

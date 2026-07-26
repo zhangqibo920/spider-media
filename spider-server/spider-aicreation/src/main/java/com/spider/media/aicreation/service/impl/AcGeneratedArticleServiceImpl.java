@@ -18,7 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -57,17 +59,20 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
     private final AcHotTopicMapper hotTopicMapper;
     /** AI 模型服务（从数据库读取模型配置） */
     private final IAiModelService aiModelService;
-    /** HTTP 客户端（用于调用 AI API） */
-    private final WebClient webClient = WebClient.builder()
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
-            .build();
+    /** HTTP 客户端（用于调用 AI API，由 WebClientConfig 统一配置超时） */
+    private final WebClient webClient;
 
     public AcGeneratedArticleServiceImpl(AcGeneratedArticleMapper generatedArticleMapper,
                                           AcHotTopicMapper hotTopicMapper,
-                                          IAiModelService aiModelService) {
+                                          IAiModelService aiModelService,
+                                          WebClient.Builder webClientBuilder) {
         this.generatedArticleMapper = generatedArticleMapper;
         this.hotTopicMapper = hotTopicMapper;
         this.aiModelService = aiModelService;
+        // 在统一超时配置基础上，扩大内存缓冲区以容纳 AI 长文本响应
+        this.webClient = webClientBuilder
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
+                .build();
     }
 
     /**
@@ -187,7 +192,11 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
                     .header("Authorization", "Bearer " + model.getApiKey())
                     .header("Content-Type", "application/json")
                     .bodyValue(body)
-                    .retrieve().bodyToMono(String.class).block();
+                    .retrieve().bodyToMono(String.class)
+                    // 网络抖动时重试 2 次，间隔 1 秒
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1))
+                            .filter(e -> !(e instanceof org.springframework.web.client.HttpClientErrorException)))
+                    .block();
 
             JsonNode root = objectMapper.readTree(json);
             return root.path("choices").get(0).path("message").path("content").asText("生成失败");
@@ -221,7 +230,10 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
                     .header("Authorization", "Bearer " + model.getApiKey())
                     .header("Content-Type", "application/json")
                     .bodyValue(body)
-                    .retrieve().bodyToMono(String.class).block();
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1))
+                            .filter(e -> !(e instanceof org.springframework.web.client.HttpClientErrorException)))
+                    .block();
 
             JsonNode root = objectMapper.readTree(json);
             return root.path("choices").get(0).path("message").path("content").asText("生成失败");

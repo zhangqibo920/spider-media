@@ -1,6 +1,10 @@
 package com.spider.media.taskscheduler.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -20,15 +24,23 @@ public class TsScheduledTask extends BaseEntity {
     private Long id;
 
     /** 所属用户ID */
+    @NotNull(message = "用户ID不能为空")
     private Long userId;
 
     /** 任务名称（便于用户识别） */
+    @NotBlank(message = "任务名称不能为空")
+    @Size(max = 100, message = "任务名称长度不能超过100")
     private String taskName;
 
     /** 任务类型（如 "热点抓取"、"文章生成"、"内容发布"） */
+    @NotBlank(message = "任务类型不能为空")
+    @Size(max = 50, message = "任务类型长度不能超过50")
     private String taskType;
 
     /** Cron 表达式（定义执行计划，如 "0 0 9 * * ?" 表示每天9点执行） */
+    @NotBlank(message = "Cron表达式不能为空")
+    @Size(max = 100, message = "Cron表达式长度不能超过100")
+    @Pattern(regexp = "^[0-9*/?,-\\s]+$", message = "Cron表达式格式不正确")
     private String cronExpression;
 
     /** 任务状态：0=已停止，1=运行中 */

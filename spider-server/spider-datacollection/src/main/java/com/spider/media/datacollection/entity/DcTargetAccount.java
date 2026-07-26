@@ -1,6 +1,8 @@
 package com.spider.media.datacollection.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -21,15 +23,20 @@ public class DcTargetAccount extends BaseEntity {
     private Long userId;
 
     /** 平台类型（如 "weibo"、"douyin"、"zhihu"） */
+    @NotBlank(message = "平台类型不能为空")
+    @Size(max = 50, message = "平台类型长度不能超过50")
     private String platform;
 
     /** 对标账号的显示名称 */
+    @NotBlank(message = "账号名称不能为空")
+    @Size(max = 100, message = "账号名称长度不能超过100")
     private String accountName;
 
     /** 对标账号的唯一ID */
     private String accountId;
 
     /** 对标账号的主页链接（用于采集文章） */
+    @NotBlank(message = "账号链接不能为空")
     private String accountUrl;
 
     /** 分组名称（用于按业务维度分类管理对标账号） */

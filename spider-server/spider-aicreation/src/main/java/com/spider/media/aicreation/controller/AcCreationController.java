@@ -86,6 +86,7 @@ public class AcCreationController extends BaseController {
      */
     @GetMapping("/article/page")
     public R<PageResult<AcGeneratedArticle>> articlePage(AcGeneratedArticlePageReqVO pageReqVO) {
+        pageReqVO.setUserId(LoginUser.getUserId());
         return page(generatedArticleService.selectArticlePage(pageReqVO));
     }
 }

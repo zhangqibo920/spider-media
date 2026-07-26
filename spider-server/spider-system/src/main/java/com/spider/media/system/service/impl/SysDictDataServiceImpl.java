@@ -4,6 +4,7 @@ import com.spider.media.system.entity.SysDictData;
 import com.spider.media.system.mapper.SysDictDataMapper;
 import com.spider.media.system.service.ISysDictDataService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,18 +43,21 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int insertDictData(SysDictData dictData) {
         dictData.setCreateTime(LocalDateTime.now());
         return dictDataMapper.insert(dictData);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateDictData(SysDictData dictData) {
         dictData.setUpdateTime(LocalDateTime.now());
         return dictDataMapper.update(dictData);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteDictDataById(Long id) {
         return dictDataMapper.deleteById(id);
     }

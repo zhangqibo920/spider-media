@@ -9,6 +9,7 @@ import com.spider.media.contentpublish.entity.PbPublishTask;
 import com.spider.media.contentpublish.service.IPbPlatformAccountService;
 import com.spider.media.contentpublish.service.IPbPublishTaskService;
 import com.spider.media.framework.security.LoginUser;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -56,7 +57,7 @@ public class PbPublishController extends BaseController {
      * @return 操作结果
      */
     @PostMapping("/account")
-    public R<Integer> addAccount(@RequestBody PbPlatformAccount account) {
+    public R<Integer> addAccount(@Valid @RequestBody PbPlatformAccount account) {
         account.setUserId(LoginUser.getUserId());
         return ok(platformAccountService.insertAccount(account));
     }
@@ -64,12 +65,14 @@ public class PbPublishController extends BaseController {
     /**
      * 删除发布账号
      *
+     * <p>删除前校验账号归属，仅允许删除自己的平台账号。</p>
+     *
      * @param id 发布账号主键ID
      * @return 操作结果
      */
     @DeleteMapping("/account/{id}")
     public R<Integer> deleteAccount(@PathVariable Long id) {
-        return ok(platformAccountService.deleteAccountById(id));
+        return ok(platformAccountService.deleteAccountById(id, LoginUser.getUserId()));
     }
 
     // ========== 发布任务管理 ==========
@@ -81,7 +84,7 @@ public class PbPublishController extends BaseController {
      * @return 创建后的任务实体
      */
     @PostMapping("/task")
-    public R<PbPublishTask> createTask(@RequestBody PbPublishTask task) {
+    public R<PbPublishTask> createTask(@Valid @RequestBody PbPublishTask task) {
         task.setUserId(LoginUser.getUserId());
         return ok(publishTaskService.createTask(task));
     }
@@ -89,12 +92,19 @@ public class PbPublishController extends BaseController {
     /**
      * 立即发布（异步执行）
      *
+     * <p>发布前先同步校验任务归属（@Async 方法异常无法直接返回前端），
+     * 校验通过后再触发异步发布流程。</p>
+     *
      * @param id 任务ID
      * @return 操作结果
      */
     @PostMapping("/task/{id}/publish")
     public R<Void> publishNow(@PathVariable Long id) {
-        publishTaskService.publishNow(id);
+        Long userId = LoginUser.getUserId();
+        // 同步校验归属，失败抛 ServiceException 直接返回前端
+        publishTaskService.validateOwnership(id, userId);
+        // 校验通过后触发异步发布
+        publishTaskService.publishNow(id, userId);
         return ok();
     }
 
@@ -107,8 +117,19 @@ public class PbPublishController extends BaseController {
      */
     @PostMapping("/task/{id}/schedule")
     public R<Void> schedulePublish(@PathVariable Long id, @RequestBody Map<String, String> request) {
-        LocalDateTime scheduledTime = LocalDateTime.parse(request.get("scheduledTime"));
-        publishTaskService.schedulePublish(id, scheduledTime);
+        String scheduledTimeStr = request.get("scheduledTime");
+        if (scheduledTimeStr == null || scheduledTimeStr.isBlank()) {
+            throw new com.spider.media.common.exception.ServiceException(
+                    com.spider.media.common.result.ErrorCodeEnums.PARAM_ERROR, "scheduledTime 不能为空");
+        }
+        LocalDateTime scheduledTime;
+        try {
+            scheduledTime = LocalDateTime.parse(scheduledTimeStr);
+        } catch (Exception e) {
+            throw new com.spider.media.common.exception.ServiceException(
+                    com.spider.media.common.result.ErrorCodeEnums.PARAM_ERROR, "scheduledTime 格式不正确");
+        }
+        publishTaskService.schedulePublish(id, scheduledTime, LoginUser.getUserId());
         return ok();
     }
 
@@ -120,6 +141,7 @@ public class PbPublishController extends BaseController {
      */
     @GetMapping("/task/page")
     public R<PageResult<PbPublishTask>> taskPage(PbPublishTaskPageReqVO pageReqVO) {
+        pageReqVO.setUserId(LoginUser.getUserId());
         return page(publishTaskService.selectTaskPage(pageReqVO));
     }
 }

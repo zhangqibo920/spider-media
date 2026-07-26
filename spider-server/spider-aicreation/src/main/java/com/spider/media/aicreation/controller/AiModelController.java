@@ -5,6 +5,7 @@ import com.spider.media.common.result.R;
 import com.spider.media.aicreation.entity.AiModel;
 import com.spider.media.aicreation.service.IAiModelService;
 import com.spider.media.system.aspect.OperLog;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class AiModelController extends BaseController {
     /** 新增模型 */
     @OperLog(module = "模型管理", action = "新增")
     @PostMapping
-    public R<Void> add(@RequestBody AiModel model) {
+    public R<Void> add(@Valid @RequestBody AiModel model) {
         aiModelService.insertModel(model);
         return ok();
     }
@@ -49,7 +50,7 @@ public class AiModelController extends BaseController {
     /** 更新模型配置 */
     @OperLog(module = "模型管理", action = "修改")
     @PutMapping
-    public R<Void> update(@RequestBody AiModel model) {
+    public R<Void> update(@Valid @RequestBody AiModel model) {
         aiModelService.updateModel(model);
         return ok();
     }

@@ -28,7 +28,11 @@ public interface IDcCollectedArticleService {
      * <p>根据对标账号的主页链接，抓取文章列表并保存到数据库。
      * 通过 URL 去重避免重复采集同一篇文章。</p>
      *
+     * <p>采集前会校验账号归属，仅允许账号所有者触发采集，防止越权操作。</p>
+     *
      * @param targetAccountId 对标账号ID
+     * @param operatorId      当前操作用户ID（用于归属校验）
+     * @throws com.spider.media.common.exception.ServiceException 账号不存在或不属于当前用户时抛出
      */
-    void collectArticles(Long targetAccountId);
+    void collectArticles(Long targetAccountId, Long operatorId);
 }

@@ -21,16 +21,22 @@
         <result column="remark" property="remark"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, model_key, model_name, provider, api_key, base_url, enabled, sort_order,
+        test_status, test_time, test_message, create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectAll" resultMap="BaseResultMap">
-        SELECT * FROM ai_model ORDER BY sort_order ASC, id ASC
+        SELECT <include refid="Base_Column_List"/> FROM ai_model WHERE del_flag = '0' ORDER BY sort_order ASC, id ASC
     </select>
 
     <select id="selectByModelKey" resultMap="BaseResultMap">
-        SELECT * FROM ai_model WHERE model_key = #{modelKey} AND enabled = 'Y'
+        SELECT <include refid="Base_Column_List"/> FROM ai_model WHERE model_key = #{modelKey} AND enabled = 'Y' AND del_flag = '0'
     </select>
 
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT * FROM ai_model WHERE id = #{id}
+        SELECT <include refid="Base_Column_List"/> FROM ai_model WHERE id = #{id} AND del_flag = '0'
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -54,8 +60,8 @@
         WHERE id = #{id}
     </update>
 
-    <delete id="deleteById">
-        DELETE FROM ai_model WHERE id = #{id}
-    </delete>
+    <update id="deleteById">
+        UPDATE ai_model SET del_flag = '2' WHERE id = #{id}
+    </update>
 
 </mapper>

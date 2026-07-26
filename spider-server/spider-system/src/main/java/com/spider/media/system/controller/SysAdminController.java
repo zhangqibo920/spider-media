@@ -11,6 +11,8 @@ import com.spider.media.system.entity.SysUser;
 import com.spider.media.system.service.ISysConfigService;
 import com.spider.media.system.service.ISysOperLogService;
 import com.spider.media.system.service.ISysUserService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,10 +23,13 @@ import java.util.Map;
  * 系统管理控制器
  *
  * <p>提供管理员专用的后台管理接口，包括系统配置管理、用户管理、操作日志查询。
- * 所有接口路径在 /api/admin 下，需要管理员权限才能访问。</p>
+ * 所有接口路径在 /api/admin 下，<b>类级别强制要求 ADMIN 角色</b>才能访问。
+ * 通过 {@code @PreAuthorize("hasRole('ADMIN')")} 在方法调度前由 Spring Security 拦截校验，
+ * 未通过校验返回 403。</p>
  */
 @RestController
 @RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class SysAdminController extends BaseController {
 
     /** 系统配置业务层服务 */
@@ -64,7 +69,7 @@ public class SysAdminController extends BaseController {
      */
     @OperLog(module = "配置管理", action = "新增")
     @PostMapping("/config")
-    public R<Void> addConfig(@RequestBody SysConfig config) {
+    public R<Void> addConfig(@Valid @RequestBody SysConfig config) {
         config.setCreateBy(LoginUser.getUsername());
         configService.insertConfig(config);
         return ok();
@@ -78,7 +83,7 @@ public class SysAdminController extends BaseController {
      */
     @OperLog(module = "配置管理", action = "修改")
     @PutMapping("/config")
-    public R<Void> updateConfig(@RequestBody SysConfig config) {
+    public R<Void> updateConfig(@Valid @RequestBody SysConfig config) {
         config.setUpdateBy(LoginUser.getUsername());
         configService.updateConfig(config);
         return ok();

@@ -25,17 +25,34 @@ public interface IPbPublishTaskService {
     /**
      * 立即发布（异步执行，调用平台 API 发布内容）
      *
-     * @param taskId 任务ID
+     * <p>发布前由 Controller 同步校验任务归属（@Async 异常无法直接返回前端），
+     * 校验通过后再触发异步发布流程。</p>
+     *
+     * @param taskId     任务ID
+     * @param operatorId 当前操作用户ID（用于归属校验）
      */
-    void publishNow(Long taskId);
+    void publishNow(Long taskId, Long operatorId);
 
     /**
      * 设置定时发布时间
      *
+     * <p>校验任务归属后更新计划发布时间。</p>
+     *
      * @param taskId        任务ID
      * @param scheduledTime 计划发布时间
+     * @param operatorId    当前操作用户ID（用于归属校验）
      */
-    void schedulePublish(Long taskId, LocalDateTime scheduledTime);
+    void schedulePublish(Long taskId, LocalDateTime scheduledTime, Long operatorId);
+
+    /**
+     * 校验发布任务归属
+     *
+     * @param taskId     任务ID
+     * @param operatorId 当前操作用户ID
+     * @return 通过校验的任务实体
+     * @throws com.spider.media.common.exception.ServiceException 任务不存在或不属于当前用户时抛出
+     */
+    PbPublishTask validateOwnership(Long taskId, Long operatorId);
 
     /**
      * 分页查询发布任务列表

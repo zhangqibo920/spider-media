@@ -9,15 +9,26 @@
         <result column="status" property="status"/>
         <result column="create_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
         <result column="remark" property="remark"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, dict_name, dict_type, status, create_by, create_time, update_by, update_time, remark
+    </sql>
+
     <select id="selectAll" resultMap="BaseResultMap">
-        SELECT * FROM sys_dict_type WHERE status = '0' ORDER BY id
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE status = '0' ORDER BY id
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE id = #{id}
     </select>
 
     <select id="selectByDictType" resultMap="BaseResultMap">
-        SELECT * FROM sys_dict_type WHERE dict_type = #{dictType} AND status = '0'
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE dict_type = #{dictType} AND status = '0'
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -27,7 +38,8 @@
 
     <update id="update">
         UPDATE sys_dict_type
-        SET dict_name = #{dictName}, remark = #{remark}, update_by = #{updateBy}, update_time = #{updateTime}
+        SET dict_name = #{dictName}, status = #{status}, remark = #{remark},
+            update_by = #{updateBy}, update_time = #{updateTime}
         WHERE id = #{id}
     </update>
 

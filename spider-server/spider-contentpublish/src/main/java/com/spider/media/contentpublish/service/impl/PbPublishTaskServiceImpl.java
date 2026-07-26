@@ -10,11 +10,11 @@ import com.spider.media.contentpublish.entity.PbPublishTask;
 import com.spider.media.contentpublish.mapper.PbPlatformAccountMapper;
 import com.spider.media.contentpublish.mapper.PbPublishTaskMapper;
 import com.spider.media.contentpublish.service.IPbPublishTaskService;
-import com.spider.media.framework.security.LoginUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -51,6 +51,7 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
      * 创建发布任务（初始状态为草稿）
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public PbPublishTask createTask(PbPublishTask task) {
         task.setStatus(0);
         task.setCreateBy(String.valueOf(task.getUserId()));
@@ -71,18 +72,29 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
      *   <li>根据结果更新状态为"已发布"或"失败"</li>
      * </ol></p>
      *
-     * @param taskId 任务ID
+     * <p>归属校验已在 Controller 同步完成（@Async 方法异常无法直接返回前端），
+     * 此处做二次防护并记录日志。</p>
+     *
+     * @param taskId     任务ID
+     * @param operatorId 当前操作用户ID
      */
     @Override
     @Async
-    public void publishNow(Long taskId) {
+    public void publishNow(Long taskId, Long operatorId) {
         PbPublishTask task = publishTaskMapper.selectById(taskId);
         if (task == null) {
-            throw new ServiceException(ErrorCodeEnums.PB_TASK_NOT_FOUND);
+            log.warn("发布任务不存在, taskId={}", taskId);
+            return;
+        }
+        // 二次归属校验（防御性，主要校验已在 Controller 完成）
+        if (operatorId == null || !operatorId.equals(task.getUserId())) {
+            log.warn("越权发布被拒绝, taskId={}, operatorId={}, ownerId={}",
+                    taskId, operatorId, task.getUserId());
+            return;
         }
         // 更新状态为发布中
         task.setStatus(1);
-        task.setUpdateBy(LoginUser.getUsername());
+        task.setUpdateBy(String.valueOf(operatorId));
         task.setUpdateTime(LocalDateTime.now());
         publishTaskMapper.updateById(task);
 
@@ -125,19 +137,31 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
     /**
      * 设置定时发布时间
      *
-     * @throws ServiceException 任务不存在时抛出异常
+     * @throws ServiceException 任务不存在或不属于当前用户时抛出异常
      */
     @Override
-    public void schedulePublish(Long taskId, LocalDateTime scheduledTime) {
+    @Transactional(rollbackFor = Exception.class)
+    public void schedulePublish(Long taskId, LocalDateTime scheduledTime, Long operatorId) {
+        PbPublishTask task = validateOwnership(taskId, operatorId);
+        task.setScheduledTime(scheduledTime);
+        task.setUpdateBy(String.valueOf(operatorId));
+        task.setUpdateTime(LocalDateTime.now());
+        publishTaskMapper.updateById(task);
+    }
+
+    /**
+     * 校验发布任务归属
+     */
+    @Override
+    public PbPublishTask validateOwnership(Long taskId, Long operatorId) {
         PbPublishTask task = publishTaskMapper.selectById(taskId);
         if (task == null) {
             throw new ServiceException(ErrorCodeEnums.PB_TASK_NOT_FOUND);
         }
-        task.setStatus(3);
-        task.setScheduledTime(scheduledTime);
-        task.setUpdateBy(LoginUser.getUsername());
-        task.setUpdateTime(LocalDateTime.now());
-        publishTaskMapper.updateById(task);
+        if (operatorId == null || !operatorId.equals(task.getUserId())) {
+            throw new ServiceException(ErrorCodeEnums.FORBIDDEN, "无权操作他人的发布任务");
+        }
+        return task;
     }
 
     @Override

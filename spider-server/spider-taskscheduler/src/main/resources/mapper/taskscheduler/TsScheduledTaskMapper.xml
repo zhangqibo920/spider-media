@@ -22,15 +22,24 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, user_id, task_name, task_type, cron_expression, status, last_run_time,
+        next_run_time, run_count, fail_count, config, create_by, create_time,
+        update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectPage" resultMap="BaseResultMap">
-        SELECT * FROM ts_scheduled_task
+        SELECT <include refid="Base_Column_List"/> FROM ts_scheduled_task
         <where>
             del_flag = '0'
             <if test="userId != null">
                 AND user_id = #{userId}
             </if>
             <if test="taskName != null and taskName != ''">
-                AND task_name LIKE CONCAT('%', #{taskName}, '%')
+                <!-- 转义 LIKE 通配符（%、_、\），防止用户输入干扰查询语义 -->
+                <bind name="taskNamePattern" value="'%' + taskName.replaceAll('[%_\\\\]', '\\\\$0') + '%'" />
+                AND task_name LIKE #{taskNamePattern} ESCAPE '\\'
             </if>
             <if test="status != null">
                 AND status = #{status}
@@ -40,7 +49,7 @@
     </select>
 
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT * FROM ts_scheduled_task WHERE id = #{id} AND del_flag = '0'
+        SELECT <include refid="Base_Column_List"/> FROM ts_scheduled_task WHERE id = #{id} AND del_flag = '0'
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">

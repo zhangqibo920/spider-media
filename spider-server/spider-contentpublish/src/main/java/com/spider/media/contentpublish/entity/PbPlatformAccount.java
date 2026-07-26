@@ -1,6 +1,8 @@
 package com.spider.media.contentpublish.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -24,9 +26,13 @@ public class PbPlatformAccount extends BaseEntity {
     private Long userId;
 
     /** 平台类型标识，如 "douyin"、"kuaishou"、"xiaohongshu" 等 */
+    @NotBlank(message = "平台类型不能为空")
+    @Size(max = 50, message = "平台类型长度不能超过50")
     private String platform;
 
     /** 平台账号的显示名称（如抖音昵称） */
+    @NotBlank(message = "账号名称不能为空")
+    @Size(max = 100, message = "账号名称长度不能超过100")
     private String accountName;
 
     /** 平台账号的唯一ID（如抖音的 open_id / union_id） */

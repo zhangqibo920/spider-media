@@ -9,8 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,17 +35,19 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
 
     /** 热点话题数据访问对象 */
     private final AcHotTopicMapper hotTopicMapper;
-    /** HTTP 客户端（用于抓取各平台热搜 API） */
-    private final WebClient webClient = WebClient.builder()
-            .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .defaultHeader("Accept", "application/json, text/plain, */*")
-            .defaultHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
-            .defaultHeader("Referer", "https://www.douyin.com/")
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
-            .build();
+    /** HTTP 客户端（用于抓取各平台热搜 API，由 WebClientConfig 统一配置超时） */
+    private final WebClient webClient;
 
-    public AcHotTopicServiceImpl(AcHotTopicMapper hotTopicMapper) {
+    public AcHotTopicServiceImpl(AcHotTopicMapper hotTopicMapper, WebClient.Builder webClientBuilder) {
         this.hotTopicMapper = hotTopicMapper;
+        // 在统一超时配置基础上，添加爬虫专用 Header 和内存缓冲区
+        this.webClient = webClientBuilder
+                .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .defaultHeader("Accept", "application/json, text/plain, */*")
+                .defaultHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
+                .defaultHeader("Referer", "https://www.douyin.com/")
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .build();
     }
 
     /**
@@ -56,6 +61,7 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
      */
     @Override
     @Async
+    @Transactional(rollbackFor = Exception.class)
     public void fetchHotTopics(String platform, Long userId) {
         log.info("开始抓取热点话题, platform={}, userId={}", platform, userId);
         try {
@@ -115,7 +121,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         try {
             String json = webClient.get()
                     .uri("https://weibo.com/ajax/side/hotSearch")
-                    .retrieve().bodyToMono(String.class).block();
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
             if (json != null) {
                 JsonNode root = objectMapper.readTree(json);
                 JsonNode data = root.path("data").path("realtime");
@@ -147,7 +155,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         try {
             String json = webClient.get()
                     .uri("https://www.douyin.com/aweme/v1/web/hot/search/list/")
-                    .retrieve().bodyToMono(String.class).block();
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
             log.debug("抖音热搜API返回: {}", json != null ? json.substring(0, Math.min(json.length(), 500)) : "null");
             if (json != null) {
                 JsonNode root = objectMapper.readTree(json);
@@ -185,7 +195,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         try {
             String json = webClient.get()
                     .uri("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=30")
-                    .retrieve().bodyToMono(String.class).block();
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
             if (json != null) {
                 JsonNode root = objectMapper.readTree(json);
                 JsonNode data = root.path("data");
@@ -217,7 +229,9 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         try {
             String json = webClient.get()
                     .uri("https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc")
-                    .retrieve().bodyToMono(String.class).block();
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
             if (json != null) {
                 JsonNode root = objectMapper.readTree(json);
                 JsonNode data = root.path("data");

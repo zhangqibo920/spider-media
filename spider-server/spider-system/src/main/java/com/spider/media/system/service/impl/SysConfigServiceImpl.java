@@ -6,6 +6,7 @@ import com.spider.media.system.entity.SysConfig;
 import com.spider.media.system.mapper.SysConfigMapper;
 import com.spider.media.system.service.ISysConfigService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -60,6 +61,7 @@ public class SysConfigServiceImpl implements ISysConfigService {
      * @throws ServiceException 配置键已存在时抛出异常
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int insertConfig(SysConfig config) {
         if (configMapper.selectByKey(config.getConfigKey()) != null) {
             throw new ServiceException("配置键已存在");
@@ -72,12 +74,14 @@ public class SysConfigServiceImpl implements ISysConfigService {
      * 更新配置（自动填充更新时间）
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateConfig(SysConfig config) {
         config.setUpdateTime(LocalDateTime.now());
         return configMapper.update(config);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteConfig(Long id) {
         return configMapper.deleteById(id);
     }

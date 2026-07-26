@@ -34,6 +34,12 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, user_id, platform, account_name, account_id, access_token, refresh_token,
+        token_expire_time, status, group_name, create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <!--
         selectById - 根据主键ID查询单条记录
 
@@ -41,7 +47,7 @@
         返回结果通过 BaseResultMap 映射为 PbPlatformAccount 对象。
     -->
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT * FROM pb_platform_account
+        SELECT <include refid="Base_Column_List"/> FROM pb_platform_account
         WHERE id = #{id} AND del_flag = '0'
     </select>
 
@@ -52,7 +58,7 @@
         用于用户绑定管理页面，展示该用户已授权的所有平台账号。
     -->
     <select id="selectByUserId" resultMap="BaseResultMap">
-        SELECT * FROM pb_platform_account
+        SELECT <include refid="Base_Column_List"/> FROM pb_platform_account
         WHERE del_flag = '0' AND user_id = #{userId}
         ORDER BY create_time DESC
     </select>

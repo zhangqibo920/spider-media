@@ -1,6 +1,9 @@
 package com.spider.media.contentpublish.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -31,18 +34,24 @@ public class PbPublishTask extends BaseEntity {
     private Long userId;
 
     /** 关联的发布平台账号ID */
+    @NotNull(message = "平台账号ID不能为空")
     private Long platformAccountId;
 
     /** 关联的 AI 生成文章ID */
     private Long articleId;
 
     /** 目标发布平台（如 "douyin"、"kuaishou"、"xiaohongshu"） */
+    @NotBlank(message = "平台类型不能为空")
+    @Size(max = 50, message = "平台类型长度不能超过50")
     private String platform;
 
     /** 发布标题 */
+    @NotBlank(message = "发布标题不能为空")
+    @Size(max = 200, message = "发布标题长度不能超过200")
     private String title;
 
     /** 发布正文内容 */
+    @NotBlank(message = "发布内容不能为空")
     private String content;
 
     /** 内容摘要 */

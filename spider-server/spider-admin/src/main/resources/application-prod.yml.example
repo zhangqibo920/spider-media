@@ -1,0 +1,51 @@
+# 生产环境配置（prod profile）
+#
+# 使用方式：
+#   1. 复制 application.yml.example -> application.yml（主配置）
+#   2. 复制 application-prod.yml.example -> application-prod.yml（生产环境覆盖配置）
+#   3. 通过 SPRING_PROFILES_ACTIVE=prod 激活
+#
+# 本文件仅覆盖与开发环境不同的配置项，其余配置继承自主 application.yml。
+
+# 生产环境 Druid 连接池：扩大容量、延长空闲检测周期
+spring:
+  datasource:
+    druid:
+      initial-size: 10
+      min-idle: 10
+      max-active: 50
+      max-wait: 30000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 600000
+
+logging:
+  level:
+    # 生产环境：业务代码使用 info 级别，避免日志量过大
+    com.spider.media: info
+    # 生产环境：关闭 SQL 日志（warn 仅在解析异常时输出）
+    com.spider.media.system.mapper: warn
+    com.spider.media.datacollection.mapper: warn
+    com.spider.media.aicreation.mapper: warn
+    com.spider.media.contentpublish.mapper: warn
+    com.spider.media.taskscheduler.mapper: warn
+    # 生产环境：仅记录安全审计相关日志，关闭 debug 决策细节
+    org.springframework.security: warn
+
+# 生产环境 Actuator：仅暴露 health 和 info，避免泄露运行时信息
+# health 端点默认不显示详情，需配合 management.endpoint.health.show-details=never 或通过授权访问
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      # 生产环境不暴露健康检查详情（防止泄露组件信息）
+      show-details: never
+
+# 生产环境：关闭 SpringDoc 接口文档，避免暴露 API 结构
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

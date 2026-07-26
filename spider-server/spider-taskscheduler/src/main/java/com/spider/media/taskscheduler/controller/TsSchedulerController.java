@@ -7,6 +7,7 @@ import com.spider.media.framework.security.LoginUser;
 import com.spider.media.taskscheduler.controller.vo.TsScheduledTaskPageReqVO;
 import com.spider.media.taskscheduler.entity.TsScheduledTask;
 import com.spider.media.taskscheduler.service.ITsScheduledTaskService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -33,7 +34,7 @@ public class TsSchedulerController extends BaseController {
      * @return 创建后的任务实体
      */
     @PostMapping("/task")
-    public R<TsScheduledTask> createTask(@RequestBody TsScheduledTask task) {
+    public R<TsScheduledTask> createTask(@Valid @RequestBody TsScheduledTask task) {
         task.setUserId(LoginUser.getUserId());
         return ok(scheduledTaskService.createTask(task));
     }
@@ -69,7 +70,8 @@ public class TsSchedulerController extends BaseController {
      * @return 任务分页结果
      */
     @GetMapping("/task/page")
-    public R<PageResult<TsScheduledTask>> taskPage(TsScheduledTaskPageReqVO pageReqVO) {
+    public R<PageResult<TsScheduledTask>> taskPage(@Valid TsScheduledTaskPageReqVO pageReqVO) {
+        pageReqVO.setUserId(LoginUser.getUserId());
         return page(scheduledTaskService.selectTaskPage(pageReqVO));
     }
 }

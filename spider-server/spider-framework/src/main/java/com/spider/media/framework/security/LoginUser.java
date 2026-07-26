@@ -43,4 +43,34 @@ public class LoginUser {
         }
         throw new ServiceException("未获取到登录用户");
     }
+
+    /**
+     * 获取当前登录用户角色
+     *
+     * <p>从 JwtAuthenticationToken 中提取 role（USER / ADMIN）。
+     * 可用于业务层做细粒度权限判断。</p>
+     *
+     * @return 当前登录用户的角色
+     * @throws ServiceException 未登录或认证信息类型不匹配时抛出异常
+     */
+    public static String getRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            return jwtAuth.getRole();
+        }
+        throw new ServiceException("未获取到登录用户");
+    }
+
+    /**
+     * 判断当前登录用户是否为管理员
+     *
+     * @return 是管理员返回 true，否则返回 false
+     */
+    public static boolean isAdmin() {
+        try {
+            return "ADMIN".equalsIgnoreCase(getRole());
+        } catch (ServiceException e) {
+            return false;
+        }
+    }
 }

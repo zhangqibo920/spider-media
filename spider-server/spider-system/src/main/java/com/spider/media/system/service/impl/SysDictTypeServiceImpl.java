@@ -35,6 +35,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int insertDictType(SysDictType dictType) {
         dictType.setStatus("0");
         dictType.setCreateTime(LocalDateTime.now());
@@ -42,6 +43,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateDictType(SysDictType dictType) {
         dictType.setUpdateTime(LocalDateTime.now());
         return dictTypeMapper.update(dictType);
@@ -51,9 +53,9 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
      * 删除字典类型（同时删除其下的所有字典数据）
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public int deleteDictTypeById(Long id) {
-        SysDictType dictType = dictTypeMapper.selectByDictType(null);
+        SysDictType dictType = dictTypeMapper.selectById(id);
         // 先查出 dictType 标识，再删除关联的字典数据
         if (dictType != null) {
             dictDataMapper.deleteByDictType(dictType.getDictType());

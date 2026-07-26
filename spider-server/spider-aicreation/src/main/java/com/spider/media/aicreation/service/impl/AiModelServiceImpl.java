@@ -8,6 +8,7 @@ import com.spider.media.aicreation.service.IAiModelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
@@ -26,12 +27,13 @@ public class AiModelServiceImpl implements IAiModelService {
 
     private final AiModelMapper modelMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final WebClient webClient = WebClient.builder()
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
-            .build();
+    private final WebClient webClient;
 
-    public AiModelServiceImpl(AiModelMapper modelMapper) {
+    public AiModelServiceImpl(AiModelMapper modelMapper, WebClient.Builder webClientBuilder) {
         this.modelMapper = modelMapper;
+        this.webClient = webClientBuilder
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
+                .build();
     }
 
     @Override
@@ -50,6 +52,7 @@ public class AiModelServiceImpl implements IAiModelService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int insertModel(AiModel model) {
         if (model.getEnabled() == null) model.setEnabled("N");
         if (model.getTestStatus() == null) model.setTestStatus("UNTESTED");
@@ -59,17 +62,20 @@ public class AiModelServiceImpl implements IAiModelService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateModel(AiModel model) {
         model.setUpdateTime(LocalDateTime.now());
         return modelMapper.update(model);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteModel(Long id) {
         return modelMapper.deleteById(id);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int toggleModel(Long id, String enabled) {
         AiModel model = modelMapper.selectById(id);
         if (model == null) return 0;

@@ -28,6 +28,22 @@
             @keyup.enter="handleLogin"
           />
         </el-form-item>
+        <el-form-item prop="captchaCode">
+          <div class="captcha-row">
+            <el-input
+              v-model="form.captchaCode"
+              placeholder="请输入验证码"
+              :prefix-icon="Key"
+              size="large"
+              maxlength="4"
+              @keyup.enter="handleLogin"
+            />
+            <div class="captcha-img" @click="refreshCaptcha" title="点击刷新验证码">
+              <img v-if="captchaImg" :src="captchaImg" alt="验证码" />
+              <div v-else class="captcha-loading">加载中...</div>
+            </div>
+          </div>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" size="large" :loading="loading" @click="handleLogin" style="width: 100%">
             登 录
@@ -43,12 +59,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, Key } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { getCaptcha } from '@/api/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -56,15 +73,34 @@ const userStore = useUserStore()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
+const captchaImg = ref('')
+const captchaId = ref('')
 
 const form = reactive({
   username: '',
   password: '',
+  captchaCode: '',
 })
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  captchaCode: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { min: 4, max: 4, message: '验证码为 4 位字符', trigger: 'blur' },
+  ],
+}
+
+/** 加载/刷新验证码 */
+async function refreshCaptcha() {
+  try {
+    const res = await getCaptcha()
+    captchaId.value = res.data.captchaId
+    captchaImg.value = res.data.img
+    form.captchaCode = ''
+  } catch {
+    ElMessage.error('验证码加载失败，请刷新页面重试')
+  }
 }
 
 const handleLogin = async () => {
@@ -73,16 +109,21 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
-    await userStore.handleLogin(form.username, form.password)
+    await userStore.handleLogin(form.username, form.password, captchaId.value, form.captchaCode)
     ElMessage.success('登录成功')
     const redirect = (route.query.redirect as string) || '/dashboard'
     router.push(redirect)
-  } catch (error) {
-    ElMessage.error('登录失败，请检查用户名和密码')
+  } catch {
+    // 登录失败后刷新验证码（验证码一次性使用）
+    refreshCaptcha()
   } finally {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  refreshCaptcha()
+})
 </script>
 
 <style scoped lang="scss">
@@ -113,6 +154,41 @@ const handleLogin = async () => {
         margin: 8px 0 0;
         color: #94a3b8;
         font-size: 14px;
+      }
+    }
+  }
+
+  .captcha-row {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    align-items: center;
+
+    .captcha-img {
+      flex-shrink: 0;
+      width: 120px;
+      height: 40px;
+      cursor: pointer;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .captcha-loading {
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      &:hover {
+        opacity: 0.85;
       }
     }
   }

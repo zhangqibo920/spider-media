@@ -1,5 +1,7 @@
 package com.spider.media.datacollection.service.impl;
 
+import com.spider.media.common.exception.ServiceException;
+import com.spider.media.common.result.ErrorCodeEnums;
 import com.spider.media.common.mybatis.PageUtils;
 import com.spider.media.common.pojo.PageResult;
 import com.spider.media.datacollection.controller.vo.DcCollectedArticlePageReqVO;
@@ -46,16 +48,18 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
     private final DcCollectedArticleMapper collectedArticleMapper;
     /** 对标账号数据访问对象 */
     private final DcTargetAccountMapper targetAccountMapper;
-    /** HTTP 客户端（用于抓取网页内容） */
-    private final WebClient webClient = WebClient.builder()
-            .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
-            .build();
+    /** HTTP 客户端（用于抓取网页内容，由 WebClientConfig 统一配置超时） */
+    private final WebClient webClient;
 
     public DcCollectedArticleServiceImpl(DcCollectedArticleMapper collectedArticleMapper,
-                                          DcTargetAccountMapper targetAccountMapper) {
+                                          DcTargetAccountMapper targetAccountMapper,
+                                          WebClient.Builder webClientBuilder) {
         this.collectedArticleMapper = collectedArticleMapper;
         this.targetAccountMapper = targetAccountMapper;
+        this.webClient = webClientBuilder
+                .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
+                .build();
     }
 
     @Override
@@ -75,6 +79,7 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
      * <p>采集流程：
      * <ol>
      *   <li>根据 targetAccountId 查询对标账号信息</li>
+     *   <li>校验账号归属：仅允许账号所有者触发采集</li>
      *   <li>获取对标账号的主页 URL</li>
      *   <li>抓取主页 HTML 并解析文章链接列表</li>
      *   <li>逐个抓取文章详情页，提取正文内容</li>
@@ -82,27 +87,33 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
      * </ol></p>
      *
      * @param targetAccountId 对标账号ID
+     * @param operatorId      当前操作用户ID（用于归属校验，因 @Async 无法读取 SecurityContext）
      */
     @Override
     @Async
-    public void collectArticles(Long targetAccountId) {
-        log.info("开始采集对标账号数据, targetAccountId={}", targetAccountId);
+    public void collectArticles(Long targetAccountId, Long operatorId) {
+        log.info("开始采集对标账号数据, targetAccountId={}, operatorId={}", targetAccountId, operatorId);
+
+        // 归属校验放在 try 块外：@Async 方法异常无法直接返回前端，
+        // Controller 已通过 validateOwnership 同步校验，此处为二次防御，仅记录日志并直接返回
+        DcTargetAccount target = targetAccountMapper.selectById(targetAccountId);
+        if (target == null) {
+            log.warn("对标账号不存在, targetAccountId={}", targetAccountId);
+            return;
+        }
+        if (operatorId == null || !operatorId.equals(target.getUserId())) {
+            log.warn("越权采集被拒绝, targetAccountId={}, operatorId={}, ownerId={}",
+                    targetAccountId, operatorId, target.getUserId());
+            return;
+        }
+
+        String url = target.getAccountUrl();
+        if (url == null || url.isEmpty()) {
+            log.warn("对标账号链接为空, targetAccountId={}", targetAccountId);
+            return;
+        }
+
         try {
-            List<DcTargetAccount> accounts = targetAccountMapper.selectList(null, null, null);
-            DcTargetAccount target = accounts.stream()
-                    .filter(a -> a.getId().equals(targetAccountId))
-                    .findFirst().orElse(null);
-            if (target == null) {
-                log.warn("对标账号不存在, targetAccountId={}", targetAccountId);
-                return;
-            }
-
-            String url = target.getAccountUrl();
-            if (url == null || url.isEmpty()) {
-                log.warn("对标账号链接为空, targetAccountId={}", targetAccountId);
-                return;
-            }
-
             // 抓取主页 HTML
             String html = webClient.get().uri(url)
                     .retrieve().bodyToMono(String.class).block();

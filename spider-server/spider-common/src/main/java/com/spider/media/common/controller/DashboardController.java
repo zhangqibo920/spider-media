@@ -1,14 +1,11 @@
 package com.spider.media.common.controller;
 
 import com.spider.media.common.result.R;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,24 +13,16 @@ import java.util.Map;
  * 仪表盘统计控制器
  *
  * <p>提供首页仪表盘所需的统计数据接口，包括各模块的数据量统计。
- * 通过直连数据库查询各表的有效记录数，为前端仪表盘展示提供数据支持。</p>
+ * 通过注入的 JdbcTemplate 查询各表的有效记录数，为前端仪表盘展示提供数据支持。</p>
  */
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    /**
-     * 获取数据库连接
-     *
-     * @return MySQL 数据库连接对象
-     * @throws Exception 连接失败时抛出异常
-     */
-    private Connection getConnection() throws Exception {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/spider_media?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai",
-            "root", "123456"
-        );
+    private final JdbcTemplate jdbcTemplate;
+
+    public DashboardController(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -43,12 +32,9 @@ public class DashboardController {
      * @return 查询到的数量，查询失败时返回 0
      */
     private long countTable(String sql) {
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                return rs.getLong(1);
-            }
+        try {
+            Long count = jdbcTemplate.queryForObject(sql, Long.class);
+            return count != null ? count : 0;
         } catch (Exception e) {
             // 查询异常时返回 0，不影响整体统计
         }

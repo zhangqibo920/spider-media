@@ -41,6 +41,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- Spring Boot WebFlux（提供 WebClient，用于 AI/爬虫的响应式 HTTP 调用） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
         <!-- Spring Boot Quartz -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

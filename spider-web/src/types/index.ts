@@ -139,6 +139,55 @@ export interface OperLog {
   createTime: string
 }
 
+/** AI 模型配置（对应后端 AiModel 实体） */
+export interface AiModel {
+  id: number
+  modelKey: string
+  modelName: string
+  provider: string
+  apiKey: string
+  baseUrl: string
+  enabled: string
+  sortOrder: number
+  testStatus: string
+  testTime?: string
+  testMessage?: string
+  remark?: string
+  createTime?: string
+  updateTime?: string
+}
+
+/** 字典类型（对应后端 SysDictType 实体） */
+export interface SysDictType {
+  id: number
+  dictName: string
+  dictType: string
+  status: string
+  remark?: string
+  createTime?: string
+}
+
+/** 字典数据（对应后端 SysDictData 实体） */
+export interface SysDictData {
+  id: number
+  dictSort: number
+  dictLabel: string
+  dictValue: string
+  dictType: string
+  cssClass?: string
+  listClass?: string
+  isDefault?: string
+  status: string
+  remark?: string
+  createTime?: string
+}
+
+/** 分页查询参数（对应后端 PageParam） */
+export interface PageParam {
+  pageNo: number
+  pageSize: number
+}
+
 /**
  * Backend page result format (matches Java PageResult<T>)
  */

@@ -7,6 +7,7 @@ import com.spider.media.system.entity.SysDictData;
 import com.spider.media.system.entity.SysDictType;
 import com.spider.media.system.service.ISysDictDataService;
 import com.spider.media.system.service.ISysDictTypeService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,7 +55,7 @@ public class SysDictController extends BaseController {
     /** 新增字典类型 */
     @OperLog(module = "字典管理", action = "新增字典类型")
     @PostMapping("/type")
-    public R<Void> addDictType(@RequestBody SysDictType dictType) {
+    public R<Void> addDictType(@Valid @RequestBody SysDictType dictType) {
         dictTypeService.insertDictType(dictType);
         return ok();
     }
@@ -62,7 +63,7 @@ public class SysDictController extends BaseController {
     /** 更新字典类型 */
     @OperLog(module = "字典管理", action = "修改字典类型")
     @PutMapping("/type")
-    public R<Void> updateDictType(@RequestBody SysDictType dictType) {
+    public R<Void> updateDictType(@Valid @RequestBody SysDictType dictType) {
         dictTypeService.updateDictType(dictType);
         return ok();
     }
@@ -92,7 +93,7 @@ public class SysDictController extends BaseController {
     /** 新增字典数据 */
     @OperLog(module = "字典管理", action = "新增字典数据")
     @PostMapping("/data")
-    public R<Void> addDictData(@RequestBody SysDictData dictData) {
+    public R<Void> addDictData(@Valid @RequestBody SysDictData dictData) {
         dictDataService.insertDictData(dictData);
         return ok();
     }
@@ -100,7 +101,7 @@ public class SysDictController extends BaseController {
     /** 更新字典数据 */
     @OperLog(module = "字典管理", action = "修改字典数据")
     @PutMapping("/data")
-    public R<Void> updateDictData(@RequestBody SysDictData dictData) {
+    public R<Void> updateDictData(@Valid @RequestBody SysDictData dictData) {
         dictDataService.updateDictData(dictData);
         return ok();
     }

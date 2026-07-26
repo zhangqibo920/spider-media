@@ -26,8 +26,15 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, user_id, target_account_id, platform, title, content, summary, url, author,
+        view_count, like_count, comment_count, share_count, publish_time, collected_time,
+        create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectPage" resultMap="BaseResultMap">
-        SELECT * FROM dc_collected_article
+        SELECT <include refid="Base_Column_List"/> FROM dc_collected_article
         <where>
             del_flag = '0'
             <if test="targetAccountId != null">
@@ -37,14 +44,16 @@
                 AND platform = #{platform}
             </if>
             <if test="title != null and title != ''">
-                AND title LIKE CONCAT('%', #{title}, '%')
+                <!-- 转义 LIKE 通配符（%、_、\），防止用户输入干扰查询语义 -->
+                <bind name="titlePattern" value="'%' + title.replaceAll('[%_\\\\]', '\\\\$0') + '%'" />
+                AND title LIKE #{titlePattern} ESCAPE '\\'
             </if>
         </where>
         ORDER BY collected_time DESC
     </select>
 
     <select id="selectByUrl" resultMap="BaseResultMap">
-        SELECT * FROM dc_collected_article WHERE url = #{url} AND del_flag = '0' LIMIT 1
+        SELECT <include refid="Base_Column_List"/> FROM dc_collected_article WHERE url = #{url} AND del_flag = '0' LIMIT 1
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">

@@ -1,6 +1,8 @@
 package com.spider.media.aicreation.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -33,18 +35,26 @@ public class AiModel extends BaseEntity {
     private Long id;
 
     /** 模型唯一标识（如 "deepseek-chat"、"glm-4"） */
+    @NotBlank(message = "模型标识不能为空")
+    @Size(max = 100, message = "模型标识长度不能超过100")
     private String modelKey;
 
     /** 模型显示名称（如 "DeepSeek Chat"、"智谱 GLM-4"） */
+    @NotBlank(message = "模型名称不能为空")
+    @Size(max = 100, message = "模型名称长度不能超过100")
     private String modelName;
 
     /** 模型提供方（如 "deepseek"、"zhipu"） */
+    @NotBlank(message = "模型提供方不能为空")
+    @Size(max = 50, message = "模型提供方长度不能超过50")
     private String provider;
 
     /** API 密钥 */
+    @NotBlank(message = "API密钥不能为空")
     private String apiKey;
 
     /** API 基础地址 */
+    @NotBlank(message = "API地址不能为空")
     private String baseUrl;
 
     /** 是否启用：'Y'=启用，'N'=禁用 */

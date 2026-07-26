@@ -15,6 +15,9 @@ public interface SysDictTypeMapper {
     /** 查询所有字典类型 */
     List<SysDictType> selectAll();
 
+    /** 根据ID查询 */
+    SysDictType selectById(@Param("id") Long id);
+
     /** 根据字典类型标识查询 */
     SysDictType selectByDictType(@Param("dictType") String dictType);
 

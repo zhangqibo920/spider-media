@@ -20,8 +20,14 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, user_id, hot_topic_id, title, content, summary, model_used, word_count,
+        status, create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
     <select id="selectPage" resultMap="BaseResultMap">
-        SELECT * FROM ac_generated_article
+        SELECT <include refid="Base_Column_List"/> FROM ac_generated_article
         <where>
             del_flag = '0'
             <if test="userId != null">
@@ -31,7 +37,9 @@
                 AND status = #{status}
             </if>
             <if test="title != null and title != ''">
-                AND title LIKE CONCAT('%', #{title}, '%')
+                <!-- 转义 LIKE 通配符（%、_、\），防止用户输入干扰查询语义 -->
+                <bind name="titlePattern" value="'%' + title.replaceAll('[%_\\\\]', '\\\\$0') + '%'" />
+                AND title LIKE #{titlePattern} ESCAPE '\\'
             </if>
         </where>
         ORDER BY create_time DESC
@@ -47,7 +55,8 @@
     <update id="update">
         UPDATE ac_generated_article
         SET title = #{title}, content = #{content}, summary = #{summary},
-            word_count = #{wordCount}, status = #{status}
+            word_count = #{wordCount}, status = #{status},
+            update_by = #{updateBy}, update_time = #{updateTime}
         WHERE id = #{id}
     </update>
 

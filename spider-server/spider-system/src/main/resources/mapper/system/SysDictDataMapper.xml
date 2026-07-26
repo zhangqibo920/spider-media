@@ -16,14 +16,20 @@
         <result column="create_time" property="createTime"/>
     </resultMap>
 
+    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
+    <sql id="Base_Column_List">
+        id, dict_sort, dict_label, dict_value, dict_type, css_class, list_class,
+        is_default, status, remark, create_time
+    </sql>
+
     <select id="selectByDictType" resultMap="BaseResultMap">
-        SELECT * FROM sys_dict_data
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_data
         WHERE dict_type = #{dictType} AND status = '0'
         ORDER BY dict_sort
     </select>
 
     <select id="selectByDictTypeAndValue" resultMap="BaseResultMap">
-        SELECT * FROM sys_dict_data
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_data
         WHERE dict_type = #{dictType} AND dict_value = #{dictValue} AND status = '0'
     </select>
 

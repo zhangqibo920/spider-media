@@ -1,0 +1,33 @@
+# 开发环境配置（dev profile）
+#
+# 使用方式：
+#   1. 复制 application.yml.example -> application.yml（主配置）
+#   2. 复制 application-dev.yml.example -> application-dev.yml（开发环境覆盖配置）
+#   3. 通过 SPRING_PROFILES_ACTIVE=dev 激活，或保持默认值（默认即 dev）
+#
+# 本文件仅覆盖与生产环境不同的配置项，其余配置继承自主 application.yml。
+
+logging:
+  level:
+    # 开发环境：业务代码使用 debug 级别，便于排查问题
+    com.spider.media: debug
+    # 开发环境：打印 SQL 语句和参数，便于调试
+    com.spider.media.system.mapper: debug
+    com.spider.media.datacollection.mapper: debug
+    com.spider.media.aicreation.mapper: debug
+    com.spider.media.contentpublish.mapper: debug
+    com.spider.media.taskscheduler.mapper: debug
+    # 开发环境：显示 Spring Security 决策日志
+    org.springframework.security: debug
+
+# 开发环境 Actuator：暴露更多端点便于调试
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,configprops,loggers,threaddump,heapdump
+
+# 开发环境：启用 SpringDoc 接口文档
+springdoc:
+  swagger-ui:
+    enabled: true

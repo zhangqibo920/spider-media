@@ -1,9 +1,12 @@
 package com.spider.media.contentpublish.service.impl;
 
+import com.spider.media.common.exception.ServiceException;
+import com.spider.media.common.result.ErrorCodeEnums;
 import com.spider.media.contentpublish.entity.PbPlatformAccount;
 import com.spider.media.contentpublish.mapper.PbPlatformAccountMapper;
 import com.spider.media.contentpublish.service.IPbPlatformAccountService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +17,8 @@ import java.util.List;
  * <p>实现 IPbPlatformAccountService 接口，负责平台账号的增删查操作。
  * 通过构造器注入 PbPlatformAccountMapper，由 MyBatis 执行实际的数据库操作。
  * 新增账号时自动填充创建人和创建时间等审计字段。</p>
+ *
+ * <p>删除账号时强制校验归属，防止越权删除他人账号。</p>
  */
 @Service
 public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
@@ -50,6 +55,7 @@ public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
      * @return 受影响的行数，1表示新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int insertAccount(PbPlatformAccount account) {
         account.setCreateBy(String.valueOf(account.getUserId()));
         account.setCreateTime(LocalDateTime.now());
@@ -59,11 +65,30 @@ public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
     /**
      * 逻辑删除平台账号
      *
-     * @param id 账号主键ID
-     * @return 受影响的行数，1表示删除成功
+     * <p>删除前校验账号归属，仅允许账号所有者删除。</p>
+     *
+     * @param id     账号主键ID
+     * @param userId 当前操作用户ID
      */
     @Override
-    public int deleteAccountById(Long id) {
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteAccountById(Long id, Long userId) {
+        validateOwnership(id, userId);
         return platformAccountMapper.deleteById(id);
+    }
+
+    /**
+     * 校验平台账号归属
+     */
+    @Override
+    public PbPlatformAccount validateOwnership(Long id, Long userId) {
+        PbPlatformAccount account = platformAccountMapper.selectById(id);
+        if (account == null) {
+            throw new ServiceException(ErrorCodeEnums.PB_ACCOUNT_NOT_FOUND);
+        }
+        if (userId == null || !account.getUserId().equals(userId)) {
+            throw new ServiceException(ErrorCodeEnums.FORBIDDEN, "无权操作他人的平台账号");
+        }
+        return account;
     }
 }

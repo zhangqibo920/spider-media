@@ -79,6 +79,10 @@ public enum ErrorCodeEnums {
     SYS_USERNAME_ALREADY_EXISTS(900002, "用户名已存在"),
     /** 密码错误 */
     SYS_PASSWORD_ERROR(900003, "密码错误"),
+    /** 验证码错误或已过期 */
+    SYS_CAPTCHA_ERROR(900004, "验证码错误或已过期"),
+    /** 账号已被锁定（登录失败次数过多） */
+    SYS_USER_LOCKED(900005, "账号已被锁定，请稍后再试"),
     ;
 
     /** 错误码，用于前端识别和后端日志追踪 */

@@ -11,30 +11,12 @@
         router
         class="sidebar-menu"
       >
-        <el-menu-item index="/dashboard">
-          <el-icon><Odometer /></el-icon>
-          <template #title>工作台</template>
-        </el-menu-item>
-        <el-menu-item index="/collection">
-          <el-icon><Download /></el-icon>
-          <template #title>数据采集</template>
-        </el-menu-item>
-        <el-menu-item index="/ai-creation">
-          <el-icon><MagicStick /></el-icon>
-          <template #title>AI创作</template>
-        </el-menu-item>
-        <el-menu-item index="/publish">
-          <el-icon><Promotion /></el-icon>
-          <template #title>内容发布</template>
-        </el-menu-item>
-        <el-menu-item index="/scheduler">
-          <el-icon><Timer /></el-icon>
-          <template #title>任务调度</template>
-        </el-menu-item>
-        <el-menu-item index="/admin">
-          <el-icon><Setting /></el-icon>
-          <template #title>系统管理</template>
-        </el-menu-item>
+        <template v-for="item in menuItems" :key="item.path">
+          <el-menu-item :index="item.path">
+            <el-icon><component :is="item.icon" /></el-icon>
+            <template #title>{{ item.title }}</template>
+          </el-menu-item>
+        </template>
       </el-menu>
     </el-aside>
 
@@ -77,6 +59,12 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 
+interface MenuItem {
+  path: string
+  title: string
+  icon: string
+}
+
 const router = useRouter()
 const route = useRoute()
 const appStore = useAppStore()
@@ -85,6 +73,40 @@ const userStore = useUserStore()
 const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
 const activeMenu = computed(() => route.path)
 const userInfo = computed(() => userStore.userInfo)
+
+/**
+ * 根据用户角色动态计算侧边栏菜单项
+ *
+ * <p>从路由配置的 children 中提取，过滤掉：
+ * <ul>
+ *   <li>meta.hidden = true 的路由（如个人中心）</li>
+ *   <li>meta.roles 不为空且用户角色不在其中的路由（如普通用户看不到系统管理）</li>
+ * </ul></p>
+ */
+const menuItems = computed<MenuItem[]>(() => {
+  // 找到根布局路由（path='/'）的 children
+  const rootRoute = router.options.routes.find(r => r.path === '/')
+  if (!rootRoute || !rootRoute.children) return []
+
+  const userRole = userInfo.value?.role
+
+  return rootRoute.children
+    .filter(child => {
+      // 隐藏的路由不显示
+      if (child.meta?.hidden) return false
+      // 角色限制：meta.roles 非空时，用户角色必须在列表中
+      const requiredRoles = child.meta?.roles
+      if (requiredRoles && requiredRoles.length > 0) {
+        return userRole && requiredRoles.includes(userRole)
+      }
+      return true
+    })
+    .map(child => ({
+      path: '/' + child.path,
+      title: child.meta?.title || '',
+      icon: child.meta?.icon || 'Menu',
+    }))
+})
 
 const toggleSidebar = () => {
   appStore.toggleSidebar()
