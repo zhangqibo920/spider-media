@@ -182,6 +182,28 @@ export interface SysDictData {
   createTime?: string
 }
 
+export interface Role {
+  roleId: number
+  roleName: string
+  roleKey: string
+  status: string
+}
+
+export interface Menu {
+  menuId: number
+  menuName: string
+  parentId: number
+  path: string
+  component: string
+  perms: string
+  icon: string
+  sortOrder: number
+  menuType: string
+  status: string
+  visible: string
+  children?: Menu[]
+}
+
 /** 分页查询参数（对应后端 PageParam） */
 export interface PageParam {
   pageNo: number

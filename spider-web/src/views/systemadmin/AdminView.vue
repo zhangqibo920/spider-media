@@ -111,6 +111,14 @@
       <el-tab-pane label="字典管理" name="dict">
         <DictManageView />
       </el-tab-pane>
+
+      <el-tab-pane label="菜单管理" name="menus">
+        <MenuManageView />
+      </el-tab-pane>
+
+      <el-tab-pane label="角色管理" name="roles">
+        <RoleManageView />
+      </el-tab-pane>
     </el-tabs>
 
     <!-- 添加配置对话框 -->
@@ -152,8 +160,7 @@
         </el-form-item>
         <el-form-item label="角色">
           <el-select v-model="editUserForm.role">
-            <el-option label="普通用户" value="USER" />
-            <el-option label="管理员" value="ADMIN" />
+            <el-option v-for="opt in roleOptions" :key="opt.roleKey" :label="opt.roleName" :value="opt.roleKey" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
@@ -198,9 +205,12 @@ import {
   getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig,
   getUsers, updateUser, deleteUser, getOperationLogs, resetPassword
 } from '@/api/admin'
+import { getRoles } from '@/api/role'
 import DictTag from '@/components/DictTag.vue'
 import ModelManageView from './ModelManageView.vue'
 import DictManageView from './DictManageView.vue'
+import MenuManageView from './MenuManageView.vue'
+import RoleManageView from './RoleManageView.vue'
 
 const activeTab = ref('config')
 const loadingConfigs = ref(false)
@@ -220,6 +230,15 @@ const addConfigForm = reactive({ configName: '', configKey: '', configValue: '',
 
 const showEditUserDialog = ref(false)
 const editUserForm = reactive({ userId: 0, userName: '', nickName: '', email: '', role: 'USER', status: '0' })
+
+const roleOptions = ref<any[]>([])
+
+const loadRoleOptions = async () => {
+  try {
+    const res = await getRoles()
+    roleOptions.value = (res.data || []).filter((r: any) => r.status === '0')
+  } catch {}
+}
 
 // ========== 修改密码 ==========
 const showChangePasswordDialog = ref(false)
@@ -364,7 +383,7 @@ const handleDeleteUser = async (row: any) => {
   } catch {}
 }
 
-onMounted(() => { loadConfigs(); loadUsers(); loadLogs() })
+onMounted(() => { loadConfigs(); loadUsers(); loadLogs(); loadRoleOptions() })
 </script>
 
 <style scoped lang="scss">

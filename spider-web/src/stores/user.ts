@@ -1,20 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { login, register, getCurrentUser } from '@/api/auth'
-import type { User } from '@/types'
+import { getRouters } from '@/api/menu'
+import type { User, Role, Menu } from '@/types'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
   const userInfo = ref<User | null>(null)
+  const roles = ref<Role[]>([])
+  const menuTree = ref<Menu[]>([])
+  const routesLoaded = ref(false)
 
-  /**
-   * 用户登录（携带验证码）
-   *
-   * @param username    用户名
-   * @param password    密码
-   * @param captchaId   验证码唯一标识
-   * @param captchaCode 用户输入的验证码
-   */
   async function handleLogin(
     username: string,
     password: string,
@@ -34,24 +30,57 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUserInfo() {
     try {
       const res = await getCurrentUser()
-      userInfo.value = res.data
+      userInfo.value = res.data.user
+      roles.value = res.data.roles || []
     } catch {
       logout()
     }
   }
 
+  async function fetchMenuTree() {
+    try {
+      const res = await getRouters()
+      menuTree.value = res.data || []
+      routesLoaded.value = true
+    } catch {
+      menuTree.value = []
+      routesLoaded.value = true
+    }
+  }
+
+  /** Get user's first role key (for backward compatibility) */
+  function getRole(): string {
+    if (roles.value.length > 0) {
+      return roles.value[0].roleKey
+    }
+    return userInfo.value?.role || 'USER'
+  }
+
+  function hasRole(roleKey: string): boolean {
+    return roles.value.some(r => r.roleKey === roleKey)
+  }
+
   function logout() {
     token.value = ''
     userInfo.value = null
+    roles.value = []
+    menuTree.value = []
+    routesLoaded.value = false
     localStorage.removeItem('token')
   }
 
   return {
     token,
     userInfo,
+    roles,
+    menuTree,
+    routesLoaded,
     handleLogin,
     handleRegister,
     fetchUserInfo,
+    fetchMenuTree,
+    getRole,
+    hasRole,
     logout,
   }
 })

@@ -9,7 +9,7 @@
               {{ userInfo?.nickName?.charAt(0) || 'U' }}
             </el-avatar>
             <h3>{{ userInfo?.nickName || userInfo?.userName }}</h3>
-            <DictTag dict-type="sys_user_role" :value="userInfo?.role || 'USER'" size="small" />
+            <DictTag dict-type="sys_user_role" :value="userStore.getRole()" size="small" />
           </div>
           <el-descriptions :column="1" border style="margin-top: 20px">
             <el-descriptions-item label="用户名">{{ userInfo?.userName }}</el-descriptions-item>

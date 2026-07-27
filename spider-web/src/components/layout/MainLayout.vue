@@ -12,7 +12,17 @@
         class="sidebar-menu"
       >
         <template v-for="item in menuItems" :key="item.path">
-          <el-menu-item :index="item.path">
+          <el-sub-menu v-if="item.children && item.children.length > 0" :index="item.path">
+            <template #title>
+              <el-icon><component :is="item.icon" /></el-icon>
+              <span>{{ item.title }}</span>
+            </template>
+            <el-menu-item v-for="child in item.children" :key="child.path" :index="child.path">
+              <el-icon><component :is="child.icon" /></el-icon>
+              <template #title>{{ child.title }}</template>
+            </el-menu-item>
+          </el-sub-menu>
+          <el-menu-item v-else :index="item.path">
             <el-icon><component :is="item.icon" /></el-icon>
             <template #title>{{ item.title }}</template>
           </el-menu-item>
@@ -63,6 +73,7 @@ interface MenuItem {
   path: string
   title: string
   icon: string
+  children?: MenuItem[]
 }
 
 const router = useRouter()
@@ -74,38 +85,26 @@ const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
 const activeMenu = computed(() => route.path)
 const userInfo = computed(() => userStore.userInfo)
 
-/**
- * 根据用户角色动态计算侧边栏菜单项
- *
- * <p>从路由配置的 children 中提取，过滤掉：
- * <ul>
- *   <li>meta.hidden = true 的路由（如个人中心）</li>
- *   <li>meta.roles 不为空且用户角色不在其中的路由（如普通用户看不到系统管理）</li>
- * </ul></p>
- */
 const menuItems = computed<MenuItem[]>(() => {
-  // 找到根布局路由（path='/'）的 children
-  const rootRoute = router.options.routes.find(r => r.path === '/')
-  if (!rootRoute || !rootRoute.children) return []
-
-  const userRole = userInfo.value?.role
-
-  return rootRoute.children
-    .filter(child => {
-      // 隐藏的路由不显示
-      if (child.meta?.hidden) return false
-      // 角色限制：meta.roles 非空时，用户角色必须在列表中
-      const requiredRoles = child.meta?.roles
-      if (requiredRoles && requiredRoles.length > 0) {
-        return userRole && requiredRoles.includes(userRole)
+  function toMenuItems(menus: typeof userStore.menuTree, parentPath = ''): MenuItem[] {
+    const items: MenuItem[] = []
+    for (const menu of menus) {
+      if (menu.visible === '1') continue
+      const item: MenuItem = {
+        path: menu.path.startsWith('/') ? menu.path : parentPath + '/' + menu.path,
+        title: menu.menuName,
+        icon: menu.icon || 'Menu',
       }
-      return true
-    })
-    .map(child => ({
-      path: '/' + child.path,
-      title: child.meta?.title || '',
-      icon: child.meta?.icon || 'Menu',
-    }))
+      if (menu.children && menu.children.length > 0) {
+        item.children = toMenuItems(menu.children, item.path)
+      }
+      items.push(item)
+    }
+    return items
+  }
+  return userStore.menuTree.length > 0
+    ? toMenuItems(userStore.menuTree)
+    : []
 })
 
 const toggleSidebar = () => {
@@ -124,6 +123,9 @@ const handleCommand = (command: string) => {
 onMounted(() => {
   if (userStore.token && !userStore.userInfo) {
     userStore.fetchUserInfo()
+  }
+  if (userStore.token && !userStore.routesLoaded) {
+    userStore.fetchMenuTree()
   }
 })
 </script>
