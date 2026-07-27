@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,6 +68,10 @@ public class SysRoleServiceImpl implements ISysRoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteRole(Long roleId) {
+        SysRole role = roleMapper.selectById(roleId);
+        if (role != null && Set.of("ADMIN", "USER").contains(role.getRoleKey())) {
+            throw new ServiceException(ErrorCodeEnums.FORBIDDEN, "内置角色「" + role.getRoleName() + "」不允许删除");
+        }
         return roleMapper.deleteById(roleId);
     }
 

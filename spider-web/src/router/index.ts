@@ -37,9 +37,10 @@ function generateRoutes(menus: Menu[]): RouteRecordRaw[] {
   for (const menu of menus) {
     if (menu.menuType === 'F') continue
     const routePath = menu.path.startsWith('/') ? menu.path.substring(1) : menu.path
+    const routeName = routePath.replace(/[\/-]/g, '_') || 'root'
     const route: RouteRecordRaw = {
       path: routePath,
-      name: menu.menuName,
+      name: routeName,
       meta: {
         title: menu.menuName,
         icon: menu.icon || undefined,

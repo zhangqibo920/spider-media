@@ -264,4 +264,24 @@ public class SysUserServiceImpl implements ISysUserService {
             }
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void syncUserRole(Long userId) {
+        List<SysUserRole> existing = userRoleMapper.selectByUserId(userId);
+        if (!existing.isEmpty()) {
+            return;
+        }
+        SysUser user = userMapper.selectById(userId);
+        if (user == null || user.getRole() == null || user.getRole().isBlank()) {
+            return;
+        }
+        SysRole roleEntity = roleMapper.selectByKey(user.getRole());
+        if (roleEntity != null) {
+            SysUserRole ur = new SysUserRole();
+            ur.setUserId(userId);
+            ur.setRoleId(roleEntity.getRoleId());
+            userRoleMapper.insert(ur);
+        }
+    }
 }

@@ -141,6 +141,10 @@ public class SysLoginController extends BaseController {
         String username = LoginUser.getUsername();
         SysUser user = userService.selectUserByUserName(username);
         List<SysRole> roles = roleService.selectRolesByUserId(user.getUserId());
+        if (roles.isEmpty()) {
+            userService.syncUserRole(user.getUserId());
+            roles = roleService.selectRolesByUserId(user.getUserId());
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("user", user);
         result.put("roles", roles);

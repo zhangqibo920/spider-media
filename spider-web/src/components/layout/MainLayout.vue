@@ -136,87 +136,118 @@ onMounted(() => {
 }
 
 .sidebar {
-  background: linear-gradient(180deg, #f0f9ff 0%, #e8f4fd 100%);
-  transition: width 0.3s;
+  background: #f0f9ff;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 
   .logo {
     height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    position: relative;
+    border-bottom: 1px solid #f0f0f0;
 
     .logo-text {
       font-size: 20px;
       font-weight: 700;
       letter-spacing: 2px;
-      color: #1e40af;
+      background: linear-gradient(135deg, #1677ff, #0958d9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .logo-icon {
       font-size: 26px;
       font-weight: 700;
-      color: #1e40af;
+      background: linear-gradient(135deg, #1677ff, #0958d9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
   }
 
   .sidebar-menu {
     border-right: none;
     background: transparent;
-    padding: 12px 8px;
 
     &:not(.el-menu--collapse) {
       width: 220px;
     }
 
     :deep(.el-menu-item) {
-      height: 48px;
-      line-height: 48px;
-      margin: 4px 0;
+      height: 44px;
+      line-height: 44px;
+      margin: 2px 8px;
       border-radius: 8px;
-      color: #4b5563;
+      color: #5b6871;
       font-size: 14px;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
 
       &:hover {
-        background: #dbeafe;
-        color: #1e40af;
+        background: #f0f5ff;
+        color: #1677ff;
 
-        .el-icon {
-          color: #1e40af;
-        }
+        .el-icon { color: #1677ff; }
       }
 
       &.is-active {
-        background: #dbeafe;
-        color: #1e40af;
-        font-weight: 600;
-        position: relative;
+        background: #fff;
+        color: #1677ff;
+        font-weight: 500;
 
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 3px;
-          height: 24px;
-          border-radius: 0 3px 3px 0;
-          background: #1e40af;
-        }
-
-        .el-icon {
-          color: #1e40af;
-        }
+        .el-icon { color: #1677ff; }
       }
 
       .el-icon {
         font-size: 18px;
-        transition: color 0.25s ease;
+        color: #8c8c8c;
+        transition: color 0.2s ease;
+      }
+    }
+
+    :deep(.el-sub-menu) {
+      .el-sub-menu__title {
+        height: 44px;
+        line-height: 44px;
+        margin: 2px 8px;
+        border-radius: 8px;
+        color: #5b6871;
+        font-size: 14px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f0f5ff;
+          color: #1677ff;
+
+          .el-icon { color: #1677ff; }
+        }
+
+        .el-icon {
+          font-size: 18px;
+          color: #8c8c8c;
+          transition: color 0.2s ease;
+        }
+      }
+
+      .el-menu {
+        background: transparent;
+
+        .el-menu-item {
+          padding-left: 52px !important;
+          height: 40px;
+          line-height: 40px;
+          margin: 1px 8px;
+          font-size: 13px;
+          border-radius: 6px;
+
+          &.is-active {
+            background: #fff;
+            font-weight: 500;
+          }
+        }
       }
     }
   }
@@ -227,18 +258,19 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  padding: 0 20px;
+  border-bottom: 1px solid #f0f0f0;
+  box-shadow: none;
+  padding: 0 24px;
 
   .header-left {
     .collapse-btn {
-      font-size: 20px;
+      font-size: 18px;
       cursor: pointer;
-      transition: all 0.25s ease;
+      color: #8c8c8c;
+      transition: all 0.2s ease;
 
       &:hover {
-        color: #409eff;
-        transform: scale(1.1);
+        color: #1677ff;
       }
     }
   }
@@ -248,25 +280,26 @@ onMounted(() => {
       display: flex;
       align-items: center;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 8px;
-      transition: background 0.25s ease;
+      transition: all 0.2s ease;
 
       &:hover {
-        background: #f5f7fa;
+        background: #f5f5f5;
       }
 
       .username {
         margin-left: 8px;
         font-size: 14px;
-        color: #303133;
+        color: #262626;
       }
     }
   }
 }
 
 .main-content {
-  background-color: #f0f2f5;
+  background-color: #f5f5f5;
   padding: 20px;
+  min-height: 0;
 }
 </style>

@@ -79,4 +79,11 @@ public interface ISysUserService {
      * @param roleIds 角色ID列表
      */
     void updateUserRoles(Long userId, List<Long> roleIds);
+
+    /**
+     * 根据 sys_user.role 字段同步 sys_user_role 表
+     *
+     * @param userId 用户ID
+     */
+    void syncUserRole(Long userId);
 }
