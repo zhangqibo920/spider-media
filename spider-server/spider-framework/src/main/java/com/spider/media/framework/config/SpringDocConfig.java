@@ -1,5 +1,6 @@
 package com.spider.media.framework.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -43,12 +44,13 @@ public class SpringDocConfig {
                                 .email("dev@spider-media.com")))
                 // 全局认证方案：所有接口默认携带 JWT Token
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
-                .schema(SECURITY_SCHEME_NAME, new SecurityScheme()
-                        .name(SECURITY_SCHEME_NAME)
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT")
-                        .in(SecurityScheme.In.HEADER)
-                        .description("请输入 JWT Token，格式：Bearer {token}"));
+                .components(new Components()
+                        .addSecuritySchemes(SECURITY_SCHEME_NAME, new SecurityScheme()
+                                .name(SECURITY_SCHEME_NAME)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .in(SecurityScheme.In.HEADER)
+                                .description("请输入 JWT Token，格式：Bearer {token}")));
     }
 }
