@@ -6,10 +6,13 @@ import com.spider.media.common.result.R;
 import com.spider.media.framework.security.LoginUser;
 import com.spider.media.system.aspect.OperLog;
 import com.spider.media.system.entity.SysConfig;
+import com.spider.media.system.entity.SysMenu;
 import com.spider.media.system.entity.SysOperLog;
 import com.spider.media.system.entity.SysUser;
 import com.spider.media.system.service.ISysConfigService;
+import com.spider.media.system.service.ISysMenuService;
 import com.spider.media.system.service.ISysOperLogService;
+import com.spider.media.system.service.ISysRoleService;
 import com.spider.media.system.service.ISysUserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
@@ -38,13 +41,21 @@ public class SysAdminController extends BaseController {
     private final ISysUserService userService;
     /** 操作日志业务层服务 */
     private final ISysOperLogService operLogService;
+    /** 菜单业务层服务 */
+    private final ISysMenuService menuService;
+    /** 角色业务层服务 */
+    private final ISysRoleService roleService;
 
     public SysAdminController(ISysConfigService configService,
                                ISysUserService userService,
-                               ISysOperLogService operLogService) {
+                               ISysOperLogService operLogService,
+                               ISysMenuService menuService,
+                               ISysRoleService roleService) {
         this.configService = configService;
         this.userService = userService;
         this.operLogService = operLogService;
+        this.menuService = menuService;
+        this.roleService = roleService;
     }
 
     // ========== 配置管理 ==========
@@ -178,5 +189,51 @@ public class SysAdminController extends BaseController {
         result.put("list", logs);
         result.put("total", total);
         return ok(result);
+    }
+
+    // ========== 菜单管理 ==========
+
+    @OperLog(module = "菜单管理", action = "查询")
+    @GetMapping("/menus")
+    public R<List<SysMenu>> getMenus() {
+        return ok(menuService.selectMenuList());
+    }
+
+    @OperLog(module = "菜单管理", action = "新增")
+    @PostMapping("/menus")
+    public R<Void> addMenu(@RequestBody SysMenu menu) {
+        menuService.insertMenu(menu);
+        return ok();
+    }
+
+    @OperLog(module = "菜单管理", action = "修改")
+    @PutMapping("/menus")
+    public R<Void> updateMenu(@RequestBody SysMenu menu) {
+        menuService.updateMenu(menu);
+        return ok();
+    }
+
+    @OperLog(module = "菜单管理", action = "删除")
+    @DeleteMapping("/menus/{menuId}")
+    public R<Void> deleteMenu(@PathVariable Long menuId) {
+        menuService.deleteMenu(menuId);
+        return ok();
+    }
+
+    // ========== 用户-角色分配 ==========
+
+    @OperLog(module = "用户管理", action = "查询角色")
+    @GetMapping("/users/{userId}/roles")
+    public R<List<Long>> getUserRoleIds(@PathVariable Long userId) {
+        List<com.spider.media.system.entity.SysRole> roles = roleService.selectRolesByUserId(userId);
+        List<Long> roleIds = roles.stream().map(com.spider.media.system.entity.SysRole::getRoleId).collect(java.util.stream.Collectors.toList());
+        return ok(roleIds);
+    }
+
+    @OperLog(module = "用户管理", action = "分配角色")
+    @PutMapping("/users/{userId}/roles")
+    public R<Void> updateUserRoles(@PathVariable Long userId, @RequestBody Map<String, List<Long>> body) {
+        userService.updateUserRoles(userId, body.get("roleIds"));
+        return ok();
     }
 }

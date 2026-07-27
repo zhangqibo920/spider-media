@@ -6,13 +6,16 @@ import com.spider.media.common.result.ErrorCodeEnums;
 import com.spider.media.common.result.R;
 import com.spider.media.framework.security.LoginUser;
 import com.spider.media.system.aspect.OperLog;
+import com.spider.media.system.entity.SysRole;
 import com.spider.media.system.entity.SysUser;
 import com.spider.media.system.service.CaptchaService;
+import com.spider.media.system.service.ISysRoleService;
 import com.spider.media.system.service.ISysUserService;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,10 +39,14 @@ public class SysLoginController extends BaseController {
     private final ISysUserService userService;
     /** 验证码服务 */
     private final CaptchaService captchaService;
+    /** 角色业务层服务 */
+    private final ISysRoleService roleService;
 
-    public SysLoginController(ISysUserService userService, CaptchaService captchaService) {
+    public SysLoginController(ISysUserService userService, CaptchaService captchaService,
+                               ISysRoleService roleService) {
         this.userService = userService;
         this.captchaService = captchaService;
+        this.roleService = roleService;
     }
 
     /**
@@ -122,17 +129,21 @@ public class SysLoginController extends BaseController {
     }
 
     /**
-     * 获取当前登录用户信息
+     * 获取当前登录用户信息（含角色列表）
      *
-     * <p>从 SecurityContext 中提取当前登录用户的用户名，查询并返回完整的用户信息。
-     * 需要在请求头中携带有效的 JWT Token。</p>
+     * <p>从 SecurityContext 中提取当前登录用户的用户名，查询并返回完整的用户信息
+     * 及关联的角色列表。前端可据此判断用户的角色权限和动态路由。</p>
      *
-     * @return 当前登录用户的详细信息
+     * @return 包含用户信息和角色列表的 Map
      */
     @GetMapping("/getInfo")
-    public R<SysUser> getInfo() {
+    public R<Map<String, Object>> getInfo() {
         String username = LoginUser.getUsername();
         SysUser user = userService.selectUserByUserName(username);
-        return ok(user);
+        List<SysRole> roles = roleService.selectRolesByUserId(user.getUserId());
+        Map<String, Object> result = new HashMap<>();
+        result.put("user", user);
+        result.put("roles", roles);
+        return ok(result);
     }
 }

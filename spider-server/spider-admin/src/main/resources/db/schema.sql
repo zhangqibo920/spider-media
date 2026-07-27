@@ -266,6 +266,71 @@ CREATE TABLE `sys_oper_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志记录';
 
 -- =============================================
+-- 菜单表（树形结构）
+-- =============================================
+DROP TABLE IF EXISTS `sys_menu`;
+CREATE TABLE `sys_menu` (
+    `menu_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '菜单ID',
+    `menu_name` VARCHAR(50) NOT NULL COMMENT '菜单名称',
+    `parent_id` BIGINT DEFAULT 0 COMMENT '父菜单ID（0表示顶级菜单）',
+    `path` VARCHAR(200) DEFAULT '' COMMENT '路由地址',
+    `component` VARCHAR(200) DEFAULT '' COMMENT '组件路径（前端视图路径）',
+    `perms` VARCHAR(100) DEFAULT '' COMMENT '权限标识',
+    `icon` VARCHAR(50) DEFAULT '' COMMENT '菜单图标（Element Plus图标名）',
+    `sort_order` INT DEFAULT 0 COMMENT '排序序号',
+    `menu_type` CHAR(1) DEFAULT '' COMMENT '菜单类型（M目录 C菜单 F按钮）',
+    `status` CHAR(1) DEFAULT '0' COMMENT '菜单状态（0正常 1停用）',
+    `visible` CHAR(1) DEFAULT '0' COMMENT '显示状态（0显示 1隐藏）',
+    `del_flag` CHAR(1) DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
+    `create_by` VARCHAR(64) DEFAULT '' COMMENT '创建者',
+    `create_time` DATETIME DEFAULT NULL COMMENT '创建时间',
+    `update_by` VARCHAR(64) DEFAULT '' COMMENT '更新者',
+    `update_time` DATETIME DEFAULT NULL COMMENT '更新时间',
+    `remark` VARCHAR(500) DEFAULT '' COMMENT '备注',
+    PRIMARY KEY (`menu_id`),
+    KEY `idx_parent_id` (`parent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='菜单权限表';
+
+-- =============================================
+-- 角色表
+-- =============================================
+DROP TABLE IF EXISTS `sys_role`;
+CREATE TABLE `sys_role` (
+    `role_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '角色ID',
+    `role_name` VARCHAR(30) NOT NULL COMMENT '角色名称',
+    `role_key` VARCHAR(20) NOT NULL COMMENT '角色权限字符串（如 ADMIN, USER, EDITOR）',
+    `status` CHAR(1) DEFAULT '0' COMMENT '状态（0正常 1停用）',
+    `del_flag` CHAR(1) DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
+    `create_by` VARCHAR(64) DEFAULT '' COMMENT '创建者',
+    `create_time` DATETIME DEFAULT NULL COMMENT '创建时间',
+    `update_by` VARCHAR(64) DEFAULT '' COMMENT '更新者',
+    `update_time` DATETIME DEFAULT NULL COMMENT '更新时间',
+    `remark` VARCHAR(500) DEFAULT '' COMMENT '备注',
+    PRIMARY KEY (`role_id`),
+    UNIQUE KEY `idx_role_key` (`role_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表';
+
+-- =============================================
+-- 角色-菜单关联表
+-- =============================================
+DROP TABLE IF EXISTS `sys_role_menu`;
+CREATE TABLE `sys_role_menu` (
+    `role_id` BIGINT NOT NULL COMMENT '角色ID',
+    `menu_id` BIGINT NOT NULL COMMENT '菜单ID',
+    PRIMARY KEY (`role_id`, `menu_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色-菜单关联表';
+
+-- =============================================
+-- 用户-角色关联表
+-- =============================================
+DROP TABLE IF EXISTS `sys_user_role`;
+CREATE TABLE `sys_user_role` (
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `role_id` BIGINT NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (`user_id`, `role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户-角色关联表';
+
+-- =============================================
 -- 初始化数据
 -- =============================================
 
@@ -276,3 +341,34 @@ VALUES (1, 'admin', '管理员', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOi
 -- 普通用户 (密码: user123)
 INSERT INTO `sys_user` (`user_id`, `user_name`, `nick_name`, `password`, `status`, `role`, `create_by`, `create_time`)
 VALUES (2, 'user', '普通用户', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', 'USER', 'system', NOW());
+
+-- 初始化角色
+INSERT INTO `sys_role` (`role_id`, `role_name`, `role_key`, `status`, `create_by`, `create_time`) VALUES
+(1, '管理员', 'ADMIN', '0', 'system', NOW()),
+(2, '普通用户', 'USER', '0', 'system', NOW());
+
+-- 关联用户-角色（向后兼容现有 sys_user.role 字段）
+INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 1), (2, 2);
+
+-- 初始化菜单（ADMIN 可见所有菜单，USER 可见非管理菜单）
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`, `perms`, `icon`, `sort_order`, `menu_type`, `visible`, `create_by`, `create_time`) VALUES
+(1, '工作台',     0, '/dashboard',   'dashboard/DashboardView',   '',  'Odometer',  1, 'C', '0', 'system', NOW()),
+(2, '数据采集',   0, '/collection',  'datacollection/CollectionView', '', 'Download',  2, 'C', '0', 'system', NOW()),
+(3, 'AI创作',    0, '/ai-creation', 'aicreation/AiCreationView', '', 'MagicStick', 3, 'C', '0', 'system', NOW()),
+(4, '内容发布',   0, '/publish',     'contentpublish/PublishView', '', 'Promotion',  4, 'C', '0', 'system', NOW()),
+(5, '任务调度',   0, '/scheduler',   'taskscheduler/SchedulerView', '', 'Timer',      5, 'C', '0', 'system', NOW()),
+(6, '系统管理',   0, '/admin',       '',                      '', 'Setting',    6, 'M', '0', 'system', NOW()),
+(7, '个人中心',   0, '/profile',     'userauth/ProfileView',  '', 'User',       7, 'C', '1', 'system', NOW()),
+(8,  '系统配置', 6, 'config',  'systemadmin/SysConfigView',   '', 'Setting',        1, 'C', '0', 'system', NOW()),
+(9,  '用户管理', 6, 'users',   'systemadmin/AdminUsersView',  '', 'User',           2, 'C', '0', 'system', NOW()),
+(10, '操作日志', 6, 'logs',    'systemadmin/AdminLogsView',   '', 'Document',       3, 'C', '0', 'system', NOW()),
+(11, '模型管理', 6, 'models',  'systemadmin/ModelManageView', '', 'Cpu',            4, 'C', '0', 'system', NOW()),
+(12, '字典管理', 6, 'dict',    'systemadmin/DictManageView',  '', 'List',           5, 'C', '0', 'system', NOW()),
+(13, '菜单管理', 6, 'menus',   'systemadmin/MenuManageView',  '', 'Menu',           6, 'C', '0', 'system', NOW()),
+(14, '角色管理', 6, 'roles',   'systemadmin/RoleManageView',  '', 'UserFilled',     7, 'C', '0', 'system', NOW());
+
+-- 分配角色-菜单（ADMIN 拥有所有菜单，USER 排除系统管理）
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7),
+(1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14),
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 7);

@@ -51,7 +51,10 @@ INSERT INTO `sys_dict_type` (`dict_name`, `dict_type`, `status`, `create_by`, `c
 ('AI文章状态', 'ac_article_status', '0', 'admin', NOW(), 'AI生成文章状态'),
 ('热点平台', 'hot_topic_platform', '0', 'admin', NOW(), '热点话题来源平台'),
 ('发布平台', 'publish_platform', '0', 'admin', NOW(), '内容发布目标平台'),
-('采集平台', 'collection_platform', '0', 'admin', NOW(), '数据采集来源平台');
+('采集平台', 'collection_platform', '0', 'admin', NOW(), '数据采集来源平台'),
+('菜单类型', 'sys_menu_type', '0', 'admin', NOW(), '菜单类型（M目录 C菜单 F按钮）'),
+('显示状态', 'sys_visible', '0', 'admin', NOW(), '菜单显示/隐藏状态'),
+('启用状态', 'sys_normal_status', '0', 'admin', NOW(), '通用启用/停用状态');
 
 -- =============================================
 -- 4. Initialize Dictionary Data
@@ -114,6 +117,22 @@ INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type
 (3, '百家号', 'baijia', 'publish_platform', '', '0', NOW()),
 (4, '小红书', 'xiaohongshu', 'publish_platform', '', '0', NOW()),
 (5, '抖音', 'douyin', 'publish_platform', '', '0', NOW());
+
+-- 菜单类型
+INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `status`, `create_time`) VALUES
+(1, '目录', 'M', 'sys_menu_type', '', '0', NOW()),
+(2, '菜单', 'C', 'sys_menu_type', 'primary', '0', NOW()),
+(3, '按钮', 'F', 'sys_menu_type', 'info', '0', NOW());
+
+-- 显示状态
+INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `status`, `create_time`) VALUES
+(1, '显示', '0', 'sys_visible', 'success', '0', NOW()),
+(2, '隐藏', '1', 'sys_visible', 'info', '0', NOW());
+
+-- 启用状态
+INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `status`, `create_time`) VALUES
+(1, '正常', '0', 'sys_normal_status', 'success', '0', NOW()),
+(2, '停用', '1', 'sys_normal_status', 'danger', '0', NOW());
 
 -- 采集平台
 INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `status`, `create_time`) VALUES

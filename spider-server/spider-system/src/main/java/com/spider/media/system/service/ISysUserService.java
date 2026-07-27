@@ -10,6 +10,8 @@ import java.util.List;
  * <p>定义用户注册、登录、查询、更新、删除等核心业务方法。
  * 由 {@link com.spider.media.system.service.impl.SysUserServiceImpl} 提供具体实现。</p>
  */
+import java.util.List;
+
 public interface ISysUserService {
 
     /**
@@ -69,4 +71,12 @@ public interface ISysUserService {
      * @return 受影响的行数
      */
     int resetPassword(Long userId, String newPassword);
+
+    /**
+     * 更新用户的角色分配
+     *
+     * @param userId  用户ID
+     * @param roleIds 角色ID列表
+     */
+    void updateUserRoles(Long userId, List<Long> roleIds);
 }

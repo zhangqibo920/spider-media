@@ -4,8 +4,12 @@ import com.spider.media.common.exception.ServiceException;
 import com.spider.media.common.result.ErrorCodeEnums;
 import com.spider.media.common.utils.SecurityUtils;
 import com.spider.media.framework.security.JwtToken;
+import com.spider.media.system.entity.SysRole;
 import com.spider.media.system.entity.SysUser;
+import com.spider.media.system.entity.SysUserRole;
+import com.spider.media.system.mapper.SysRoleMapper;
 import com.spider.media.system.mapper.SysUserMapper;
+import com.spider.media.system.mapper.SysUserRoleMapper;
 import com.spider.media.system.service.ISysUserService;
 import com.spider.media.system.service.LoginAttemptService;
 import org.springframework.stereotype.Service;
@@ -36,12 +40,20 @@ public class SysUserServiceImpl implements ISysUserService {
     private final JwtToken jwtToken;
     /** 登录失败计数服务，用于防爆破 */
     private final LoginAttemptService loginAttemptService;
+    /** 用户-角色关联 Mapper */
+    private final SysUserRoleMapper userRoleMapper;
+    /** 角色 Mapper */
+    private final SysRoleMapper roleMapper;
 
     public SysUserServiceImpl(SysUserMapper userMapper, JwtToken jwtToken,
-                               LoginAttemptService loginAttemptService) {
+                               LoginAttemptService loginAttemptService,
+                               SysUserRoleMapper userRoleMapper,
+                               SysRoleMapper roleMapper) {
         this.userMapper = userMapper;
         this.jwtToken = jwtToken;
         this.loginAttemptService = loginAttemptService;
+        this.userRoleMapper = userRoleMapper;
+        this.roleMapper = roleMapper;
     }
 
     /**
@@ -82,6 +94,16 @@ public class SysUserServiceImpl implements ISysUserService {
         user.setCreateBy(userName);
         user.setCreateTime(LocalDateTime.now());
         userMapper.insert(user);
+
+        // 同步角色到 sys_user_role 表
+        SysRole roleEntity = roleMapper.selectByKey(role);
+        if (roleEntity != null) {
+            SysUserRole ur = new SysUserRole();
+            ur.setUserId(user.getUserId());
+            ur.setRoleId(roleEntity.getRoleId());
+            userRoleMapper.insert(ur);
+        }
+
         // 清空密码后返回，避免返回对象携带哈希（即便 @JsonIgnore 已处理，也杜绝其他序列化路径泄露）
         user.setPassword(null);
         return user;
@@ -175,7 +197,21 @@ public class SysUserServiceImpl implements ISysUserService {
             }
         }
         user.setUpdateTime(LocalDateTime.now());
-        return userMapper.update(user);
+        int rows = userMapper.update(user);
+
+        // 同步角色变更到 sys_user_role 表
+        if (user.getRole() != null) {
+            SysRole roleEntity = roleMapper.selectByKey(user.getRole());
+            if (roleEntity != null) {
+                userRoleMapper.deleteByUserId(user.getUserId());
+                SysUserRole ur = new SysUserRole();
+                ur.setUserId(user.getUserId());
+                ur.setRoleId(roleEntity.getRoleId());
+                userRoleMapper.insert(ur);
+            }
+        }
+
+        return rows;
     }
 
     @Override
@@ -213,5 +249,19 @@ public class SysUserServiceImpl implements ISysUserService {
         user.setPassword(SecurityUtils.encryptPassword(newPassword));
         user.setUpdateTime(LocalDateTime.now());
         return userMapper.updatePassword(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUserRoles(Long userId, List<Long> roleIds) {
+        userRoleMapper.deleteByUserId(userId);
+        if (roleIds != null && !roleIds.isEmpty()) {
+            for (Long roleId : roleIds) {
+                SysUserRole ur = new SysUserRole();
+                ur.setUserId(userId);
+                ur.setRoleId(roleId);
+                userRoleMapper.insert(ur);
+            }
+        }
     }
 }
