@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw, Component } from 'vue-router'
-import { defineAsyncComponent } from 'vue'
+import type { RouteRecordRaw } from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { useUserStore } from '@/stores/user'
@@ -16,22 +15,22 @@ declare module 'vue-router' {
   }
 }
 
-const componentMap: Record<string, Component> = {
-  'dashboard/DashboardView': defineAsyncComponent(() => import('@/views/dashboard/DashboardView.vue')),
-  'datacollection/CollectionView': defineAsyncComponent(() => import('@/views/datacollection/CollectionView.vue')),
-  'aicreation/AiCreationView': defineAsyncComponent(() => import('@/views/aicreation/AiCreationView.vue')),
-  'contentpublish/PublishView': defineAsyncComponent(() => import('@/views/contentpublish/PublishView.vue')),
-  'taskscheduler/SchedulerView': defineAsyncComponent(() => import('@/views/taskscheduler/SchedulerView.vue')),
-  'systemadmin/SysConfigView': defineAsyncComponent(() => import('@/views/systemadmin/SysConfigView.vue')),
-  'systemadmin/AdminUsersView': defineAsyncComponent(() => import('@/views/systemadmin/AdminUsersView.vue')),
-  'systemadmin/AdminLogsView': defineAsyncComponent(() => import('@/views/systemadmin/AdminLogsView.vue')),
-  'systemadmin/ModelManageView': defineAsyncComponent(() => import('@/views/systemadmin/ModelManageView.vue')),
-  'systemadmin/DictManageView': defineAsyncComponent(() => import('@/views/systemadmin/DictManageView.vue')),
-  'systemadmin/MenuManageView': defineAsyncComponent(() => import('@/views/systemadmin/MenuManageView.vue')),
-  'systemadmin/RoleManageView': defineAsyncComponent(() => import('@/views/systemadmin/RoleManageView.vue')),
-  'hotmonitor/KeywordManageView': defineAsyncComponent(() => import('@/views/hotmonitor/KeywordManageView.vue')),
-  'hotmonitor/HotFeedView': defineAsyncComponent(() => import('@/views/hotmonitor/HotFeedView.vue')),
-  'userauth/ProfileView': defineAsyncComponent(() => import('@/views/userauth/ProfileView.vue')),
+const componentMap: Record<string, () => Promise<any>> = {
+  'dashboard/DashboardView': () => import('@/views/dashboard/DashboardView.vue'),
+  'datacollection/CollectionView': () => import('@/views/datacollection/CollectionView.vue'),
+  'aicreation/AiCreationView': () => import('@/views/aicreation/AiCreationView.vue'),
+  'contentpublish/PublishView': () => import('@/views/contentpublish/PublishView.vue'),
+  'taskscheduler/SchedulerView': () => import('@/views/taskscheduler/SchedulerView.vue'),
+  'systemadmin/SysConfigView': () => import('@/views/systemadmin/SysConfigView.vue'),
+  'systemadmin/AdminUsersView': () => import('@/views/systemadmin/AdminUsersView.vue'),
+  'systemadmin/AdminLogsView': () => import('@/views/systemadmin/AdminLogsView.vue'),
+  'systemadmin/ModelManageView': () => import('@/views/systemadmin/ModelManageView.vue'),
+  'systemadmin/DictManageView': () => import('@/views/systemadmin/DictManageView.vue'),
+  'systemadmin/MenuManageView': () => import('@/views/systemadmin/MenuManageView.vue'),
+  'systemadmin/RoleManageView': () => import('@/views/systemadmin/RoleManageView.vue'),
+  'hotmonitor/KeywordManageView': () => import('@/views/hotmonitor/KeywordManageView.vue'),
+  'hotmonitor/HotFeedView': () => import('@/views/hotmonitor/HotFeedView.vue'),
+  'userauth/ProfileView': () => import('@/views/userauth/ProfileView.vue'),
 }
 
 function generateRoutes(menus: Menu[]): RouteRecordRaw[] {
@@ -48,7 +47,7 @@ function generateRoutes(menus: Menu[]): RouteRecordRaw[] {
         icon: menu.icon || undefined,
         hidden: menu.visible === '1',
       },
-    }
+    } as RouteRecordRaw
     if (menu.menuType === 'M') {
       const childRoutes = generateRoutes(menu.children || [])
       route.children = childRoutes
