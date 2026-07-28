@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.hotmonitor.mapper.HmKeywordMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.hotmonitor.entity.HmKeyword">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="keyword" property="keyword"/>
+        <result column="status" property="status"/>
+        <result column="interval_min" property="intervalMin"/>
+        <result column="notify_email" property="notifyEmail"/>
+        <result column="notify_site" property="notifySite"/>
+        <result column="last_fetch_time" property="lastFetchTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, keyword, status, interval_min, notify_email, notify_site, last_fetch_time,
+        create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM hm_keyword WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM hm_keyword
+        WHERE del_flag = '0' AND user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectActiveKeywords" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM hm_keyword
+        WHERE del_flag = '0' AND status = '0'
+          AND (last_fetch_time IS NULL
+               OR TIMESTAMPDIFF(SECOND, last_fetch_time, #{now}) >= interval_min * 60)
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hm_keyword (user_id, keyword, status, interval_min, notify_email, notify_site,
+                                create_by, create_time)
+        VALUES (#{userId}, #{keyword}, #{status}, #{intervalMin}, #{notifyEmail}, #{notifySite},
+                #{createBy}, #{createTime})
+    </insert>
+
+    <update id="updateById">
+        UPDATE hm_keyword
+        SET keyword       = #{keyword},
+            status        = #{status},
+            interval_min  = #{intervalMin},
+            notify_email  = #{notifyEmail},
+            notify_site   = #{notifySite},
+            update_by     = #{updateBy},
+            update_time   = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteById">
+        UPDATE hm_keyword SET del_flag = '2' WHERE id = #{id}
+    </update>
+
+    <update id="updateLastFetchTime">
+        UPDATE hm_keyword SET last_fetch_time = #{fetchTime} WHERE id = #{id}
+    </update>
+
+</mapper>

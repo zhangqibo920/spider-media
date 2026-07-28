@@ -11,6 +11,12 @@
         <result column="hot_score" property="hotScore"/>
         <result column="url" property="url"/>
         <result column="category" property="category"/>
+        <result column="keyword_id" property="keywordId"/>
+        <result column="source" property="source"/>
+        <result column="ai_score" property="aiScore"/>
+        <result column="ai_summary" property="aiSummary"/>
+        <result column="ai_verified" property="aiVerified"/>
+        <result column="relevance" property="relevance"/>
         <result column="create_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
         <result column="update_by" property="updateBy"/>
@@ -19,9 +25,9 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
-    <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
     <sql id="Base_Column_List">
         id, user_id, platform, title, description, hot_score, url, category,
+        keyword_id, source, ai_score, ai_summary, ai_verified, relevance,
         create_by, create_time, update_by, update_time, remark, del_flag
     </sql>
 
@@ -35,10 +41,39 @@
         ORDER BY hot_score DESC
     </select>
 
+    <select id="selectByKeywordId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM ac_hot_topic
+        WHERE del_flag = '0' AND user_id = #{userId} AND keyword_id = #{keywordId}
+        ORDER BY hot_score DESC
+    </select>
+
+    <select id="selectByFilter" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM ac_hot_topic
+        WHERE del_flag = '0' AND user_id = #{userId}
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="source != null and source != ''">AND source = #{source}</if>
+        <if test="minScore != null">AND hot_score >= #{minScore}</if>
+        <if test="minRelevance != null">AND relevance >= #{minRelevance}</if>
+        ORDER BY
+        <choose>
+            <when test="sortBy == 'relevance'">relevance</when>
+            <when test="sortBy == 'time'">create_time</when>
+            <otherwise>hot_score</otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder == 'asc'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO ac_hot_topic (user_id, platform, title, description, hot_score, url, category,
+                                  keyword_id, source, ai_score, ai_summary, ai_verified, relevance,
                                   create_by, create_time)
         VALUES (#{userId}, #{platform}, #{title}, #{description}, #{hotScore}, #{url}, #{category},
+                #{keywordId}, #{source}, #{aiScore}, #{aiSummary}, #{aiVerified}, #{relevance},
                 #{createBy}, #{createTime})
     </insert>
 

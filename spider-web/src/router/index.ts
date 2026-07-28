@@ -29,6 +29,8 @@ const componentMap: Record<string, Component> = {
   'systemadmin/DictManageView': defineAsyncComponent(() => import('@/views/systemadmin/DictManageView.vue')),
   'systemadmin/MenuManageView': defineAsyncComponent(() => import('@/views/systemadmin/MenuManageView.vue')),
   'systemadmin/RoleManageView': defineAsyncComponent(() => import('@/views/systemadmin/RoleManageView.vue')),
+  'hotmonitor/KeywordManageView': defineAsyncComponent(() => import('@/views/hotmonitor/KeywordManageView.vue')),
+  'hotmonitor/HotFeedView': defineAsyncComponent(() => import('@/views/hotmonitor/HotFeedView.vue')),
   'userauth/ProfileView': defineAsyncComponent(() => import('@/views/userauth/ProfileView.vue')),
 }
 

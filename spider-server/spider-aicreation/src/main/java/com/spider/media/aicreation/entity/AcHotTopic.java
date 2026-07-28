@@ -37,4 +37,22 @@ public class AcHotTopic extends BaseEntity {
 
     /** 话题分类（如 "微博热搜"、"知乎热榜"） */
     private String category;
+
+    /** 关联关键词ID（热点监控模块使用） */
+    private Long keywordId;
+
+    /** 来源标识（如 weibo/douyin/zhihu/toutiao） */
+    private String source;
+
+    /** AI 重要性评分 1-5 */
+    private Integer aiScore;
+
+    /** AI 智能摘要 */
+    private String aiSummary;
+
+    /** AI 真假判定 0=未验证 1=真实 2=可疑 3=虚假 */
+    private String aiVerified;
+
+    /** 与关键词相关性 0-100 */
+    private Integer relevance;
 }

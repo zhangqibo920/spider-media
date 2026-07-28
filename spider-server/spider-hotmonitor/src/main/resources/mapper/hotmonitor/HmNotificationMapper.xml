@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spider.media.hotmonitor.mapper.HmNotificationMapper">
+
+    <resultMap id="BaseResultMap" type="com.spider.media.hotmonitor.entity.HmNotification">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="type" property="type"/>
+        <result column="is_read" property="isRead"/>
+        <result column="hot_topic_id" property="hotTopicId"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="del_flag" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, title, content, type, is_read, hot_topic_id,
+        create_by, create_time, update_by, update_time, remark, del_flag
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM hm_notification WHERE id = #{id} AND del_flag = '0'
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM hm_notification
+        WHERE del_flag = '0' AND user_id = #{userId}
+        <if test="isRead != null and isRead != ''">AND is_read = #{isRead}</if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM hm_notification
+        WHERE del_flag = '0' AND user_id = #{userId} AND is_read = '0'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hm_notification (user_id, title, content, type, hot_topic_id,
+                                     create_by, create_time)
+        VALUES (#{userId}, #{title}, #{content}, #{type}, #{hotTopicId},
+                #{createBy}, #{createTime})
+    </insert>
+
+    <update id="markAsRead">
+        UPDATE hm_notification SET is_read = '1' WHERE id = #{id}
+    </update>
+
+    <update id="markAllAsRead">
+        UPDATE hm_notification SET is_read = '1' WHERE user_id = #{userId}
+    </update>
+
+</mapper>

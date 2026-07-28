@@ -39,6 +39,11 @@
           </el-icon>
         </div>
         <div class="header-right">
+          <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="notification-badge">
+            <el-icon class="notification-bell" @click="showNotificationDrawer = true" :size="20">
+              <Bell />
+            </el-icon>
+          </el-badge>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" :src="userInfo?.avatar">
@@ -60,14 +65,32 @@
         <router-view />
       </el-main>
     </el-container>
+
+    <el-drawer v-model="showNotificationDrawer" title="通知" size="350px" @open="loadNotifications">
+      <template #header>
+        <div class="drawer-header">
+          <span>通知</span>
+          <el-button text size="small" @click="handleMarkAllRead" v-if="unreadCount > 0">全部已读</el-button>
+        </div>
+      </template>
+      <div v-loading="notifLoading">
+        <div v-for="n in notifications" :key="n.id" class="notif-item" :class="{ unread: n.isRead === '0' }" @click="handleNotifClick(n)">
+          <div class="notif-title">{{ n.title }}</div>
+          <div class="notif-content">{{ n.content }}</div>
+          <div class="notif-time">{{ n.createTime }}</div>
+        </div>
+        <el-empty v-if="!notifLoading && notifications.length === 0" description="暂无通知" />
+      </div>
+    </el-drawer>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
+import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '@/api/hotmonitor'
 
 interface MenuItem {
   path: string
@@ -111,6 +134,46 @@ const toggleSidebar = () => {
   appStore.toggleSidebar()
 }
 
+const showNotificationDrawer = ref(false)
+const notifications = ref<any[]>([])
+const notifLoading = ref(false)
+const unreadCount = ref(0)
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
+const loadUnreadCount = async () => {
+  if (!userStore.token) return
+  try {
+    const res = await getUnreadCount()
+    unreadCount.value = res.data.count
+  } catch { /* ignore */ }
+}
+
+const loadNotifications = async () => {
+  notifLoading.value = true
+  try {
+    const res = await getNotifications()
+    notifications.value = res.data
+  } finally {
+    notifLoading.value = false
+  }
+}
+
+const handleNotifClick = async (n: any) => {
+  if (n.isRead === '0') {
+    await markNotificationRead(n.id)
+    n.isRead = '1'
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  }
+}
+
+const handleMarkAllRead = async () => {
+  try {
+    await markAllNotificationsRead()
+    notifications.value.forEach(n => { n.isRead = '1' })
+    unreadCount.value = 0
+  } catch { /* ignore */ }
+}
+
 const handleCommand = (command: string) => {
   if (command === 'logout') {
     userStore.logout()
@@ -121,6 +184,13 @@ const handleCommand = (command: string) => {
 }
 
 onMounted(() => {
+  loadUnreadCount()
+  pollTimer = setInterval(loadUnreadCount, 30000)
+})
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer)
+})
   if (userStore.token && !userStore.userInfo) {
     userStore.fetchUserInfo()
   }
@@ -302,4 +372,15 @@ onMounted(() => {
   padding: 20px;
   min-height: 0;
 }
+
+.notification-badge { line-height: 1; }
+.notification-bell { cursor: pointer; color: #606266; transition: color 0.2s; vertical-align: middle; }
+.notification-bell:hover { color: #1677ff; }
+
+.drawer-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.notif-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+.notif-item.unread { background: #f0f9ff; margin: 0 -12px; padding: 12px; border-radius: 6px; }
+.notif-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.notif-content { font-size: 13px; color: #606266; margin-bottom: 4px; }
+.notif-time { font-size: 12px; color: #999; }
 </style>

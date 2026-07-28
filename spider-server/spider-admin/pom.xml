@@ -49,6 +49,10 @@
             <groupId>com.spider</groupId>
             <artifactId>spider-taskscheduler</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.spider</groupId>
+            <artifactId>spider-hotmonitor</artifactId>
+        </dependency>
 
         <!-- Spring Boot Actuator（健康检查、指标监控、运行时管理） -->
         <dependency>

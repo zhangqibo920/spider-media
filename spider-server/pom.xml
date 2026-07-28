@@ -20,6 +20,7 @@
         <module>spider-aicreation</module>
         <module>spider-contentpublish</module>
         <module>spider-taskscheduler</module>
+        <module>spider-hotmonitor</module>
         <module>spider-admin</module>
     </modules>
 
@@ -79,6 +80,11 @@
             <dependency>
                 <groupId>com.spider</groupId>
                 <artifactId>spider-taskscheduler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.spider</groupId>
+                <artifactId>spider-hotmonitor</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
