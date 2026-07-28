@@ -29,7 +29,7 @@ public class BaiduFetcher implements IHotSourceFetcher {
         try {
             Document doc = Jsoup.connect("https://top.baidu.com/board?tab=realtime")
                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                    .timeout(10000)
+                    .timeout(30000)
                     .get();
             Elements items = doc.select("#sanRoot .content_1YWBm .category-wrap_iQLoo .content-wrapper .content_28Njm");
             int rank = 1;

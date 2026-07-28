@@ -29,7 +29,7 @@ public class GitHubFetcher implements IHotSourceFetcher {
         try {
             Document doc = Jsoup.connect("https://github.com/trending")
                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                    .timeout(10000)
+                    .timeout(30000)
                     .get();
             Elements articles = doc.select("article.Box-row");
             int rank = 1;
