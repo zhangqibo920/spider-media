@@ -123,3 +123,12 @@ DELETE FROM `sys_role_menu` WHERE `menu_id` IN (15, 16, 17);
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (1, 15), (1, 16), (1, 17),
 (2, 15), (2, 16), (2, 17);
+
+-- 5. SMTP 邮件配置（先删后插，保证幂等）
+DELETE FROM `sys_config` WHERE `config_key` LIKE 'smtp.%';
+INSERT INTO `sys_config` (`config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`) VALUES
+('SMTP 服务器',   'smtp.host',     '', 'Y', 'system', NOW()),
+('SMTP 端口',     'smtp.port',     '587', 'Y', 'system', NOW()),
+('SMTP 用户名',   'smtp.username', '', 'Y', 'system', NOW()),
+('SMTP 密码',     'smtp.password', '', 'Y', 'system', NOW()),
+('发件人地址',    'smtp.from',     '', 'Y', 'system', NOW());
