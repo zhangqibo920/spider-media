@@ -6,8 +6,11 @@ import com.spider.media.hotmonitor.entity.HmKeyword;
 import com.spider.media.hotmonitor.entity.HmNotification;
 import com.spider.media.hotmonitor.mapper.HmKeywordMapper;
 import com.spider.media.hotmonitor.mapper.HmNotificationMapper;
+import com.spider.media.hotmonitor.ai.HmAiAnalyzer;
+import com.spider.media.hotmonitor.ai.dto.AnalysisResult;
 import com.spider.media.hotmonitor.service.IHmMonitorService;
 import com.spider.media.hotmonitor.service.fetcher.IHotSourceFetcher;
+import com.spider.media.hotmonitor.websocket.WebSocketSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,15 +31,18 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
     private final AcHotTopicMapper hotTopicMapper;
     private final HmNotificationMapper notificationMapper;
     private final List<IHotSourceFetcher> fetchers;
+    private final HmAiAnalyzer aiAnalyzer;
 
     public HmMonitorServiceImpl(HmKeywordMapper keywordMapper,
                                  AcHotTopicMapper hotTopicMapper,
                                  HmNotificationMapper notificationMapper,
-                                 List<IHotSourceFetcher> fetchers) {
+                                 List<IHotSourceFetcher> fetchers,
+                                 HmAiAnalyzer aiAnalyzer) {
         this.keywordMapper = keywordMapper;
         this.hotTopicMapper = hotTopicMapper;
         this.notificationMapper = notificationMapper;
         this.fetchers = fetchers;
+        this.aiAnalyzer = aiAnalyzer;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -74,10 +80,18 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
         }
 
         if (!allTopics.isEmpty()) {
+            int highImportanceCount = 0;
             for (AcHotTopic topic : allTopics) {
+                AnalysisResult analysis = aiAnalyzer.analyze(
+                        keyword.getKeyword(), topic.getTitle(), topic.getDescription());
+                topic.setRelevance(analysis.getRelevance());
+                topic.setAiSummary(analysis.getSummary());
+                topic.setAiScore(analysis.getImportance());
+                topic.setAiVerified(analysis.getIsFake());
                 topic.setCreateBy("system");
                 topic.setCreateTime(LocalDateTime.now());
                 hotTopicMapper.insert(topic);
+                if (analysis.getImportance() >= 4) highImportanceCount++;
             }
 
             if ("1".equals(keyword.getNotifySite())) {
@@ -93,6 +107,12 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
                 notification.setCreateBy("system");
                 notification.setCreateTime(LocalDateTime.now());
                 notificationMapper.insert(notification);
+
+                String wsMsg = "{\"type\":\"notification\",\"unreadCount\":1,\"title\":\"" +
+                        notification.getTitle() + "\",\"content\":\"" +
+                        notification.getContent() + "\",\"time\":\"" +
+                        notification.getCreateTime() + "\"}";
+                WebSocketSessionManager.sendToUser(keyword.getUserId(), wsMsg);
             }
         }
 

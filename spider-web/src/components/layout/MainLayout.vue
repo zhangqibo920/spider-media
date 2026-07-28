@@ -90,6 +90,7 @@ import { computed, onMounted, ref, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
+import { useWebSocket } from '@/composables/useWebSocket'
 import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '@/api/hotmonitor'
 
 interface MenuItem {
@@ -140,6 +141,8 @@ const notifLoading = ref(false)
 const unreadCount = ref(0)
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
+const ws = useWebSocket(userStore.token)
+
 const loadUnreadCount = async () => {
   if (!userStore.token) return
   try {
@@ -185,10 +188,17 @@ const handleCommand = (command: string) => {
 
 onMounted(() => {
   loadUnreadCount()
-  pollTimer = setInterval(loadUnreadCount, 30000)
+  ws.connect()
+  ws.onMessage((data) => {
+    if (data.type === 'notification') {
+      unreadCount.value = data.unreadCount || (unreadCount.value + 1)
+    }
+  })
+  pollTimer = setInterval(loadUnreadCount, 60000)
 })
 
 onUnmounted(() => {
+  ws.disconnect()
   if (pollTimer) clearInterval(pollTimer)
 })
 </script>
