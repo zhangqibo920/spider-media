@@ -16,7 +16,11 @@
           </template>
           <el-table :data="hotTopics" v-loading="loadingTopics" max-height="400">
             <el-table-column prop="title" label="热点话题" show-overflow-tooltip />
-            <el-table-column prop="hotScore" label="热度" width="80" />
+             <el-table-column label="热度" width="100">
+               <template #default="{ row }">
+                 {{ row.hotScore >= 10000 ? (row.hotScore / 10000).toFixed((row.hotScore % 10000) === 0 ? 0 : 1) + '万' : row.hotScore?.toLocaleString() ?? '-' }}
+               </template>
+             </el-table-column>
             <el-table-column prop="platform" label="平台" width="80">
               <template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template>
             </el-table-column>

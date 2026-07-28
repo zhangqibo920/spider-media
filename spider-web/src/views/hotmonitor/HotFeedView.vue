@@ -26,7 +26,11 @@
             <el-tag size="small">{{ row.source || row.platform }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="hotScore" label="热度" width="80" sortable="custom" />
+        <el-table-column label="热度" width="100" sortable="custom" prop="hotScore">
+          <template #default="{ row }">
+            {{ formatHot(row.hotScore) }}
+          </template>
+        </el-table-column>
         <el-table-column label="AI评分" width="80">
           <template #default="{ row }">
             <el-rate :model-value="row.aiScore || 0" disabled size="small" />
@@ -63,6 +67,13 @@ const keywordFilter = ref('')
 const sourceFilter = ref('')
 const sortBy = ref('hot_score')
 const sources = ['weibo', 'douyin', 'zhihu', 'toutiao', 'baidu', 'bilibili', 'hackernews', 'github']
+
+const formatHot = (v: number | null) => {
+  if (v == null) return '-'
+  if (v >= 100000000) return (v / 100000000).toFixed(1) + '亿'
+  if (v >= 10000) return (v / 10000).toFixed(v % 10000 === 0 ? 0 : 1) + '万'
+  return v.toLocaleString()
+}
 
 const relevanceType = (v: number | null) => {
   if (v == null) return 'info'
