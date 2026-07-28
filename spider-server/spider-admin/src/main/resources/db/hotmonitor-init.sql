@@ -58,21 +58,57 @@ CREATE TABLE `hm_notification` (
     KEY `idx_user_unread` (`user_id`, `is_read`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内通知表';
 
--- 3. 热点话题表扩展字段（如果列已经存在会报错，可忽略或先检查）
+-- 3. 热点话题表扩展字段（用 information_schema 检测列是否存在，避免重复执行报错）
 --   执行前请确认 ac_hot_topic 表已存在
-ALTER TABLE `ac_hot_topic`
-    ADD COLUMN `keyword_id`    BIGINT       DEFAULT NULL COMMENT '关联关键词ID' AFTER `category`,
-    ADD INDEX `idx_keyword_id` (`keyword_id`);
-ALTER TABLE `ac_hot_topic`
-    ADD COLUMN `source`        VARCHAR(50)  DEFAULT '' COMMENT '来源标识' AFTER `keyword_id`;
-ALTER TABLE `ac_hot_topic`
-    ADD COLUMN `ai_score`      TINYINT      DEFAULT NULL COMMENT 'AI重要性评分1-5' AFTER `source`;
-ALTER TABLE `ac_hot_topic`
-    ADD COLUMN `ai_summary`    VARCHAR(500) DEFAULT '' COMMENT 'AI智能摘要' AFTER `ai_score`;
-ALTER TABLE `ac_hot_topic`
-    ADD COLUMN `ai_verified`   CHAR(1)      DEFAULT '0' COMMENT 'AI真假判定 0=未验证 1=真实 2=可疑 3=虚假' AFTER `ai_summary`;
-ALTER TABLE `ac_hot_topic`
-    ADD COLUMN `relevance`     TINYINT      DEFAULT NULL COMMENT '与关键词相关性0-100' AFTER `ai_verified`;
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'keyword_id');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD COLUMN `keyword_id` BIGINT DEFAULT NULL COMMENT ''关联关键词ID'' AFTER `category`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'source');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD COLUMN `source` VARCHAR(50) DEFAULT '''' COMMENT ''来源标识'' AFTER `keyword_id`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'ai_score');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD COLUMN `ai_score` TINYINT DEFAULT NULL COMMENT ''AI重要性评分1-5'' AFTER `source`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'ai_summary');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD COLUMN `ai_summary` VARCHAR(500) DEFAULT '''' COMMENT ''AI智能摘要'' AFTER `ai_score`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'ai_verified');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD COLUMN `ai_verified` CHAR(1) DEFAULT ''0'' COMMENT ''AI真假判定 0=未验证 1=真实 2=可疑 3=虚假'' AFTER `ai_summary`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'relevance');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD COLUMN `relevance` TINYINT DEFAULT NULL COMMENT ''与关键词相关性0-100'' AFTER `ai_verified`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+-- 索引安全检测
+SET @idx_exists = (SELECT COUNT(*) FROM `information_schema`.`STATISTICS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `INDEX_NAME` = 'idx_keyword_id');
+SET @s = IF(@idx_exists = 0,
+    'ALTER TABLE `ac_hot_topic` ADD INDEX `idx_keyword_id` (`keyword_id`)',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
 
 -- 4. 角色-菜单关联（先清理旧关联，再添加新关联）
 DELETE FROM `sys_role_menu` WHERE `menu_id` IN (15, 16, 17);
