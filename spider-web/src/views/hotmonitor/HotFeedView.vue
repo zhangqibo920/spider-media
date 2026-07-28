@@ -62,7 +62,7 @@ const topics = ref<any[]>([])
 const keywordFilter = ref('')
 const sourceFilter = ref('')
 const sortBy = ref('hot_score')
-const sources = ['weibo', 'douyin', 'zhihu', 'toutiao']
+const sources = ['weibo', 'douyin', 'zhihu', 'toutiao', 'baidu', 'bilibili', 'hackernews', 'github']
 
 const relevanceType = (v: number | null) => {
   if (v == null) return 'info'

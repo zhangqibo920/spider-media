@@ -10,6 +10,7 @@ import com.spider.media.hotmonitor.ai.HmAiAnalyzer;
 import com.spider.media.hotmonitor.ai.dto.AnalysisResult;
 import com.spider.media.hotmonitor.service.IHmMonitorService;
 import com.spider.media.hotmonitor.service.fetcher.IHotSourceFetcher;
+import com.spider.media.hotmonitor.skill.HmSkillEngine;
 import com.spider.media.hotmonitor.websocket.WebSocketSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,17 +33,20 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
     private final HmNotificationMapper notificationMapper;
     private final List<IHotSourceFetcher> fetchers;
     private final HmAiAnalyzer aiAnalyzer;
+    private final HmSkillEngine skillEngine;
 
     public HmMonitorServiceImpl(HmKeywordMapper keywordMapper,
                                  AcHotTopicMapper hotTopicMapper,
                                  HmNotificationMapper notificationMapper,
                                  List<IHotSourceFetcher> fetchers,
-                                 HmAiAnalyzer aiAnalyzer) {
+                                 HmAiAnalyzer aiAnalyzer,
+                                 HmSkillEngine skillEngine) {
         this.keywordMapper = keywordMapper;
         this.hotTopicMapper = hotTopicMapper;
         this.notificationMapper = notificationMapper;
         this.fetchers = fetchers;
         this.aiAnalyzer = aiAnalyzer;
+        this.skillEngine = skillEngine;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -115,6 +119,8 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
                 WebSocketSessionManager.sendToUser(keyword.getUserId(), wsMsg);
             }
         }
+
+        skillEngine.executeAll(keyword, allTopics);
 
         keywordMapper.updateLastFetchTime(keyword.getId(), now);
         log.info("关键词监控完成: {}, 获取{}条", keyword.getKeyword(), allTopics.size());

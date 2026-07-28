@@ -24,11 +24,14 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="邮件通知" width="90">
+        <el-table-column label="邮件通知" width="240">
           <template #default="{ row }">
             <el-tag :type="row.notifyEmail === '1' ? 'success' : 'info'" size="small">
               {{ row.notifyEmail === '1' ? '开启' : '关闭' }}
             </el-tag>
+            <span v-if="row.notifyEmail === '1' && row.notifyEmailAddr" style="margin-left:6px;font-size:12px;color:#666">
+              {{ row.notifyEmailAddr }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="lastFetchTime" label="上次抓取" width="160" />
@@ -59,6 +62,9 @@
         <el-form-item label="邮件通知">
           <el-switch v-model="form.notifyEmail" :active-value="'1'" :inactive-value="'0'" />
         </el-form-item>
+        <el-form-item label="邮箱地址" v-if="form.notifyEmail === '1'">
+          <el-input v-model="form.notifyEmailAddr" placeholder="接收通知的邮箱" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showDialog = false">取消</el-button>
@@ -86,6 +92,7 @@ const form = reactive({
   intervalMin: 30,
   notifySite: '1',
   notifyEmail: '0',
+  notifyEmailAddr: '',
 })
 
 const rules = {
@@ -110,6 +117,7 @@ const handleEdit = (row: any) => {
   form.intervalMin = row.intervalMin
   form.notifySite = row.notifySite
   form.notifyEmail = row.notifyEmail
+  form.notifyEmailAddr = row.notifyEmailAddr || ''
   showDialog.value = true
 }
 
@@ -162,6 +170,7 @@ const resetForm = () => {
   form.intervalMin = 30
   form.notifySite = '1'
   form.notifyEmail = '0'
+  form.notifyEmailAddr = ''
 }
 
 onMounted(() => { loadKeywords() })

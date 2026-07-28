@@ -24,6 +24,7 @@ CREATE TABLE `hm_keyword` (
     `status`          CHAR(1)      DEFAULT '0' COMMENT '0=激活 1=暂停',
     `interval_min`    INT          DEFAULT 30 COMMENT '抓取间隔(分钟)',
     `notify_email`    CHAR(1)      DEFAULT '0' COMMENT '是否邮件通知 0=否 1=是',
+    `notify_email_addr` VARCHAR(100) DEFAULT '' COMMENT '通知邮箱地址',
     `notify_site`     CHAR(1)      DEFAULT '1' COMMENT '是否站内通知 0=否 1=是',
     `last_fetch_time` DATETIME     DEFAULT NULL COMMENT '上次抓取时间',
     `del_flag`        CHAR(1)      DEFAULT '0' COMMENT '删除标志',
@@ -98,6 +99,14 @@ SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
                    WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'ac_hot_topic' AND `COLUMN_NAME` = 'relevance');
 SET @s = IF(@col_exists = 0,
     'ALTER TABLE `ac_hot_topic` ADD COLUMN `relevance` TINYINT DEFAULT NULL COMMENT ''与关键词相关性0-100'' AFTER `ai_verified`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+-- hm_keyword 兼容列新增（已有表升级用）
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'hm_keyword' AND `COLUMN_NAME` = 'notify_email_addr');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `hm_keyword` ADD COLUMN `notify_email_addr` VARCHAR(100) DEFAULT '''' COMMENT ''通知邮箱地址'' AFTER `notify_email`',
     'SELECT 1');
 PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
 
