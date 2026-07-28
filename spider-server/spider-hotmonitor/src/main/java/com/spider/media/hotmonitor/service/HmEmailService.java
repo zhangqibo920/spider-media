@@ -1,8 +1,8 @@
 package com.spider.media.hotmonitor.service;
 
-import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -14,15 +14,22 @@ public class HmEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(HmEmailService.class);
     private final JavaMailSender mailSender;
+    private final boolean enabled;
 
-    public HmEmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public HmEmailService(ObjectProvider<JavaMailSender> mailSenderProvider) {
+        JavaMailSender sender = mailSenderProvider.getIfAvailable();
+        this.mailSender = sender;
+        this.enabled = sender != null;
+        if (!enabled) {
+            log.warn("JavaMailSender 未配置（缺少 spring.mail.host），邮件通知已禁用");
+        }
     }
 
     public void sendNotification(String to, String keyword, List<String> topicTitles, String topTitle, int total) {
+        if (!enabled) return;
         try {
-            MimeMessage msg = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
+            var msg = mailSender.createMimeMessage();
+            var helper = new MimeMessageHelper(msg, true, "UTF-8");
             helper.setTo(to);
             helper.setSubject("热点监控: " + keyword);
 
