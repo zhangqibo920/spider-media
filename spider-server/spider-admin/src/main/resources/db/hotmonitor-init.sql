@@ -6,15 +6,14 @@
 -- 0. 修复 AI创作 菜单类型（原为 C，需改为 M 以支持子菜单）
 UPDATE `sys_menu` SET `menu_type` = 'M', `component` = '' WHERE `menu_id` = 3;
 
--- 0a. 修正已有菜单 ID（如果之前已执行旧版初始化，15=关键词管理，16=热点信息流）
---     用临时 ID 18 避免主键冲突：先腾位置，再插入新数据
-UPDATE `sys_menu` SET `menu_id` = 18 WHERE `menu_id` = 16;
-UPDATE `sys_menu` SET `menu_id` = 16 WHERE `menu_id` = 15;
-UPDATE `sys_menu` SET `menu_id` = 17 WHERE `menu_id` = 18;
+-- 0a. 重建 AI创作 下的子菜单（先删后插，保证幂等）
+DELETE FROM `sys_role_menu` WHERE `menu_id` IN (15, 16, 17);
+DELETE FROM `sys_menu` WHERE `menu_id` IN (15, 16, 17);
 
--- 0b. 新增 热点抓取 子菜单（此时 menu_id=15 已空）
-INSERT IGNORE INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`, `icon`, `sort_order`, `menu_type`, `visible`, `create_by`, `create_time`)
-VALUES (15, '热点抓取', 3, 'fetch', 'aicreation/AiCreationView', 'TrendCharts', 0, 'C', '0', 'system', NOW());
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`, `icon`, `sort_order`, `menu_type`, `visible`, `create_by`, `create_time`) VALUES
+(15, '热点抓取',   3, 'fetch',    'aicreation/AiCreationView',    'TrendCharts', 0, 'C', '0', 'system', NOW()),
+(16, '关键词管理', 3, 'keywords', 'hotmonitor/KeywordManageView', 'Search',       1, 'C', '0', 'system', NOW()),
+(17, '热点信息流', 3, 'hot-feed', 'hotmonitor/HotFeedView',       'TrendCharts', 2, 'C', '0', 'system', NOW());
 
 -- 1. 监控关键词表
 DROP TABLE IF EXISTS `hm_keyword`;
