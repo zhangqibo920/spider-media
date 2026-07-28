@@ -131,26 +131,27 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
     private List<AcHotTopic> fetchWeiboHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {
-            String json = webClient.get()
-                    .uri("https://weibo.com/ajax/side/hotSearch")
+            String html = webClient.get()
+                    .uri("https://s.weibo.com/top/summary")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                     .retrieve().bodyToMono(String.class)
                     .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
                     .block();
-            if (json != null) {
-                JsonNode root = objectMapper.readTree(json);
-                JsonNode data = root.path("data").path("realtime");
-                if (data.isArray()) {
-                    int rank = 1;
-                    for (JsonNode item : data) {
-                        AcHotTopic topic = new AcHotTopic();
-                        topic.setTitle(item.path("note").asText(""));
-                        topic.setDescription(item.path("label_name").asText(""));
-                        topic.setHotScore(item.path("num").asInt(0));
-                        topic.setUrl("https://s.weibo.com/weibo?q=%23" + item.path("word").asText("") + "%23");
-                        topic.setCategory("微博热搜");
-                        topics.add(topic);
-                        if (++rank > 30) break;
-                    }
+            if (html != null) {
+                org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(html);
+                int rank = 1;
+                for (org.jsoup.nodes.Element tr : doc.select("#pl_top_realtimehot table tbody tr")) {
+                    String title = tr.select(".td-02 a").text();
+                    String hot = tr.select(".td-02 span").text();
+                    if (title.isEmpty()) continue;
+                    AcHotTopic topic = new AcHotTopic();
+                    topic.setTitle(title);
+                    topic.setDescription("");
+                    topic.setHotScore(parseIntSafe(hot));
+                    topic.setUrl("https://s.weibo.com" + tr.select(".td-02 a").attr("href"));
+                    topic.setCategory("微博热搜");
+                    topics.add(topic);
+                    if (++rank > 30) break;
                 }
             }
         } catch (Exception e) {
