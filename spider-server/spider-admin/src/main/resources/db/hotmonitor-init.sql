@@ -26,6 +26,7 @@ CREATE TABLE `hm_keyword` (
     `notify_email`    CHAR(1)      DEFAULT '0' COMMENT '是否邮件通知 0=否 1=是',
     `notify_email_addr` VARCHAR(100) DEFAULT '' COMMENT '通知邮箱地址',
     `notify_site`     CHAR(1)      DEFAULT '1' COMMENT '是否站内通知 0=否 1=是',
+    `sources`         VARCHAR(200) DEFAULT '' COMMENT '抓取源列表(逗号分隔,空=全部)',
     `last_fetch_time` DATETIME     DEFAULT NULL COMMENT '上次抓取时间',
     `del_flag`        CHAR(1)      DEFAULT '0' COMMENT '删除标志',
     `create_by`       VARCHAR(64)  DEFAULT '' COMMENT '创建者',
@@ -102,11 +103,18 @@ SET @s = IF(@col_exists = 0,
     'SELECT 1');
 PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
 
--- hm_keyword 兼容列新增（已有表升级用）
+-- hm_keyword 列安全新增
 SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
                    WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'hm_keyword' AND `COLUMN_NAME` = 'notify_email_addr');
 SET @s = IF(@col_exists = 0,
     'ALTER TABLE `hm_keyword` ADD COLUMN `notify_email_addr` VARCHAR(100) DEFAULT '''' COMMENT ''通知邮箱地址'' AFTER `notify_email`',
+    'SELECT 1');
+PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
+
+SET @col_exists = (SELECT COUNT(*) FROM `information_schema`.`COLUMNS`
+                   WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'hm_keyword' AND `COLUMN_NAME` = 'sources');
+SET @s = IF(@col_exists = 0,
+    'ALTER TABLE `hm_keyword` ADD COLUMN `sources` VARCHAR(200) DEFAULT '''' COMMENT ''抓取源列表(逗号分隔,空=全部)'' AFTER `notify_site`',
     'SELECT 1');
 PREPARE `stmt` FROM @s; EXECUTE `stmt`; DEALLOCATE PREPARE `stmt`;
 

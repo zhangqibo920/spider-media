@@ -11,6 +11,7 @@
         <result column="notify_email" property="notifyEmail"/>
         <result column="notify_email_addr" property="notifyEmailAddr"/>
         <result column="notify_site" property="notifySite"/>
+        <result column="sources" property="sources"/>
         <result column="last_fetch_time" property="lastFetchTime"/>
         <result column="create_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
@@ -21,7 +22,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, user_id, keyword, status, interval_min, notify_email, notify_email_addr, notify_site, last_fetch_time,
+        id, user_id, keyword, status, interval_min, notify_email, notify_email_addr, notify_site, sources, last_fetch_time,
         create_by, create_time, update_by, update_time, remark, del_flag
     </sql>
 
@@ -43,9 +44,9 @@
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO hm_keyword (user_id, keyword, status, interval_min, notify_email, notify_email_addr, notify_site,
+        INSERT INTO hm_keyword (user_id, keyword, status, interval_min, notify_email, notify_email_addr, notify_site, sources,
                                 create_by, create_time)
-        VALUES (#{userId}, #{keyword}, #{status}, #{intervalMin}, #{notifyEmail}, #{notifyEmailAddr}, #{notifySite},
+        VALUES (#{userId}, #{keyword}, #{status}, #{intervalMin}, #{notifyEmail}, #{notifyEmailAddr}, #{notifySite}, #{sources},
                 #{createBy}, #{createTime})
     </insert>
 
@@ -57,6 +58,7 @@
             notify_email  = #{notifyEmail},
             notify_email_addr = #{notifyEmailAddr},
             notify_site   = #{notifySite},
+            sources       = #{sources},
             update_by     = #{updateBy},
             update_time   = #{updateTime}
         WHERE id = #{id}

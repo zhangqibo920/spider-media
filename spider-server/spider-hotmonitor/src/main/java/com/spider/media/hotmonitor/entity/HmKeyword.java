@@ -18,5 +18,6 @@ public class HmKeyword extends BaseEntity {
     private String notifyEmail;
     private String notifyEmailAddr;
     private String notifySite;
+    private String sources;
     private LocalDateTime lastFetchTime;
 }

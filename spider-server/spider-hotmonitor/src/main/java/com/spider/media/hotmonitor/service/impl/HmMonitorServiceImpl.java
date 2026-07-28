@@ -20,8 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class HmMonitorServiceImpl implements IHmMonitorService {
@@ -66,9 +69,19 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
     @Transactional(rollbackFor = Exception.class)
     public void executeKeyword(HmKeyword keyword, LocalDateTime now) {
         log.info("开始监控关键词: {}", keyword.getKeyword());
+
+        Set<String> enabledSources = keyword.getSources() != null && !keyword.getSources().isBlank()
+                ? Arrays.stream(keyword.getSources().split(","))
+                        .map(String::trim).collect(Collectors.toSet())
+                : null;
+
         List<AcHotTopic> allTopics = new ArrayList<>();
 
         for (IHotSourceFetcher fetcher : fetchers) {
+            if (enabledSources != null && !enabledSources.contains(fetcher.sourceName())) {
+                log.debug("跳过平台: {}", fetcher.sourceName());
+                continue;
+            }
             try {
                 List<AcHotTopic> topics = fetcher.fetch(keyword.getKeyword());
                 for (AcHotTopic topic : topics) {

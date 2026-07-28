@@ -34,6 +34,14 @@
             </span>
           </template>
         </el-table-column>
+        <el-table-column label="抓取平台" min-width="180">
+          <template #default="{ row }">
+            <template v-if="row.sources && row.sources.length > 0">
+              <el-tag v-for="s in row.sources.split(',')" :key="s" size="small" style="margin:1px 2px">{{ s }}</el-tag>
+            </template>
+            <span v-else style="color:#999;font-size:12px">全部</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="lastFetchTime" label="上次抓取" width="160" />
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
@@ -65,6 +73,12 @@
         <el-form-item label="邮箱地址" v-if="form.notifyEmail === '1'">
           <el-input v-model="form.notifyEmailAddr" placeholder="接收通知的邮箱" />
         </el-form-item>
+        <el-form-item label="抓取平台">
+          <el-select v-model="form.sources" multiple placeholder="全部平台" style="width:100%">
+            <el-option v-for="s in allSources" :key="s.value" :label="s.label" :value="s.value" />
+          </el-select>
+          <div style="font-size:12px;color:#999;margin-top:4px">不选则抓取全部平台</div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showDialog = false">取消</el-button>
@@ -86,6 +100,17 @@ const isEdit = ref(false)
 const keywords = ref<any[]>([])
 const formRef = ref<any>(null)
 
+const allSources = [
+  { label: '微博', value: 'weibo' },
+  { label: '抖音', value: 'douyin' },
+  { label: '知乎', value: 'zhihu' },
+  { label: '头条', value: 'toutiao' },
+  { label: '百度', value: 'baidu' },
+  { label: 'B站', value: 'bilibili' },
+  { label: 'HackerNews', value: 'hackernews' },
+  { label: 'GitHub', value: 'github' },
+]
+
 const form = reactive({
   id: 0,
   keyword: '',
@@ -93,6 +118,7 @@ const form = reactive({
   notifySite: '1',
   notifyEmail: '0',
   notifyEmailAddr: '',
+  sources: [] as string[],
 })
 
 const rules = {
@@ -118,6 +144,7 @@ const handleEdit = (row: any) => {
   form.notifySite = row.notifySite
   form.notifyEmail = row.notifyEmail
   form.notifyEmailAddr = row.notifyEmailAddr || ''
+  form.sources = row.sources ? row.sources.split(',') : []
   showDialog.value = true
 }
 
@@ -126,11 +153,12 @@ const handleSave = async () => {
   if (!valid) return
   saving.value = true
   try {
+    const payload = { ...form, sources: form.sources.join(',') }
     if (isEdit.value) {
-      await updateKeyword(form)
+      await updateKeyword(payload)
       ElMessage.success('更新成功')
     } else {
-      await createKeyword(form)
+      await createKeyword(payload)
       ElMessage.success('添加成功')
     }
     showDialog.value = false
@@ -171,6 +199,7 @@ const resetForm = () => {
   form.notifySite = '1'
   form.notifyEmail = '0'
   form.notifyEmailAddr = ''
+  form.sources = []
 }
 
 onMounted(() => { loadKeywords() })
