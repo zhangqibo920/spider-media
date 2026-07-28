@@ -412,7 +412,7 @@ INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 1), (2, 2);
 INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`, `perms`, `icon`, `sort_order`, `menu_type`, `visible`, `create_by`, `create_time`) VALUES
 (1, '工作台',     0, '/dashboard',   'dashboard/DashboardView',   '',  'Odometer',  1, 'C', '0', 'system', NOW()),
 (2, '数据采集',   0, '/collection',  'datacollection/CollectionView', '', 'Download',  2, 'C', '0', 'system', NOW()),
-(3, 'AI创作',    0, '/ai-creation', 'aicreation/AiCreationView', '', 'MagicStick', 3, 'C', '0', 'system', NOW()),
+(3, 'AI创作',    0, '/ai-creation', '',                       '', 'MagicStick', 3, 'M', '0', 'system', NOW()),
 (4, '内容发布',   0, '/publish',     'contentpublish/PublishView', '', 'Promotion',  4, 'C', '0', 'system', NOW()),
 (5, '任务调度',   0, '/scheduler',   'taskscheduler/SchedulerView', '', 'Timer',      5, 'C', '0', 'system', NOW()),
 (6, '系统管理',   0, '/admin',       '',                      '', 'Setting',    6, 'M', '0', 'system', NOW()),
@@ -425,12 +425,13 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`
 (13, '菜单管理', 6, 'menus',   'systemadmin/MenuManageView',  '', 'Menu',           6, 'C', '0', 'system', NOW()),
 (14, '角色管理', 6, 'roles',   'systemadmin/RoleManageView',  '', 'UserFilled',     7, 'C', '0', 'system', NOW()),
 -- 热点监控（属于 AI创作 的子菜单，menu_id=3）
-(15, '关键词管理', 3, 'keywords', 'hotmonitor/KeywordManageView', '', 'Search', 1, 'C', '0', 'system', NOW()),
-(16, '热点信息流', 3, 'hot-feed', 'hotmonitor/HotFeedView',       '', 'TrendCharts', 2, 'C', '0', 'system', NOW());
+(15, '热点抓取',  3, 'fetch',    'aicreation/AiCreationView',    '', 'TrendCharts', 0, 'C', '0', 'system', NOW()),
+(16, '关键词管理', 3, 'keywords', 'hotmonitor/KeywordManageView', '', 'Search',       1, 'C', '0', 'system', NOW()),
+(17, '热点信息流', 3, 'hot-feed', 'hotmonitor/HotFeedView',       '', 'TrendCharts', 2, 'C', '0', 'system', NOW());
 
 -- 分配角色-菜单（ADMIN 拥有所有菜单，USER 排除系统管理）
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7),
 (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14),
-(1, 15), (1, 16),
-(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 7), (2, 15), (2, 16);
+(1, 15), (1, 16), (1, 17),
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 7), (2, 15), (2, 16), (2, 17);

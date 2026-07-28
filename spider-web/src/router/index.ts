@@ -56,9 +56,6 @@ function generateRoutes(menus: Menu[]): RouteRecordRaw[] {
       }
     } else if (menu.component && componentMap[menu.component]) {
       route.component = componentMap[menu.component]
-      if (menu.children && menu.children.length > 0) {
-        route.children = generateRoutes(menu.children)
-      }
     }
     routes.push(route)
   }
