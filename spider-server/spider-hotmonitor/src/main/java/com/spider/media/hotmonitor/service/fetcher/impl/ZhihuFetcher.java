@@ -24,7 +24,6 @@ public class ZhihuFetcher implements IHotSourceFetcher {
     public ZhihuFetcher(WebClient.Builder builder) {
         this.webClient = builder
                 .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                .defaultHeader("Accept", "application/json, text/plain, */*")
                 .defaultHeader("Accept-Language", "zh-CN,zh;q=0.9")
                 .codecs(c -> c.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
                 .build();
@@ -40,8 +39,10 @@ public class ZhihuFetcher implements IHotSourceFetcher {
     public List<AcHotTopic> fetch(String keyword) {
         List<AcHotTopic> topics = new ArrayList<>();
         try {
+            String cookie = grabCookie();
             String json = webClient.get()
                     .uri("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=30")
+                    .header("Cookie", cookie)
                     .retrieve().bodyToMono(String.class)
                     .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
                     .block();
@@ -69,5 +70,26 @@ public class ZhihuFetcher implements IHotSourceFetcher {
             log.warn("知乎热榜抓取失败", e);
         }
         return topics;
+    }
+
+    private String grabCookie() {
+        try {
+            return webClient.get()
+                    .uri("https://www.zhihu.com/")
+                    .exchangeToMono(resp -> {
+                        var allCookies = resp.cookies();
+                        StringBuilder sb = new StringBuilder();
+                        allCookies.forEach((name, values) -> {
+                            if (!values.isEmpty()) {
+                                if (!sb.isEmpty()) sb.append("; ");
+                                sb.append(name).append("=").append(values.get(0).getValue());
+                            }
+                        });
+                        return reactor.core.publisher.Mono.just(sb.toString());
+                    })
+                    .blockOptional().orElse("");
+        } catch (Exception e) {
+            return "";
+        }
     }
 }

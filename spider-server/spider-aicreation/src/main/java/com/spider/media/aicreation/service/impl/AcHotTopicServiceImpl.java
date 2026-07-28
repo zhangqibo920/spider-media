@@ -206,8 +206,10 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
     private List<AcHotTopic> fetchZhihuHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {
+            String cookie = grabZhihuCookie();
             String json = webClient.get()
                     .uri("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=30")
+                    .header("Cookie", cookie)
                     .retrieve().bodyToMono(String.class)
                     .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
                     .block();
@@ -220,8 +222,8 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
                         AcHotTopic topic = new AcHotTopic();
                         topic.setTitle(target.path("title").asText(""));
                         topic.setDescription(target.path("excerpt").asText(""));
-                        topic.setHotScore(item.path("detail_text").asText("0").replaceAll("[^0-9]", "").isEmpty() ? 0 :
-                                Integer.parseInt(item.path("detail_text").asText("0").replaceAll("[^0-9]", "")));
+                        String hotText = item.path("detail_text").asText("0").replaceAll("[^0-9]", "");
+                        topic.setHotScore(hotText.isEmpty() ? 0 : Integer.parseInt(hotText));
                         topic.setUrl("https://www.zhihu.com/question/" + target.path("id").asText(""));
                         topic.setCategory("知乎热榜");
                         topics.add(topic);
@@ -232,6 +234,27 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
             log.warn("知乎热榜抓取失败", e);
         }
         return topics;
+    }
+
+    private String grabZhihuCookie() {
+        try {
+            return webClient.get()
+                    .uri("https://www.zhihu.com/")
+                    .exchangeToMono(resp -> {
+                        var cookieMap = resp.cookies();
+                        StringBuilder sb = new StringBuilder();
+                        cookieMap.forEach((name, values) -> {
+                            if (!values.isEmpty()) {
+                                if (!sb.isEmpty()) sb.append("; ");
+                                sb.append(name).append("=").append(values.get(0).getValue());
+                            }
+                        });
+                        return reactor.core.publisher.Mono.just(sb.toString());
+                    })
+                    .blockOptional().orElse("");
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**
