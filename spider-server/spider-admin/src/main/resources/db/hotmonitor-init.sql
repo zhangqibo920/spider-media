@@ -124,6 +124,14 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (1, 15), (1, 16), (1, 17),
 (2, 15), (2, 16), (2, 17);
 
+-- 4a. 热点平台字典新增4源
+DELETE FROM `sys_dict_data` WHERE `dict_type` = 'hot_topic_platform' AND `dict_value` IN ('baidu','bilibili','hackernews','github');
+INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type`, `remark`, `del_flag`, `create_time`) VALUES
+(5, '百度',       'baidu',      'hot_topic_platform', '', '0', NOW()),
+(6, 'B站',        'bilibili',   'hot_topic_platform', '', '0', NOW()),
+(7, 'HackerNews', 'hackernews', 'hot_topic_platform', '', '0', NOW()),
+(8, 'GitHub',     'github',     'hot_topic_platform', '', '0', NOW());
+
 -- 5. SMTP 邮件配置（先删后插，保证幂等）
 DELETE FROM `sys_config` WHERE `config_key` LIKE 'smtp.%';
 INSERT INTO `sys_config` (`config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`) VALUES

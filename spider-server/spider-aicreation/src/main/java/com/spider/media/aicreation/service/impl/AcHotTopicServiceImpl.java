@@ -79,6 +79,18 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
                 case "toutiao":
                     topics = fetchToutiaoHot();
                     break;
+                case "baidu":
+                    topics = fetchBaiduHot();
+                    break;
+                case "bilibili":
+                    topics = fetchBilibiliHot();
+                    break;
+                case "hackernews":
+                    topics = fetchHackerNewsHot();
+                    break;
+                case "github":
+                    topics = fetchGitHubHot();
+                    break;
                 default:
                     topics = fetchWeiboHot();
                     break;
@@ -224,6 +236,142 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
     /**
      * 抓取今日头条热榜（最多30条）
      */
+    private List<AcHotTopic> fetchBaiduHot() {
+        List<AcHotTopic> topics = new ArrayList<>();
+        try {
+            String html = webClient.get()
+                    .uri("https://top.baidu.com/board?tab=realtime")
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
+            if (html != null) {
+                org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(html);
+                org.jsoup.select.Elements items = doc.select(".category-wrap_iQLoo .content-wrapper .content_28Njm");
+                int rank = 1;
+                for (org.jsoup.nodes.Element item : items) {
+                    String title = item.select(".c-single-text-ellipsis").text();
+                    String desc = item.select(".desc_3CTjT").text();
+                    if (title.isEmpty()) continue;
+                    AcHotTopic topic = new AcHotTopic();
+                    topic.setTitle(title);
+                    topic.setDescription(desc);
+                    topic.setHotScore(parseIntSafe(item.select(".hot-index_1Bl1a").text()));
+                    topic.setUrl("https://top.baidu.com/board?tab=realtime");
+                    topic.setCategory("百度热搜");
+                    topics.add(topic);
+                    if (++rank > 30) break;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("百度热搜抓取失败", e);
+        }
+        return topics;
+    }
+
+    private List<AcHotTopic> fetchBilibiliHot() {
+        List<AcHotTopic> topics = new ArrayList<>();
+        try {
+            String json = webClient.get()
+                    .uri("https://api.bilibili.com/x/web-interface/ranking/v2")
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
+            if (json != null) {
+                JsonNode root = objectMapper.readTree(json);
+                JsonNode data = root.path("data").path("list");
+                if (data.isArray()) {
+                    for (JsonNode item : data) {
+                        AcHotTopic topic = new AcHotTopic();
+                        topic.setTitle(item.path("title").asText(""));
+                        topic.setDescription(item.path("desc").asText(""));
+                        topic.setHotScore(item.path("stat").path("view").asInt(0));
+                        topic.setUrl("https://www.bilibili.com/video/" + item.path("bvid").asText());
+                        topic.setCategory("B站热门");
+                        topics.add(topic);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("B站热门抓取失败", e);
+        }
+        return topics;
+    }
+
+    private List<AcHotTopic> fetchHackerNewsHot() {
+        List<AcHotTopic> topics = new ArrayList<>();
+        try {
+            String idsJson = webClient.get()
+                    .uri("https://hacker-news.firebaseio.com/v0/topstories.json")
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
+            if (idsJson == null) return topics;
+            int[] ids = objectMapper.readValue(idsJson, int[].class);
+            int count = 0;
+            for (int id : ids) {
+                if (count >= 30) break;
+                String itemJson = webClient.get()
+                        .uri("https://hacker-news.firebaseio.com/v0/item/" + id + ".json")
+                        .retrieve().bodyToMono(String.class)
+                        .retryWhen(Retry.backoff(1, Duration.ofSeconds(1)))
+                        .block();
+                if (itemJson == null) continue;
+                JsonNode item = objectMapper.readTree(itemJson);
+                String title = item.path("title").asText("");
+                if (title.isEmpty()) continue;
+                AcHotTopic topic = new AcHotTopic();
+                topic.setTitle(title);
+                topic.setDescription(item.path("text").asText(""));
+                topic.setHotScore(item.path("score").asInt(0));
+                topic.setUrl(item.path("url").asText("https://news.ycombinator.com/item?id=" + id));
+                topic.setCategory("HackerNews");
+                topics.add(topic);
+                count++;
+            }
+        } catch (Exception e) {
+            log.warn("HackerNews抓取失败", e);
+        }
+        return topics;
+    }
+
+    private List<AcHotTopic> fetchGitHubHot() {
+        List<AcHotTopic> topics = new ArrayList<>();
+        try {
+            String html = webClient.get()
+                    .uri("https://github.com/trending")
+                    .retrieve().bodyToMono(String.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
+                    .block();
+            if (html != null) {
+                org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(html);
+                org.jsoup.select.Elements articles = doc.select("article.Box-row");
+                for (org.jsoup.nodes.Element article : articles) {
+                    String repo = article.select("h2 a").text().replaceAll("\\s+", "");
+                    String desc = article.select("p").text();
+                    if (repo.isEmpty()) continue;
+                    AcHotTopic topic = new AcHotTopic();
+                    topic.setTitle(repo);
+                    topic.setDescription(desc);
+                    topic.setHotScore(parseIntSafe(article.select(".d-inline-block.float-sm-right").text()));
+                    topic.setUrl("https://github.com/" + repo);
+                    topic.setCategory("GitHub Trending");
+                    topics.add(topic);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("GitHub Trending抓取失败", e);
+        }
+        return topics;
+    }
+
+    private int parseIntSafe(String text) {
+        try {
+            return Integer.parseInt(text.replaceAll("[^0-9kK]", "").replaceAll("(?i)k", "000"));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     private List<AcHotTopic> fetchToutiaoHot() {
         List<AcHotTopic> topics = new ArrayList<>();
         try {

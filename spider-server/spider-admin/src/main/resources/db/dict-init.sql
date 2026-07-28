@@ -108,7 +108,11 @@ INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type
 (1, '微博', 'weibo', 'hot_topic_platform', '', '0', NOW()),
 (2, '抖音', 'douyin', 'hot_topic_platform', '', '0', NOW()),
 (3, '知乎', 'zhihu', 'hot_topic_platform', '', '0', NOW()),
-(4, '头条', 'toutiao', 'hot_topic_platform', '', '0', NOW());
+(4, '头条', 'toutiao', 'hot_topic_platform', '', '0', NOW()),
+(5, '百度', 'baidu', 'hot_topic_platform', '', '0', NOW()),
+(6, 'B站', 'bilibili', 'hot_topic_platform', '', '0', NOW()),
+(7, 'HackerNews', 'hackernews', 'hot_topic_platform', '', '0', NOW()),
+(8, 'GitHub', 'github', 'hot_topic_platform', '', '0', NOW());
 
 -- 发布平台
 INSERT INTO `sys_dict_data` (`dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `status`, `create_time`) VALUES
