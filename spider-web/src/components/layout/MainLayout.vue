@@ -65,24 +65,24 @@
         <router-view />
       </el-main>
     </el-container>
-
-    <el-drawer v-model="showNotificationDrawer" title="通知" size="350px" @open="loadNotifications">
-      <template #header>
-        <div class="drawer-header">
-          <span>通知</span>
-          <el-button text size="small" @click="handleMarkAllRead" v-if="unreadCount > 0">全部已读</el-button>
-        </div>
-      </template>
-      <div v-loading="notifLoading">
-        <div v-for="n in notifications" :key="n.id" class="notif-item" :class="{ unread: n.isRead === '0' }" @click="handleNotifClick(n)">
-          <div class="notif-title">{{ n.title }}</div>
-          <div class="notif-content">{{ n.content }}</div>
-          <div class="notif-time">{{ n.createTime }}</div>
-        </div>
-        <el-empty v-if="!notifLoading && notifications.length === 0" description="暂无通知" />
-      </div>
-    </el-drawer>
   </el-container>
+
+  <el-drawer v-model="showNotificationDrawer" title="通知" size="350px" @open="loadNotifications">
+    <template #header>
+      <div class="drawer-header">
+        <span>通知</span>
+        <el-button text size="small" @click="handleMarkAllRead" v-if="unreadCount > 0">全部已读</el-button>
+      </div>
+    </template>
+    <div v-loading="notifLoading">
+      <div v-for="n in notifications" :key="n.id" class="notif-item" :class="{ unread: n.isRead === '0' }" @click="handleNotifClick(n)">
+        <div class="notif-title">{{ n.title }}</div>
+        <div class="notif-content">{{ n.content }}</div>
+        <div class="notif-time">{{ n.createTime }}</div>
+      </div>
+      <el-empty v-if="!notifLoading && notifications.length === 0" description="暂无通知" />
+    </div>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -190,13 +190,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer)
-})
-  if (userStore.token && !userStore.userInfo) {
-    userStore.fetchUserInfo()
-  }
-  if (userStore.token && !userStore.routesLoaded) {
-    userStore.fetchMenuTree()
-  }
 })
 </script>
 
