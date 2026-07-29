@@ -9,6 +9,8 @@ import com.spider.media.contentpublish.entity.PbPlatformAccount;
 import com.spider.media.contentpublish.entity.PbPublishTask;
 import com.spider.media.contentpublish.mapper.PbPlatformAccountMapper;
 import com.spider.media.contentpublish.mapper.PbPublishTaskMapper;
+import com.spider.media.contentpublish.publisher.PlatformPublisher;
+import com.spider.media.contentpublish.publisher.PlatformPublisherRegistry;
 import com.spider.media.contentpublish.service.IPbPublishTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,38 +20,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-/**
- * 发布任务业务层实现类
- *
- * <p>实现发布任务的完整生命周期管理：
- * <ul>
- *   <li>创建任务（草稿状态）</li>
- *   <li>立即发布（异步调用平台 API）</li>
- *   <li>设置定时发布</li>
- *   <li>分页查询</li>
- * </ul></p>
- *
- * <p>发布流程：查找平台账号 → 验证账号有效性 → 调用平台 API → 更新任务状态和结果。</p>
- */
 @Service
 public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
 
     private static final Logger log = LoggerFactory.getLogger(PbPublishTaskServiceImpl.class);
+    private static final int MAX_RETRIES = 3;
 
-    /** 发布任务数据访问对象 */
     private final PbPublishTaskMapper publishTaskMapper;
-    /** 平台账号数据访问对象（用于查找发布所需的授权账号） */
     private final PbPlatformAccountMapper platformAccountMapper;
+    private final PlatformPublisherRegistry publisherRegistry;
 
     public PbPublishTaskServiceImpl(PbPublishTaskMapper publishTaskMapper,
-                                     PbPlatformAccountMapper platformAccountMapper) {
+                                     PbPlatformAccountMapper platformAccountMapper,
+                                     PlatformPublisherRegistry publisherRegistry) {
         this.publishTaskMapper = publishTaskMapper;
         this.platformAccountMapper = platformAccountMapper;
+        this.publisherRegistry = publisherRegistry;
     }
 
-    /**
-     * 创建发布任务（初始状态为草稿）
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PbPublishTask createTask(PbPublishTask task) {
@@ -60,24 +48,6 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         return task;
     }
 
-    /**
-     * 异步立即发布任务
-     *
-     * <p>发布流程：
-     * <ol>
-     *   <li>查询发布任务，校验是否存在</li>
-     *   <li>将状态更新为"发布中"</li>
-     *   <li>查找关联的平台账号</li>
-     *   <li>调用平台 API 发布内容</li>
-     *   <li>根据结果更新状态为"已发布"或"失败"</li>
-     * </ol></p>
-     *
-     * <p>归属校验已在 Controller 同步完成（@Async 方法异常无法直接返回前端），
-     * 此处做二次防护并记录日志。</p>
-     *
-     * @param taskId     任务ID
-     * @param operatorId 当前操作用户ID
-     */
     @Override
     @Async
     public void publishNow(Long taskId, Long operatorId) {
@@ -86,13 +56,12 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
             log.warn("发布任务不存在, taskId={}", taskId);
             return;
         }
-        // 二次归属校验（防御性，主要校验已在 Controller 完成）
         if (operatorId == null || !operatorId.equals(task.getUserId())) {
             log.warn("越权发布被拒绝, taskId={}, operatorId={}, ownerId={}",
                     taskId, operatorId, task.getUserId());
             return;
         }
-        // 更新状态为发布中
+
         task.setStatus(1);
         task.setUpdateBy(String.valueOf(operatorId));
         task.setUpdateTime(LocalDateTime.now());
@@ -101,32 +70,25 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         log.info("开始发布任务, taskId={}, platform={}", taskId, task.getPlatform());
 
         try {
-            // 查找平台账号
             PbPlatformAccount account = platformAccountMapper.selectById(task.getPlatformAccountId());
             if (account == null) {
-                task.setStatus(3);
-                task.setPublishResult("发布失败: 找不到平台账号");
-                publishTaskMapper.updateById(task);
+                markFailed(task, "找不到平台账号");
                 return;
             }
 
-            // 调用平台 API 发布
-            boolean success = publishToPlatform(task, account);
+            PlatformPublisher publisher = publisherRegistry.getPublisher(task.getPlatform());
+            PlatformPublisher.PublishResult result = publisher.publish(task, account);
 
-            if (success) {
+            if (result.success()) {
                 task.setStatus(2);
                 task.setPublishedTime(LocalDateTime.now());
-                task.setPublishResult("发布成功");
-                log.info("发布成功, taskId={}, platform={}", taskId, task.getPlatform());
+                task.setPublishResult(result.message());
+                log.info("发布成功, taskId={}", taskId);
             } else {
-                task.setStatus(3);
-                task.setPublishResult("发布失败: 平台接口返回错误");
-                log.warn("发布失败, taskId={}, platform={}", taskId, task.getPlatform());
+                handleFailure(task, result.message());
             }
         } catch (Exception e) {
-            task.setStatus(3);
-            task.setPublishResult("发布失败: " + e.getMessage());
-            log.error("发布异常, taskId={}", taskId, e);
+            handleFailure(task, "发布异常: " + e.getMessage());
         }
 
         task.setUpdateBy("system");
@@ -134,11 +96,6 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         publishTaskMapper.updateById(task);
     }
 
-    /**
-     * 设置定时发布时间
-     *
-     * @throws ServiceException 任务不存在或不属于当前用户时抛出异常
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void schedulePublish(Long taskId, LocalDateTime scheduledTime, Long operatorId) {
@@ -149,22 +106,16 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         publishTaskMapper.updateById(task);
     }
 
-    /**
-     * 更新发布任务
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PbPublishTask updateTask(PbPublishTask task) {
-        PbPublishTask existing = validateOwnership(task.getId(), task.getUserId());
+        validateOwnership(task.getId(), task.getUserId());
         task.setUpdateBy(String.valueOf(task.getUserId()));
         task.setUpdateTime(LocalDateTime.now());
         publishTaskMapper.updateById(task);
         return task;
     }
 
-    /**
-     * 逻辑删除发布任务
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTask(Long taskId, Long operatorId) {
@@ -172,9 +123,6 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         publishTaskMapper.deleteById(taskId);
     }
 
-    /**
-     * 校验发布任务归属
-     */
     @Override
     public PbPublishTask validateOwnership(Long taskId, Long operatorId) {
         PbPublishTask task = publishTaskMapper.selectById(taskId);
@@ -198,23 +146,22 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
         );
     }
 
-    /**
-     * 模拟发布到平台（实际项目中替换为真实的平台 API 调用）
-     *
-     * @param task    发布任务
-     * @param account 发布使用的平台账号
-     * @return 发布是否成功
-     */
-    private boolean publishToPlatform(PbPublishTask task, PbPlatformAccount account) {
-        String platform = task.getPlatform();
-        log.info("模拟发布到{}平台, 账号: {}", platform, account.getAccountName());
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+    private void handleFailure(PbPublishTask task, String reason) {
+        int retryCount = task.getRetryCount() == null ? 0 : task.getRetryCount();
+        if (retryCount < MAX_RETRIES) {
+            task.setStatus(1);
+            task.setRetryCount(retryCount + 1);
+            task.setPublishResult("第" + (retryCount + 1) + "次重试: " + reason);
+            log.warn("发布失败即将重试, taskId={}, retry={}/{}", task.getId(), retryCount + 1, MAX_RETRIES);
+        } else {
+            task.setStatus(3);
+            task.setPublishResult(reason);
+            log.warn("发布失败已达最大重试次数, taskId={}", task.getId());
         }
+    }
 
-        return true;
+    private void markFailed(PbPublishTask task, String reason) {
+        task.setStatus(3);
+        task.setPublishResult(reason);
     }
 }
