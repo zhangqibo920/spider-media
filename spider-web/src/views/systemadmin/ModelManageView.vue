@@ -3,32 +3,32 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>AI 模型管理</span>
+          <span>{{ $t('sysAdmin.modelManagement') }}</span>
           <el-button type="primary" @click="openAddDialog">
-            <el-icon><Plus /></el-icon> 添加模型
+            <el-icon><Plus /></el-icon> {{ $t('sysAdmin.addModel') }}
           </el-button>
         </div>
       </template>
 
       <el-table :data="models" v-loading="loading" stripe>
-        <el-table-column prop="modelName" label="模型名称" width="160" />
-        <el-table-column prop="modelKey" label="模型标识" width="140">
+        <el-table-column prop="modelName" :label="$t('sysAdmin.modelName')" width="160" />
+        <el-table-column prop="modelKey" :label="$t('sysAdmin.modelKey')" width="140">
           <template #default="{ row }">
             <el-tag size="small">{{ row.modelKey }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="provider" label="提供方" width="100">
+        <el-table-column prop="provider" :label="$t('sysAdmin.provider')" width="100">
           <template #default="{ row }">
             <el-tag :type="getProviderType(row.provider)" size="small">{{ row.provider }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="apiKey" label="API密钥" width="200">
+        <el-table-column prop="apiKey" :label="$t('sysAdmin.apiKey')" width="200">
           <template #default="{ row }">
             <span v-if="row.apiKey">{{ maskKey(row.apiKey) }}</span>
-            <span v-else class="text-muted">未配置</span>
+            <span v-else class="text-muted">{{ $t('sysAdmin.notConfigured') }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="enabled" label="状态" width="80">
+        <el-table-column prop="enabled" :label="$t('common.status')" width="80">
           <template #default="{ row }">
             <el-switch
               :model-value="row.enabled === 'Y'"
@@ -37,14 +37,14 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="testStatus" label="测试状态" width="100">
+        <el-table-column prop="testStatus" :label="$t('sysAdmin.testStatus')" width="100">
           <template #default="{ row }">
             <el-tag :type="getTestStatusType(row.testStatus)" size="small">
               {{ getTestStatusLabel(row.testStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="testMessage" label="测试结果" show-overflow-tooltip>
+        <el-table-column prop="testMessage" :label="$t('sysAdmin.testResult')" show-overflow-tooltip>
           <template #default="{ row }">
             <span v-if="row.testMessage" :class="row.testStatus === 'SUCCESS' ? 'text-success' : 'text-danger'">
               {{ row.testMessage }}
@@ -52,15 +52,15 @@
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200">
+        <el-table-column :label="$t('common.operation')" width="200">
           <template #default="{ row }">
-            <el-button type="primary" link @click="openEditDialog(row)">编辑</el-button>
+            <el-button type="primary" link @click="openEditDialog(row)">{{ $t('common.edit') }}</el-button>
             <el-button type="success" link @click="handleTest(row)" :loading="row._testing">
-              {{ row._testing ? '测试中' : '测试' }}
+              {{ row._testing ? $t('sysAdmin.testing') : $t('sysAdmin.testModel') }}
             </el-button>
-            <el-popconfirm title="确定删除该模型？" @confirm="handleDelete(row.id)">
+            <el-popconfirm :title="$t('sysAdmin.confirmDeleteModel')" @confirm="handleDelete(row.id)">
               <template #reference>
-                <el-button type="danger" link>删除</el-button>
+                <el-button type="danger" link>{{ $t('common.delete') }}</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -69,41 +69,41 @@
     </el-card>
 
     <!-- Add/Edit Dialog -->
-    <el-dialog v-model="showDialog" :title="editingId ? '编辑模型' : '添加模型'" width="600px" @closed="resetForm">
+    <el-dialog v-model="showDialog" :title="editingId ? $t('sysAdmin.editModel') : $t('sysAdmin.addModel')" width="600px" @closed="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="模型标识" prop="modelKey">
-          <el-input v-model="form.modelKey" placeholder="如 deepseek-chat、glm-4" :disabled="!!editingId" />
+        <el-form-item :label="$t('sysAdmin.modelKey')" prop="modelKey">
+          <el-input v-model="form.modelKey" :placeholder="$t('sysAdmin.modelKeyPlaceholder')" :disabled="!!editingId" />
         </el-form-item>
-        <el-form-item label="模型名称" prop="modelName">
-          <el-input v-model="form.modelName" placeholder="如 DeepSeek Chat、智谱 GLM-4" />
+        <el-form-item :label="$t('sysAdmin.modelName')" prop="modelName">
+          <el-input v-model="form.modelName" :placeholder="$t('sysAdmin.modelNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="提供方" prop="provider">
-          <el-select v-model="form.provider" placeholder="选择提供方">
+        <el-form-item :label="$t('sysAdmin.provider')" prop="provider">
+          <el-select v-model="form.provider" :placeholder="$t('sysAdmin.providerPlaceholder')">
             <el-option label="DeepSeek" value="deepseek" />
             <el-option label="智谱" value="zhipu" />
             <el-option label="OpenAI" value="openai" />
-            <el-option label="其他" value="other" />
+            <el-option :label="$t('sysAdmin.other')" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="API密钥" prop="apiKey">
-          <el-input v-model="form.apiKey" type="password" placeholder="输入API密钥" show-password />
+        <el-form-item :label="$t('sysAdmin.apiKey')" prop="apiKey">
+          <el-input v-model="form.apiKey" type="password" :placeholder="$t('sysAdmin.apiKeyPlaceholder')" show-password />
         </el-form-item>
-        <el-form-item label="API地址" prop="baseUrl">
-          <el-input v-model="form.baseUrl" placeholder="如 https://api.deepseek.com" />
+        <el-form-item :label="$t('sysAdmin.apiUrl')" prop="baseUrl">
+          <el-input v-model="form.baseUrl" :placeholder="$t('sysAdmin.apiUrlPlaceholder')" />
         </el-form-item>
-        <el-form-item label="排序号">
+        <el-form-item :label="$t('sysAdmin.sortOrder')">
           <el-input-number v-model="form.sortOrder" :min="0" :max="999" />
         </el-form-item>
-        <el-form-item label="启用">
+        <el-form-item :label="$t('common.enabled')">
           <el-switch v-model="form.enabled" active-value="Y" inactive-value="N" />
         </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="模型描述信息" />
+        <el-form-item :label="$t('common.remark')">
+          <el-input v-model="form.remark" type="textarea" :rows="2" :placeholder="$t('sysAdmin.remarkPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button @click="showDialog = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ $t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -112,11 +112,14 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import type { FormInstance } from 'element-plus'
 import {
   getAiModelList, addAiModel, updateAiModel, deleteAiModel,
   toggleAiModel, testAiModel
 } from '@/api/aiModel'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const models = ref<any[]>([])
@@ -136,11 +139,11 @@ const form = reactive({
 })
 
 const rules = {
-  modelKey: [{ required: true, message: '请输入模型标识', trigger: 'blur' }],
-  modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
-  provider: [{ required: true, message: '请选择提供方', trigger: 'change' }],
-  apiKey: [{ required: true, message: '请输入API密钥', trigger: 'blur' }],
-  baseUrl: [{ required: true, message: '请输入API地址', trigger: 'blur' }],
+  modelKey: [{ required: true, message: t('sysAdmin.modelKeyRequired'), trigger: 'blur' }],
+  modelName: [{ required: true, message: t('sysAdmin.modelNameRequired'), trigger: 'blur' }],
+  provider: [{ required: true, message: t('sysAdmin.providerRequired'), trigger: 'change' }],
+  apiKey: [{ required: true, message: t('sysAdmin.apiKeyRequired'), trigger: 'blur' }],
+  baseUrl: [{ required: true, message: t('sysAdmin.apiUrlRequired'), trigger: 'blur' }],
 }
 
 const loadModels = async () => {
@@ -170,8 +173,8 @@ const getTestStatusType = (status: string) => {
 }
 
 const getTestStatusLabel = (status: string) => {
-  const map: Record<string, string> = { SUCCESS: '通过', FAILED: '失败', TESTING: '测试中', UNTESTED: '未测试' }
-  return map[status] || '未知'
+  const map: Record<string, string> = { SUCCESS: t('common.success'), FAILED: t('common.failed'), TESTING: t('sysAdmin.testing'), UNTESTED: t('sysAdmin.untested') }
+  return map[status] || t('sysAdmin.unknown')
 }
 
 const openAddDialog = () => {
@@ -201,14 +204,14 @@ const handleSubmit = async () => {
   try {
     if (editingId.value) {
       await updateAiModel({ id: editingId.value, ...form })
-      ElMessage.success('更新成功')
+      ElMessage.success(t('common.updateSuccess'))
     } else {
       await addAiModel(form)
-      ElMessage.success('添加成功')
+      ElMessage.success(t('sysAdmin.addSuccess'))
     }
     showDialog.value = false
     loadModels()
-  } catch { ElMessage.error('操作失败') }
+  } catch { ElMessage.error(t('common.operationFailed')) }
 }
 
 const handleToggle = async (row: any, enabled: boolean) => {
@@ -216,41 +219,40 @@ const handleToggle = async (row: any, enabled: boolean) => {
   try {
     await toggleAiModel(row.id, enabled ? 'Y' : 'N')
     row.enabled = enabled ? 'Y' : 'N'
-    ElMessage.success(enabled ? '已启用' : '已禁用')
-  } catch { ElMessage.error('操作失败') } finally { row._toggling = false }
+    ElMessage.success(enabled ? t('sysAdmin.enabledSuccess') : t('sysAdmin.disabledSuccess'))
+  } catch { ElMessage.error(t('common.operationFailed')) } finally { row._toggling = false }
 }
 
 const handleTest = async (row: any) => {
   row._testing = true
   row.testStatus = 'TESTING'
-  row.testMessage = '正在测试...'
+  row.testMessage = t('sysAdmin.testingMessage')
   try {
     const res = await testAiModel(row.id)
     const result = res.data?.result || ''
     if (result.startsWith('连接成功')) {
       row.testStatus = 'SUCCESS'
       row.testMessage = result
-      ElMessage.success('模型测试通过')
+      ElMessage.success(t('sysAdmin.testPassed'))
     } else {
       row.testStatus = 'FAILED'
       row.testMessage = result
-      ElMessage.error('模型测试失败')
+      ElMessage.error(t('sysAdmin.testFailed'))
     }
-    // Reload to get updated test status from server
     loadModels()
   } catch {
     row.testStatus = 'FAILED'
-    row.testMessage = '测试请求失败'
-    ElMessage.error('测试请求失败')
+    row.testMessage = t('sysAdmin.testRequestFailed')
+    ElMessage.error(t('sysAdmin.testRequestFailed'))
   } finally { row._testing = false }
 }
 
 const handleDelete = async (id: number) => {
   try {
     await deleteAiModel(id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     loadModels()
-  } catch { ElMessage.error('删除失败') }
+  } catch { ElMessage.error(t('common.deleteFailed')) }
 }
 
 onMounted(() => { loadModels() })

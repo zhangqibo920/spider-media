@@ -3,52 +3,52 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>监控关键词</span>
+          <span>{{ t('keyword.title') }}</span>
           <el-button type="primary" @click="showDialog = true">
-            <el-icon><Plus /></el-icon> 添加关键词
+            <el-icon><Plus /></el-icon> {{ t('keyword.addKeyword') }}
           </el-button>
         </div>
       </template>
       <el-table :data="keywords" v-loading="loading" stripe>
-        <el-table-column prop="keyword" label="关键词" min-width="160" />
-        <el-table-column label="状态" width="80">
+        <el-table-column prop="keyword" :label="t('keyword.keyword')" min-width="160" />
+        <el-table-column :label="t('common.status')" width="80">
           <template #default="{ row }">
             <el-switch :model-value="row.status === '0'" @change="handleToggle(row)" size="small" />
           </template>
         </el-table-column>
-        <el-table-column prop="intervalMin" label="间隔(分钟)" width="100" />
-        <el-table-column label="站内通知" width="90">
+        <el-table-column prop="intervalMin" :label="t('keyword.interval')" width="100" />
+        <el-table-column :label="t('keyword.siteNotification')" width="90">
           <template #default="{ row }">
             <el-tag :type="row.notifySite === '1' ? 'success' : 'info'" size="small">
-              {{ row.notifySite === '1' ? '开启' : '关闭' }}
+              {{ row.notifySite === '1' ? t('common.enabled') : t('common.disabled') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="邮件通知" width="240">
+        <el-table-column :label="t('keyword.emailNotification')" width="240">
           <template #default="{ row }">
             <el-tag :type="row.notifyEmail === '1' ? 'success' : 'info'" size="small">
-              {{ row.notifyEmail === '1' ? '开启' : '关闭' }}
+              {{ row.notifyEmail === '1' ? t('common.enabled') : t('common.disabled') }}
             </el-tag>
             <span v-if="row.notifyEmail === '1' && row.notifyEmailAddr" style="margin-left:6px;font-size:12px;color:#666">
               {{ row.notifyEmailAddr }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="抓取平台" min-width="180">
+        <el-table-column :label="t('keyword.sources')" min-width="180">
           <template #default="{ row }">
             <template v-if="row.sources && row.sources.length > 0">
               <el-tag v-for="s in row.sources.split(',')" :key="s" size="small" style="margin:1px 2px">{{ s }}</el-tag>
             </template>
-            <span v-else style="color:#999;font-size:12px">全部</span>
+            <span v-else style="color:#999;font-size:12px">{{ t('keyword.allSources') }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="lastFetchTime" label="上次抓取" width="160" />
-        <el-table-column label="操作" width="120">
+        <el-table-column prop="lastFetchTime" :label="t('keyword.lastFetch')" width="160" />
+        <el-table-column :label="t('common.operation')" width="120">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-popconfirm title="确定删除此关键词？" @confirm="handleDelete(row.id)">
+            <el-button type="primary" link @click="handleEdit(row)">{{ t('common.edit') }}</el-button>
+            <el-popconfirm :title="t('common.confirmDeleteMsg')" @confirm="handleDelete(row.id)">
               <template #reference>
-                <el-button type="danger" link>删除</el-button>
+                <el-button type="danger" link>{{ t('common.delete') }}</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -56,42 +56,45 @@
       </el-table>
     </el-card>
 
-    <el-dialog v-model="showDialog" :title="isEdit ? '编辑关键词' : '添加关键词'" width="500px" @closed="resetForm">
+    <el-dialog v-model="showDialog" :title="isEdit ? t('keyword.editKeyword') : t('keyword.addKeywordTitle')" width="500px" @closed="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="关键词" prop="keyword">
-          <el-input v-model="form.keyword" placeholder="输入要监控的关键词" />
+        <el-form-item :label="t('keyword.keyword')" prop="keyword">
+          <el-input v-model="form.keyword" :placeholder="t('keyword.keywordPlaceholder')" />
         </el-form-item>
-        <el-form-item label="抓取间隔" prop="intervalMin">
-          <el-input-number v-model="form.intervalMin" :min="5" :max="1440" /> 分钟
+        <el-form-item :label="t('keyword.fetchInterval')" prop="intervalMin">
+          <el-input-number v-model="form.intervalMin" :min="5" :max="1440" /> {{ t('keyword.minutes') }}
         </el-form-item>
-        <el-form-item label="站内通知">
+        <el-form-item :label="t('keyword.siteNotification')">
           <el-switch v-model="form.notifySite" :active-value="'1'" :inactive-value="'0'" />
         </el-form-item>
-        <el-form-item label="邮件通知">
+        <el-form-item :label="t('keyword.emailNotification')">
           <el-switch v-model="form.notifyEmail" :active-value="'1'" :inactive-value="'0'" />
         </el-form-item>
-        <el-form-item label="邮箱地址" v-if="form.notifyEmail === '1'">
-          <el-input v-model="form.notifyEmailAddr" placeholder="接收通知的邮箱" />
+        <el-form-item :label="t('keyword.emailAddr')" v-if="form.notifyEmail === '1'">
+          <el-input v-model="form.notifyEmailAddr" :placeholder="t('keyword.emailAddrPlaceholder')" />
         </el-form-item>
-        <el-form-item label="抓取平台">
-          <el-select v-model="form.sources" multiple placeholder="全部平台" style="width:100%">
+        <el-form-item :label="t('keyword.sources')">
+          <el-select v-model="form.sources" multiple :placeholder="t('keyword.selectSources')" style="width:100%">
             <el-option v-for="s in allSources" :key="s.value" :label="s.label" :value="s.value" />
           </el-select>
-          <div style="font-size:12px;color:#999;margin-top:4px">不选则抓取全部平台</div>
+          <div style="font-size:12px;color:#999;margin-top:4px">{{ t('keyword.sourceHint') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleSave" :loading="saving">确定</el-button>
+        <el-button @click="showDialog = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSave" :loading="saving">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { getKeywords, createKeyword, updateKeyword, deleteKeyword, toggleKeywordStatus } from '@/api/hotmonitor'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const saving = ref(false)
@@ -100,7 +103,7 @@ const isEdit = ref(false)
 const keywords = ref<any[]>([])
 const formRef = ref<any>(null)
 
-const allSources = [
+const allSources = computed(() => [
   { label: '微博', value: 'weibo' },
   { label: '抖音', value: 'douyin' },
   { label: '知乎', value: 'zhihu' },
@@ -109,7 +112,7 @@ const allSources = [
   { label: 'B站', value: 'bilibili' },
   { label: 'HackerNews', value: 'hackernews' },
   { label: 'GitHub', value: 'github' },
-]
+])
 
 const form = reactive({
   id: 0,
@@ -122,8 +125,8 @@ const form = reactive({
 })
 
 const rules = {
-  keyword: [{ required: true, message: '请输入关键词', trigger: 'blur' }],
-  intervalMin: [{ required: true, message: '请设置抓取间隔', trigger: 'blur' }],
+  keyword: [{ required: true, message: t('keyword.keywordRequired'), trigger: 'blur' }],
+  intervalMin: [{ required: true, message: t('keyword.intervalRequired'), trigger: 'blur' }],
 }
 
 const loadKeywords = async () => {
@@ -156,15 +159,15 @@ const handleSave = async () => {
     const payload = { ...form, sources: form.sources.join(',') }
     if (isEdit.value) {
       await updateKeyword(payload)
-      ElMessage.success('更新成功')
+      ElMessage.success(t('common.updateSuccess'))
     } else {
       await createKeyword(payload)
-      ElMessage.success('添加成功')
+      ElMessage.success(t('keyword.addSuccess'))
     }
     showDialog.value = false
     loadKeywords()
   } catch {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operationFailed'))
   } finally {
     saving.value = false
   }
@@ -173,10 +176,10 @@ const handleSave = async () => {
 const handleDelete = async (id: number) => {
   try {
     await deleteKeyword(id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     loadKeywords()
   } catch {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('common.deleteFailed'))
   }
 }
 
@@ -185,9 +188,9 @@ const handleToggle = async (row: any) => {
   try {
     await toggleKeywordStatus(row.id, newStatus)
     row.status = newStatus
-    ElMessage.success(newStatus === '0' ? '已激活' : '已暂停')
+    ElMessage.success(newStatus === '0' ? t('keyword.activated') : t('keyword.paused'))
   } catch {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operationFailed'))
   }
 }
 

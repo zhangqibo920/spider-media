@@ -2,12 +2,12 @@
   <el-card>
     <el-table :data="logs" v-loading="loadingLogs" stripe>
       <el-table-column type="index" label="#" width="50" :index="(index: number) => (logPage - 1) * logSize + index + 1" />
-      <el-table-column prop="username" label="用户" width="100" />
-      <el-table-column prop="module" label="模块" width="100" />
-      <el-table-column prop="action" label="操作" width="100" />
-      <el-table-column prop="description" label="描述" show-overflow-tooltip />
+      <el-table-column prop="username" :label="$t('sysAdmin.username')" width="100" />
+      <el-table-column prop="module" :label="$t('sysAdmin.module')" width="100" />
+      <el-table-column prop="action" :label="$t('common.operation')" width="100" />
+      <el-table-column prop="description" :label="$t('sysAdmin.description')" show-overflow-tooltip />
       <el-table-column prop="ip" label="IP" width="120" />
-      <el-table-column prop="createTime" label="时间" width="180" />
+      <el-table-column prop="createTime" :label="$t('common.createTime')" width="180" />
     </el-table>
     <el-pagination
       v-model:current-page="logPage"
@@ -24,7 +24,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getOperationLogs } from '@/api/admin'
+
+const { t } = useI18n()
 
 const loadingLogs = ref(false)
 const logs = ref<any[]>([])

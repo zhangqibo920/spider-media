@@ -1,76 +1,76 @@
 <template>
   <el-card>
-    <template #header><span>用户管理</span></template>
+    <template #header><span>{{ $t('sysAdmin.userManagement') }}</span></template>
     <el-table :data="users" v-loading="loadingUsers" stripe>
       <el-table-column prop="userId" label="ID" width="60" />
-      <el-table-column prop="userName" label="用户名" width="120" />
-      <el-table-column prop="nickName" label="昵称" width="120" />
-      <el-table-column prop="email" label="邮箱" />
-      <el-table-column prop="role" label="角色" width="100">
+      <el-table-column prop="userName" :label="$t('sysAdmin.username')" width="120" />
+      <el-table-column prop="nickName" :label="$t('sysAdmin.nickname')" width="120" />
+      <el-table-column prop="email" :label="$t('sysAdmin.email')" />
+      <el-table-column prop="role" :label="$t('sysAdmin.role')" width="100">
         <template #default="{ row }">
           <DictTag dict-type="sys_user_role" :value="row.role" size="small" />
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="80">
+      <el-table-column prop="status" :label="$t('common.status')" width="80">
         <template #default="{ row }">
           <DictTag dict-type="sys_user_status" :value="row.status" size="small" />
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建时间" width="180" />
-      <el-table-column label="操作" width="200">
+      <el-table-column prop="createTime" :label="$t('common.createTime')" width="180" />
+      <el-table-column :label="$t('common.operation')" width="200">
         <template #default="{ row }">
-          <el-button type="primary" link @click="startEditUser(row)">编辑</el-button>
-          <el-button type="warning" link @click="openChangePassword(row)">改密</el-button>
-          <el-button type="danger" link @click="handleDeleteUser(row)" :disabled="row.userId === 1">删除</el-button>
+          <el-button type="primary" link @click="startEditUser(row)">{{ $t('common.edit') }}</el-button>
+          <el-button type="warning" link @click="openChangePassword(row)">{{ $t('sysAdmin.changePassword') }}</el-button>
+          <el-button type="danger" link @click="handleDeleteUser(row)" :disabled="row.userId === 1">{{ $t('common.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
   </el-card>
 
-  <el-dialog v-model="showEditUserDialog" title="编辑用户" width="480px">
+  <el-dialog v-model="showEditUserDialog" :title="$t('sysAdmin.editUser')" width="480px">
     <el-form :model="editUserForm" label-width="80px">
-      <el-form-item label="用户名">
+      <el-form-item :label="$t('sysAdmin.username')">
         <el-input v-model="editUserForm.userName" disabled />
       </el-form-item>
-      <el-form-item label="昵称">
+      <el-form-item :label="$t('sysAdmin.nickname')">
         <el-input v-model="editUserForm.nickName" />
       </el-form-item>
-      <el-form-item label="邮箱">
+      <el-form-item :label="$t('sysAdmin.email')">
         <el-input v-model="editUserForm.email" />
       </el-form-item>
-      <el-form-item label="角色">
+      <el-form-item :label="$t('sysAdmin.role')">
         <el-select v-model="editUserForm.role">
           <el-option v-for="opt in roleOptions" :key="opt.roleKey" :label="opt.roleName" :value="opt.roleKey" />
         </el-select>
       </el-form-item>
-      <el-form-item label="状态">
+      <el-form-item :label="$t('common.status')">
         <el-radio-group v-model="editUserForm.status">
-          <el-radio value="0">正常</el-radio>
-          <el-radio value="1">停用</el-radio>
+          <el-radio value="0">{{ $t('common.normal') }}</el-radio>
+          <el-radio value="1">{{ $t('common.disabled') }}</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="showEditUserDialog = false">取消</el-button>
-      <el-button type="primary" @click="handleSaveUser">确定</el-button>
+      <el-button @click="showEditUserDialog = false">{{ $t('common.cancel') }}</el-button>
+      <el-button type="primary" @click="handleSaveUser">{{ $t('common.confirm') }}</el-button>
     </template>
   </el-dialog>
 
-  <el-dialog v-model="showChangePasswordDialog" title="重置密码" width="480px" @closed="resetPasswordForm">
+  <el-dialog v-model="showChangePasswordDialog" :title="$t('sysAdmin.changePassword')" width="480px" @closed="resetPasswordForm">
     <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="100px">
-      <el-form-item label="当前用户">
+      <el-form-item :label="$t('sysAdmin.currentUser')">
         <el-input :model-value="passwordForm.userName" disabled />
       </el-form-item>
-      <el-form-item label="新密码" prop="newPassword">
-        <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码" show-password />
+      <el-form-item :label="$t('sysAdmin.newPassword')" prop="newPassword">
+        <el-input v-model="passwordForm.newPassword" type="password" :placeholder="$t('sysAdmin.newPasswordPlaceholder')" show-password />
       </el-form-item>
-      <el-form-item label="确认密码" prop="confirmPassword">
-        <el-input v-model="passwordForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
+      <el-form-item :label="$t('sysAdmin.confirmPassword')" prop="confirmPassword">
+        <el-input v-model="passwordForm.confirmPassword" type="password" :placeholder="$t('sysAdmin.confirmPasswordPlaceholder')" show-password />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="showChangePasswordDialog = false">取消</el-button>
-      <el-button type="primary" :loading="changingPassword" @click="handleChangePassword">确定</el-button>
+      <el-button @click="showChangePasswordDialog = false">{{ $t('common.cancel') }}</el-button>
+      <el-button type="primary" :loading="changingPassword" @click="handleChangePassword">{{ $t('common.confirm') }}</el-button>
     </template>
   </el-dialog>
 </template>
@@ -78,10 +78,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import type { FormInstance } from 'element-plus'
 import { getUsers, updateUser, deleteUser, resetPassword } from '@/api/admin'
 import { getRoles } from '@/api/role'
 import DictTag from '@/components/DictTag.vue'
+
+const { t } = useI18n()
 
 const loadingUsers = ref(false)
 const users = ref<any[]>([])
@@ -97,12 +100,12 @@ const passwordForm = reactive({ userId: 0, userName: '', newPassword: '', confir
 const roleOptions = ref<any[]>([])
 
 const validateConfirmPassword = (_rule: any, value: string, callback: Function) => {
-  if (value !== passwordForm.newPassword) { callback(new Error('两次输入的密码不一致')) }
+  if (value !== passwordForm.newPassword) { callback(new Error(t('sysAdmin.passwordMismatch'))) }
   else { callback() }
 }
 const passwordRules = {
-  newPassword: [{ required: true, message: '请输入新密码', trigger: 'blur' }, { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }],
-  confirmPassword: [{ required: true, message: '请确认密码', trigger: 'blur' }, { validator: validateConfirmPassword, trigger: 'blur' }],
+  newPassword: [{ required: true, message: t('sysAdmin.newPasswordRequired'), trigger: 'blur' }, { min: 6, message: t('sysAdmin.passwordMinLength'), trigger: 'blur' }],
+  confirmPassword: [{ required: true, message: t('sysAdmin.confirmPasswordRequired'), trigger: 'blur' }, { validator: validateConfirmPassword, trigger: 'blur' }],
 }
 
 const loadUsers = async () => {
@@ -124,7 +127,7 @@ const handleChangePassword = async () => {
   const valid = await passwordFormRef.value?.validate().catch(() => false)
   if (!valid) return
   changingPassword.value = true
-  try { await resetPassword(passwordForm.userId, passwordForm.newPassword); ElMessage.success('密码重置成功'); showChangePasswordDialog.value = false } catch { ElMessage.error('密码重置失败') } finally { changingPassword.value = false }
+  try { await resetPassword(passwordForm.userId, passwordForm.newPassword); ElMessage.success(t('sysAdmin.passwordResetSuccess')); showChangePasswordDialog.value = false } catch { ElMessage.error(t('sysAdmin.passwordResetFailed')) } finally { changingPassword.value = false }
 }
 
 const startEditUser = (row: any) => {
@@ -132,10 +135,10 @@ const startEditUser = (row: any) => {
   showEditUserDialog.value = true
 }
 const handleSaveUser = async () => {
-  try { await updateUser(editUserForm); ElMessage.success('保存成功'); showEditUserDialog.value = false; loadUsers() } catch { ElMessage.error('保存失败') }
+  try { await updateUser(editUserForm); ElMessage.success(t('common.saveSuccess')); showEditUserDialog.value = false; loadUsers() } catch { ElMessage.error(t('common.saveFailed')) }
 }
 const handleDeleteUser = async (row: any) => {
-  try { await ElMessageBox.confirm('确定删除该用户吗？', '提示', { type: 'warning' }); await deleteUser(row.userId); ElMessage.success('删除成功'); loadUsers() } catch {}
+  try { await ElMessageBox.confirm(t('common.confirmDeleteMsg'), t('sysAdmin.prompt'), { type: 'warning' }); await deleteUser(row.userId); ElMessage.success(t('common.deleteSuccess')); loadUsers() } catch {}
 }
 
 onMounted(() => { loadUsers(); loadRoleOptions() })

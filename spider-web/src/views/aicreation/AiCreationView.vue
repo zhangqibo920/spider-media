@@ -5,28 +5,28 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <span>全网热点</span>
-              <el-select v-model="selectedPlatform" placeholder="选择平台" size="small" style="width: 120px">
+              <span>{{ $t('aiCreation.hotTopics') }}</span>
+              <el-select v-model="selectedPlatform" :placeholder="$t('aiCreation.selectPlatform')" size="small" style="width: 120px">
                 <el-option v-for="p in platformDict" :key="p.dictValue" :label="p.dictLabel" :value="p.dictValue" />
               </el-select>
               <el-button type="primary" size="small" @click="handleFetchHot" :loading="fetching">
-                抓取热点
+                {{ $t('aiCreation.fetchHot') }}
               </el-button>
             </div>
           </template>
           <el-table :data="hotTopics" v-loading="loadingTopics" max-height="400">
-            <el-table-column prop="title" label="热点话题" show-overflow-tooltip />
-             <el-table-column label="热度" width="100">
-               <template #default="{ row }">
-                 {{ row.hotScore >= 10000 ? (row.hotScore / 10000).toFixed((row.hotScore % 10000) === 0 ? 0 : 1) + '万' : row.hotScore?.toLocaleString() ?? '-' }}
-               </template>
-             </el-table-column>
-            <el-table-column prop="platform" label="平台" width="80">
+            <el-table-column prop="title" :label="$t('aiCreation.hotTopic')" show-overflow-tooltip />
+             <el-table-column :label="$t('aiCreation.hotScore')" width="100">
+                <template #default="{ row }">
+                  {{ row.hotScore >= 10000 ? (row.hotScore / 10000).toFixed((row.hotScore % 10000) === 0 ? 0 : 1) + $t('aiCreation.tenThousand') : row.hotScore?.toLocaleString() ?? '-' }}
+                </template>
+              </el-table-column>
+            <el-table-column prop="platform" :label="$t('collection.platform')" width="80">
               <template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template>
             </el-table-column>
-            <el-table-column label="操作" width="80">
+            <el-table-column :label="$t('common.operation')" width="80">
               <template #default="{ row }">
-                <el-button type="primary" link @click="handleGenerate(row.id)">生成文章</el-button>
+                <el-button type="primary" link @click="handleGenerate(row.id)">{{ $t('hotFeed.generateArticle') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -35,19 +35,19 @@
 
       <el-col :span="12">
         <el-card>
-          <template #header><span>AI生成文章</span></template>
+          <template #header><span>{{ $t('aiCreation.aiArticles') }}</span></template>
           <el-table :data="articles" v-loading="loadingArticles" max-height="400">
-            <el-table-column prop="title" label="标题" show-overflow-tooltip />
-            <el-table-column prop="modelUsed" label="模型" width="100" />
-            <el-table-column prop="wordCount" label="字数" width="80" />
-            <el-table-column prop="status" label="状态" width="80">
+            <el-table-column prop="title" :label="$t('aiCreation.articleTitle')" show-overflow-tooltip />
+            <el-table-column prop="modelUsed" :label="$t('aiCreation.model')" width="100" />
+            <el-table-column prop="wordCount" :label="$t('aiCreation.wordCount')" width="80" />
+            <el-table-column prop="status" :label="$t('common.status')" width="80">
               <template #default="{ row }">
                 <DictTag dict-type="ac_article_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="80">
+            <el-table-column :label="$t('common.operation')" width="80">
               <template #default="{ row }">
-                <el-button type="primary" link @click="showArticleDetail(row)">查看</el-button>
+                <el-button type="primary" link @click="showArticleDetail(row)">{{ $t('aiCreation.viewArticle') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -55,22 +55,22 @@
       </el-col>
     </el-row>
 
-    <el-dialog v-model="showDetailDialog" title="文章详情" width="700px" top="5vh">
+    <el-dialog v-model="showDetailDialog" :title="$t('aiCreation.articleDetail')" width="700px" top="5vh">
       <div v-if="currentArticle">
         <h3>{{ currentArticle.title }}</h3>
         <el-descriptions :column="2" border style="margin: 16px 0">
-          <el-descriptions-item label="模型">{{ currentArticle.modelUsed }}</el-descriptions-item>
-          <el-descriptions-item label="字数">{{ currentArticle.wordCount }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
+          <el-descriptions-item :label="$t('aiCreation.model')">{{ currentArticle.modelUsed }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('aiCreation.wordCount')">{{ currentArticle.wordCount }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('common.status')">
             <DictTag dict-type="ac_article_status" :value="currentArticle.status" size="small" />
           </el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ currentArticle.createTime }}</el-descriptions-item>
+          <el-descriptions-item :label="$t('common.createTime')">{{ currentArticle.createTime }}</el-descriptions-item>
         </el-descriptions>
         <div v-if="currentArticle.summary" style="margin-bottom: 12px">
-          <strong>摘要：</strong>{{ currentArticle.summary }}
+          <strong>{{ $t('aiCreation.summary') }}：</strong>{{ currentArticle.summary }}
         </div>
         <el-divider />
-        <div class="article-content" style="max-height: 400px; overflow-y: auto">{{ currentArticle.content || '暂无内容' }}</div>
+        <div class="article-content" style="max-height: 400px; overflow-y: auto">{{ currentArticle.content || $t('aiCreation.noContent') }}</div>
       </div>
     </el-dialog>
   </div>
@@ -79,9 +79,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles } from '@/api/ai'
 import { useDict } from '@/composables/useDict'
 import DictTag from '@/components/DictTag.vue'
+
+const { t } = useI18n()
 
 const { dict: platformDict } = useDict('hot_topic_platform')
 
@@ -106,8 +109,7 @@ const handleFetchHot = async () => {
   fetching.value = true
   try {
     await fetchHotTopics(selectedPlatform.value)
-    ElMessage.success('热点抓取任务已触发，正在获取数据...')
-    // Poll for results since fetch is async on backend
+    ElMessage.success(t('aiCreation.fetchHotTriggered'))
     let attempts = 0
     const maxAttempts = 10
     const poll = async () => {
@@ -119,10 +121,10 @@ const handleFetchHot = async () => {
       }
     }
     poll()
-  } catch { ElMessage.error('抓取失败') } finally { fetching.value = false }
+  } catch { ElMessage.error(t('aiCreation.fetchHotFailed')) } finally { fetching.value = false }
 }
 const handleGenerate = async (topicId: number) => {
-  try { await generateArticle(topicId); ElMessage.success('AI创作任务已触发'); loadArticles() } catch { ElMessage.error('生成失败') }
+  try { await generateArticle(topicId); ElMessage.success(t('aiCreation.generateTriggered')); loadArticles() } catch { ElMessage.error(t('aiCreation.generateFailed')) }
 }
 const showArticleDetail = (article: any) => { currentArticle.value = article; showDetailDialog.value = true }
 

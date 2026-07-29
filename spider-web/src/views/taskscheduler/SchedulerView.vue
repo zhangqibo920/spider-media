@@ -3,57 +3,57 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>定时任务管理</span>
+          <span>{{ $t('scheduler.title') }}</span>
           <el-button type="primary" @click="showCreateDialog = true">
-            <el-icon><Plus /></el-icon> 创建任务
+            <el-icon><Plus /></el-icon> {{ $t('scheduler.createTask') }}
           </el-button>
         </div>
       </template>
 
       <el-table :data="tasks" v-loading="loading" stripe>
-        <el-table-column prop="taskName" label="任务名称" />
-        <el-table-column prop="taskType" label="任务类型" width="120">
+        <el-table-column prop="taskName" :label="$t('scheduler.taskName')" />
+        <el-table-column prop="taskType" :label="$t('scheduler.taskType')" width="120">
           <template #default="{ row }">
             <el-tag>{{ row.taskType }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="cronExpression" label="Cron表达式" width="150" />
-        <el-table-column prop="status" label="状态" width="80">
+        <el-table-column prop="cronExpression" :label="$t('scheduler.cronExpression')" width="150" />
+        <el-table-column prop="status" :label="$t('common.status')" width="80">
           <template #default="{ row }">
             <DictTag dict-type="ts_task_status" :value="row.status" />
           </template>
         </el-table-column>
-        <el-table-column prop="runCount" label="执行次数" width="80" />
-        <el-table-column prop="failCount" label="失败次数" width="80" />
-        <el-table-column label="操作" width="150">
+        <el-table-column prop="runCount" :label="$t('scheduler.executeCount')" width="80" />
+        <el-table-column prop="failCount" :label="$t('scheduler.failCount')" width="80" />
+        <el-table-column :label="$t('common.operation')" width="150">
           <template #default="{ row }">
-            <el-button v-if="row.status === 0" type="success" link @click="handleEnable(row.id)">启用</el-button>
-            <el-button v-if="row.status === 1" type="warning" link @click="handleDisable(row.id)">停用</el-button>
+            <el-button v-if="row.status === 0" type="success" link @click="handleEnable(row.id)">{{ $t('scheduler.enable') }}</el-button>
+            <el-button v-if="row.status === 1" type="warning" link @click="handleDisable(row.id)">{{ $t('scheduler.disable') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog v-model="showCreateDialog" title="创建定时任务" width="500px" @closed="resetForm">
+    <el-dialog v-model="showCreateDialog" :title="$t('scheduler.createScheduledTask')" width="500px" @closed="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="任务名称" prop="taskName">
-          <el-input v-model="form.taskName" placeholder="输入任务名称" />
+        <el-form-item :label="$t('scheduler.taskName')" prop="taskName">
+          <el-input v-model="form.taskName" :placeholder="$t('scheduler.taskNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="任务类型" prop="taskType">
-          <el-select v-model="form.taskType" placeholder="选择类型">
-            <el-option label="热点抓取" value="HOT_TOPIC" />
-            <el-option label="AI创作" value="AI_CREATION" />
-            <el-option label="内容发布" value="PUBLISH" />
-            <el-option label="数据采集" value="DATA_COLLECT" />
+        <el-form-item :label="$t('scheduler.taskType')" prop="taskType">
+          <el-select v-model="form.taskType" :placeholder="$t('scheduler.selectType')">
+            <el-option :label="$t('scheduler.taskTypeHotTopic')" value="HOT_TOPIC" />
+            <el-option :label="$t('scheduler.taskTypeAICreation')" value="AI_CREATION" />
+            <el-option :label="$t('scheduler.taskTypePublish')" value="PUBLISH" />
+            <el-option :label="$t('scheduler.taskTypeDataCollect')" value="DATA_COLLECT" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Cron表达式" prop="cronExpression">
-          <el-input v-model="form.cronExpression" placeholder="例: 0 0/30 * * * ?" />
+        <el-form-item :label="$t('scheduler.cronExpression')" prop="cronExpression">
+          <el-input v-model="form.cronExpression" :placeholder="$t('scheduler.cronPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showCreateDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleCreate">确定</el-button>
+        <el-button @click="showCreateDialog = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleCreate">{{ $t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -61,10 +61,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getScheduledTasks, createScheduledTask, enableTask, disableTask } from '@/api/scheduler'
 import DictTag from '@/components/DictTag.vue'
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const showCreateDialog = ref(false)
@@ -78,9 +81,9 @@ const form = reactive({
 })
 
 const rules = {
-  taskName: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
-  taskType: [{ required: true, message: '请选择任务类型', trigger: 'change' }],
-  cronExpression: [{ required: true, message: '请输入Cron表达式', trigger: 'blur' }],
+  taskName: [{ required: true, message: t('scheduler.taskNameRequired'), trigger: 'blur' }],
+  taskType: [{ required: true, message: t('scheduler.taskTypeRequired'), trigger: 'change' }],
+  cronExpression: [{ required: true, message: t('scheduler.cronRequired'), trigger: 'blur' }],
 }
 
 const loadTasks = async () => {
@@ -98,11 +101,11 @@ const handleCreate = async () => {
   if (!valid) return
   try {
     await createScheduledTask(form)
-    ElMessage.success('创建成功')
+    ElMessage.success(t('scheduler.createSuccess'))
     showCreateDialog.value = false
     loadTasks()
   } catch {
-    ElMessage.error('创建失败')
+    ElMessage.error(t('scheduler.createFailed'))
   }
 }
 
@@ -115,20 +118,20 @@ const resetForm = () => {
 const handleEnable = async (id: number) => {
   try {
     await enableTask(id)
-    ElMessage.success('已启用')
+    ElMessage.success(t('scheduler.enableSuccess'))
     loadTasks()
   } catch {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operationFailed'))
   }
 }
 
 const handleDisable = async (id: number) => {
   try {
     await disableTask(id)
-    ElMessage.success('已停用')
+    ElMessage.success(t('scheduler.disableSuccess'))
     loadTasks()
   } catch {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operationFailed'))
   }
 }
 

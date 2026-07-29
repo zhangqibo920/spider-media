@@ -3,9 +3,9 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>菜单管理</span>
+          <span>{{ $t('sysAdmin.menuManagement') }}</span>
           <el-button type="primary" @click="openAddDialog(null)">
-            <el-icon><Plus /></el-icon> 添加菜单
+            <el-icon><Plus /></el-icon> {{ $t('sysAdmin.addMenu') }}
           </el-button>
         </div>
       </template>
@@ -17,70 +17,70 @@
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
         stripe
       >
-        <el-table-column prop="menuName" label="菜单名称" width="200">
+        <el-table-column prop="menuName" :label="$t('sysAdmin.menuName')" width="200">
           <template #default="{ row }">
             <el-icon v-if="row.icon" style="margin-right: 6px"><component :is="row.icon" /></el-icon>
             {{ row.menuName }}
           </template>
         </el-table-column>
-        <el-table-column prop="icon" label="图标" width="100">
+        <el-table-column prop="icon" :label="$t('sysAdmin.icon')" width="100">
           <template #default="{ row }">
             <el-tag v-if="row.icon" size="small">{{ row.icon }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="path" label="路由路径" width="180" />
-        <el-table-column prop="component" label="组件路径" width="200" />
-        <el-table-column prop="sortOrder" label="排序" width="70" />
-        <el-table-column prop="menuType" label="类型" width="80">
+        <el-table-column prop="path" :label="$t('sysAdmin.routePath')" width="180" />
+        <el-table-column prop="component" :label="$t('sysAdmin.componentPath')" width="200" />
+        <el-table-column prop="sortOrder" :label="$t('sysAdmin.sortOrder')" width="70" />
+        <el-table-column prop="menuType" :label="$t('sysAdmin.menuType')" width="80">
           <template #default="{ row }">
             <DictTag dict-type="sys_menu_type" :value="row.menuType || 'C'" size="small" />
           </template>
         </el-table-column>
-        <el-table-column prop="visible" label="可见" width="70">
+        <el-table-column prop="visible" :label="$t('sysAdmin.visible')" width="70">
           <template #default="{ row }">
             <DictTag dict-type="sys_visible" :value="row.visible || '0'" size="small" />
           </template>
         </el-table-column>
-        <el-table-column prop="perms" label="权限标识" width="180" />
-        <el-table-column prop="status" label="状态" width="70">
+        <el-table-column prop="perms" :label="$t('sysAdmin.perms')" width="180" />
+        <el-table-column prop="status" :label="$t('common.status')" width="70">
           <template #default="{ row }">
             <DictTag dict-type="sys_normal_status" :value="row.status || '0'" size="small" />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column :label="$t('common.operation')" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="openAddDialog(row)">添加子菜单</el-button>
-            <el-button type="warning" link @click="openEditDialog(row)">编辑</el-button>
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+            <el-button type="primary" link @click="openAddDialog(row)">{{ $t('sysAdmin.addChildMenu') }}</el-button>
+            <el-button type="warning" link @click="openEditDialog(row)">{{ $t('common.edit') }}</el-button>
+            <el-button type="danger" link @click="handleDelete(row)">{{ $t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑菜单' : '添加菜单'" width="560px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="上级菜单">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? $t('sysAdmin.editMenu') : $t('sysAdmin.addMenu')" width="560px">
+      <el-form ref="formRef" :model="form" :rules="rules" :label-width="100">
+        <el-form-item :label="$t('sysAdmin.parentMenu')">
           <el-tree-select
             v-model="form.parentId"
             :data="menuTreeSelect"
             :props="{ label: 'menuName', value: 'menuId', children: 'children' }"
-            placeholder="选择上级菜单（留空为顶级）"
+            :placeholder="t('sysAdmin.parentMenuPlaceholder')"
             check-strictly
             clearable
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="菜单名称" prop="menuName">
-          <el-input v-model="form.menuName" placeholder="请输入菜单名称" />
+        <el-form-item :label="$t('sysAdmin.menuName')" prop="menuName">
+          <el-input v-model="form.menuName" :placeholder="t('sysAdmin.menuNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="路由路径" prop="path">
-          <el-input v-model="form.path" placeholder="如 /dashboard" />
+        <el-form-item :label="$t('sysAdmin.routePath')" prop="path">
+          <el-input v-model="form.path" :placeholder="t('sysAdmin.routePathPlaceholder')" />
         </el-form-item>
-        <el-form-item label="组件路径">
-          <el-input v-model="form.component" placeholder="如 dashboard/DashboardView" />
+        <el-form-item :label="$t('sysAdmin.componentPath')">
+          <el-input v-model="form.component" :placeholder="t('sysAdmin.componentPathPlaceholder')" />
         </el-form-item>
-        <el-form-item label="图标">
-          <el-select v-model="form.icon" clearable filterable placeholder="请选择图标" style="width: 100%">
+        <el-form-item :label="$t('sysAdmin.icon')">
+          <el-select v-model="form.icon" clearable filterable :placeholder="t('sysAdmin.iconPlaceholder')" style="width: 100%">
             <el-option v-for="icon in elementIcons" :key="icon" :label="icon" :value="icon">
               <el-icon style="vertical-align: middle; margin-right: 6px"><component :is="icon" /></el-icon>
               <span>{{ icon }}</span>
@@ -89,45 +89,45 @@
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="菜单类型">
-              <el-select v-model="form.menuType" placeholder="请选择">
-                <el-option label="目录" value="M" />
-                <el-option label="菜单" value="C" />
-                <el-option label="按钮" value="F" />
+            <el-form-item :label="$t('sysAdmin.menuType')">
+              <el-select v-model="form.menuType" :placeholder="t('sysAdmin.pleaseSelect')">
+                <el-option :label="t('sysAdmin.menuTypeDir')" value="M" />
+                <el-option :label="t('sysAdmin.menuTypeMenu')" value="C" />
+                <el-option :label="t('sysAdmin.menuTypeButton')" value="F" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="排序">
+            <el-form-item :label="$t('sysAdmin.sortOrder')">
               <el-input-number v-model="form.sortOrder" :min="0" :max="999" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="显示状态">
+            <el-form-item :label="$t('sysAdmin.visible')">
               <el-radio-group v-model="form.visible">
-                <el-radio value="0">显示</el-radio>
-                <el-radio value="1">隐藏</el-radio>
+                <el-radio value="0">{{ $t('sysAdmin.show') }}</el-radio>
+                <el-radio value="1">{{ $t('sysAdmin.hide') }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="菜单状态">
+            <el-form-item :label="$t('common.status')">
               <el-radio-group v-model="form.status">
-                <el-radio value="0">正常</el-radio>
-                <el-radio value="1">停用</el-radio>
+                <el-radio value="0">{{ $t('common.normal') }}</el-radio>
+                <el-radio value="1">{{ $t('common.disabled') }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="权限标识">
-          <el-input v-model="form.perms" placeholder="如 system:user:list" />
+        <el-form-item :label="$t('sysAdmin.perms')">
+          <el-input v-model="form.perms" :placeholder="t('sysAdmin.permsPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">确定</el-button>
+        <el-button @click="dialogVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">{{ $t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -136,6 +136,8 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { getMenus, addMenu, updateMenu, deleteMenu } from '@/api/admin'
 import { iconMap, iconNames as elementIcons } from '@/utils/icon-map'
 import DictTag from '@/components/DictTag.vue'
@@ -164,12 +166,12 @@ const defaultForm = {
 const form = reactive({ ...defaultForm })
 
 const rules = {
-  menuName: [{ required: true, message: '菜单名称不能为空', trigger: 'blur' }],
-  path: [{ required: true, message: '路由路径不能为空', trigger: 'blur' }],
+  menuName: [{ required: true, message: t('sysAdmin.menuNameRequired'), trigger: 'blur' }],
+  path: [{ required: true, message: t('sysAdmin.pathRequired'), trigger: 'blur' }],
 }
 
 const menuTreeSelect = computed(() => {
-  return menuList.value.length > 0 ? [{ menuId: 0, menuName: '顶级菜单', children: menuList.value }] : []
+  return menuList.value.length > 0 ? [{ menuId: 0, menuName: t('sysAdmin.topLevelMenu'), children: menuList.value }] : []
 })
 
 const loadMenus = async () => {
@@ -216,15 +218,15 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await updateMenu({ ...form })
-      ElMessage.success('修改成功')
+      ElMessage.success(t('common.updateSuccess'))
     } else {
       await addMenu({ ...form })
-      ElMessage.success('添加成功')
+      ElMessage.success(t('common.saveSuccess'))
     }
     dialogVisible.value = false
     loadMenus()
   } catch {
-    ElMessage.error(isEdit.value ? '修改失败' : '添加失败')
+    ElMessage.error(isEdit.value ? t('common.updateFailed') : t('common.saveFailed'))
   } finally {
     submitting.value = false
   }
@@ -232,9 +234,9 @@ const handleSubmit = async () => {
 
 const handleDelete = async (row: any) => {
   try {
-    await ElMessageBox.confirm(`确定删除菜单「${row.menuName}」吗？`, '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('sysAdmin.confirmDeleteMenu', { name: row.menuName }), t('sysAdmin.hint'), { type: 'warning' })
     await deleteMenu(row.menuId)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     loadMenus()
   } catch {}
 }
