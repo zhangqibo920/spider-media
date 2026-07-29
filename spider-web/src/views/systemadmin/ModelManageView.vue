@@ -80,7 +80,7 @@
         <el-form-item :label="$t('sysAdmin.provider')" prop="provider">
           <el-select v-model="form.provider" :placeholder="$t('sysAdmin.providerPlaceholder')">
             <el-option label="DeepSeek" value="deepseek" />
-            <el-option label="智谱" value="zhipu" />
+            <el-option :label="t('sysAdmin.providerZhipu')" value="zhipu" />
             <el-option label="OpenAI" value="openai" />
             <el-option :label="$t('sysAdmin.other')" value="other" />
           </el-select>
@@ -230,7 +230,7 @@ const handleTest = async (row: any) => {
   try {
     const res = await testAiModel(row.id)
     const result = res.data?.result || ''
-    if (result.startsWith('连接成功')) {
+    if (result.startsWith(t('sysAdmin.testSuccessPrefix'))) {
       row.testStatus = 'SUCCESS'
       row.testMessage = result
       ElMessage.success(t('sysAdmin.testPassed'))

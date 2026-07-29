@@ -15,6 +15,14 @@ import java.time.LocalDateTime;
 public interface IPbPublishTaskService {
 
     /**
+     * 根据主键ID查询发布任务
+     *
+     * @param id 任务ID
+     * @return 任务实体，不存在返回 null
+     */
+    PbPublishTask selectById(Long id);
+
+    /**
      * 创建发布任务（初始状态为草稿）
      *
      * @param task 任务实体

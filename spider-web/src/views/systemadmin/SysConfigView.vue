@@ -41,14 +41,14 @@
   </el-card>
 
   <el-dialog v-model="showAddConfigDialog" :title="$t('sysAdmin.addConfig')" width="480px">
-    <el-form :model="addConfigForm" label-width="80px">
-      <el-form-item :label="$t('sysAdmin.configName')">
+    <el-form ref="configFormRef" :model="addConfigForm" :rules="configFormRules" label-width="80px">
+      <el-form-item :label="$t('sysAdmin.configName')" prop="configName">
         <el-input v-model="addConfigForm.configName" :placeholder="$t('sysAdmin.configNamePlaceholder')" />
       </el-form-item>
-      <el-form-item :label="$t('sysAdmin.configKey')">
+      <el-form-item :label="$t('sysAdmin.configKey')" prop="configKey">
         <el-input v-model="addConfigForm.configKey" :placeholder="$t('sysAdmin.configKeyPlaceholder')" />
       </el-form-item>
-      <el-form-item :label="$t('sysAdmin.configValue')">
+      <el-form-item :label="$t('sysAdmin.configValue')" prop="configValue">
         <el-input v-model="addConfigForm.configValue" type="textarea" :rows="3" :placeholder="$t('sysAdmin.configValuePlaceholder')" />
       </el-form-item>
       <el-form-item :label="$t('sysAdmin.configType')">
@@ -69,6 +69,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import type { FormInstance } from 'element-plus'
 import { getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig } from '@/api/admin'
 import DictTag from '@/components/DictTag.vue'
 
@@ -80,6 +81,12 @@ const editingConfigId = ref<number | null>(null)
 const editingConfigValue = ref('')
 const showAddConfigDialog = ref(false)
 const addConfigForm = reactive({ configName: '', configKey: '', configValue: '', configType: 'N' })
+const configFormRef = ref<FormInstance>()
+const configFormRules = {
+  configName: [{ required: true, message: t('common.required'), trigger: 'blur' }],
+  configKey: [{ required: true, message: t('common.required'), trigger: 'blur' }],
+  configValue: [{ required: true, message: t('common.required'), trigger: 'blur' }],
+}
 
 const loadConfigs = async () => {
   loadingConfigs.value = true
@@ -100,7 +107,8 @@ const handleSaveConfig = async (row: any) => {
   } catch { ElMessage.error(t('common.saveFailed')) }
 }
 const handleAddConfig = async () => {
-  if (!addConfigForm.configKey) { ElMessage.warning(t('sysAdmin.configKeyRequired')); return }
+  const valid = await configFormRef.value?.validate().catch(() => false)
+  if (!valid) return
   try {
     await addSystemConfig(addConfigForm)
     ElMessage.success(t('sysAdmin.addSuccess'))

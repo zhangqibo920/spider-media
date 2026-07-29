@@ -33,6 +33,11 @@ public class TsSchedulerController extends BaseController {
      * @param task 任务实体（包含任务名、类型、Cron表达式等）
      * @return 创建后的任务实体
      */
+    @GetMapping("/task/{id}")
+    public R<TsScheduledTask> getScheduledTask(@PathVariable Long id) {
+        return ok(scheduledTaskService.selectById(id));
+    }
+
     @PostMapping("/task")
     public R<TsScheduledTask> createTask(@Valid @RequestBody TsScheduledTask task) {
         task.setUserId(LoginUser.getUserId());

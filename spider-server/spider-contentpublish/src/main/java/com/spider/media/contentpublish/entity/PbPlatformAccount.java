@@ -1,6 +1,7 @@
 package com.spider.media.contentpublish.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -38,10 +39,12 @@ public class PbPlatformAccount extends BaseEntity {
     /** 平台账号的唯一ID（如抖音的 open_id / union_id） */
     private String accountId;
 
-    /** 平台授权的 Access Token，用于调用平台 API */
+    /** 平台授权的 Access Token，用于调用平台 API（查询时不返回） */
+    @JsonIgnore
     private String accessToken;
 
-    /** 平台授权的 Refresh Token，用于在 Access Token 过期后刷新 */
+    /** 平台授权的 Refresh Token，用于在 Access Token 过期后刷新（查询时不返回） */
+    @JsonIgnore
     private String refreshToken;
 
     /** Access Token 的过期时间，过期后需使用 Refresh Token 刷新 */

@@ -283,6 +283,32 @@ CREATE TABLE `ts_scheduled_task` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='定时任务表';
 
 -- =============================================
+-- AI 模型表
+-- =============================================
+DROP TABLE IF EXISTS `ai_model`;
+CREATE TABLE `ai_model` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '模型ID',
+    `model_key` VARCHAR(100) NOT NULL COMMENT '模型标识（如 deepseek-chat）',
+    `model_name` VARCHAR(100) NOT NULL COMMENT '模型显示名称',
+    `provider` VARCHAR(50) NOT NULL COMMENT '模型提供方（如 deepseek、zhipu）',
+    `api_key` VARCHAR(500) DEFAULT '' COMMENT 'API密钥',
+    `base_url` VARCHAR(500) DEFAULT '' COMMENT 'API基础地址',
+    `enabled` CHAR(1) DEFAULT 'N' COMMENT '是否启用（Y启用 N禁用）',
+    `sort_order` INT DEFAULT 0 COMMENT '排序序号',
+    `test_status` VARCHAR(20) DEFAULT 'UNTESTED' COMMENT '测试状态（UNTESTED/TESTING/SUCCESS/FAILED）',
+    `test_time` DATETIME DEFAULT NULL COMMENT '最近测试时间',
+    `test_message` VARCHAR(1000) DEFAULT '' COMMENT '测试结果信息',
+    `del_flag` CHAR(1) DEFAULT '0' COMMENT '删除标志',
+    `create_by` VARCHAR(64) DEFAULT '' COMMENT '创建者',
+    `create_time` DATETIME DEFAULT NULL COMMENT '创建时间',
+    `update_by` VARCHAR(64) DEFAULT '' COMMENT '更新者',
+    `update_time` DATETIME DEFAULT NULL COMMENT '更新时间',
+    `remark` VARCHAR(500) DEFAULT '' COMMENT '备注',
+    PRIMARY KEY (`id`),
+    KEY `idx_model_key` (`model_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI 模型配置表';
+
+-- =============================================
 -- 系统配置表
 -- =============================================
 DROP TABLE IF EXISTS `sys_config`;

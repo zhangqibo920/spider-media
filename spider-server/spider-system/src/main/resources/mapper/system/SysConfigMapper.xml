@@ -22,6 +22,11 @@
         create_by, create_time, update_by, update_time, remark, del_flag
     </sql>
 
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM sys_config
+        WHERE id = #{id} AND del_flag = '0'
+    </select>
+
     <select id="selectByGroup" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List"/> FROM sys_config
         WHERE del_flag = '0'

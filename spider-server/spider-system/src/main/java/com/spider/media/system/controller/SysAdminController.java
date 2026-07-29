@@ -72,6 +72,11 @@ public class SysAdminController extends BaseController {
         return ok(configService.selectConfigList(group));
     }
 
+    @GetMapping("/config/{id}")
+    public R<SysConfig> getConfigById(@PathVariable Long id) {
+        return ok(configService.selectById(id));
+    }
+
     /**
      * 新增系统配置
      *
@@ -124,6 +129,11 @@ public class SysAdminController extends BaseController {
     @GetMapping("/users")
     public R<List<SysUser>> getUsers() {
         return ok(userService.selectUserList());
+    }
+
+    @GetMapping("/users/{userId}")
+    public R<SysUser> getSysUser(@PathVariable Long userId) {
+        return ok(userService.selectByUserId(userId));
     }
 
     /**
@@ -197,6 +207,11 @@ public class SysAdminController extends BaseController {
     @GetMapping("/menus")
     public R<List<SysMenu>> getMenus() {
         return ok(menuService.selectMenuList());
+    }
+
+    @GetMapping("/menus/{menuId}")
+    public R<SysMenu> getMenu(@PathVariable Long menuId) {
+        return ok(menuService.selectMenuById(menuId));
     }
 
     @OperLog(module = "菜单管理", action = "新增")

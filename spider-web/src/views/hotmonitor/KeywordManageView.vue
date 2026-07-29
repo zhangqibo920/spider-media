@@ -104,12 +104,12 @@ const keywords = ref<any[]>([])
 const formRef = ref<any>(null)
 
 const allSources = computed(() => [
-  { label: '微博', value: 'weibo' },
-  { label: '抖音', value: 'douyin' },
-  { label: '知乎', value: 'zhihu' },
-  { label: '头条', value: 'toutiao' },
-  { label: '百度', value: 'baidu' },
-  { label: 'B站', value: 'bilibili' },
+  { label: t('keyword.sourceWeibo'), value: 'weibo' },
+  { label: t('keyword.sourceDouyin'), value: 'douyin' },
+  { label: t('keyword.sourceZhihu'), value: 'zhihu' },
+  { label: t('keyword.sourceToutiao'), value: 'toutiao' },
+  { label: t('keyword.sourceBaidu'), value: 'baidu' },
+  { label: t('keyword.sourceBilibili'), value: 'bilibili' },
   { label: 'HackerNews', value: 'hackernews' },
   { label: 'GitHub', value: 'github' },
 ])

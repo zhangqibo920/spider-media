@@ -40,21 +40,21 @@
 
     <el-dialog v-model="showAddDialog" :title="$t('collection.addAccount')" width="500px" @closed="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="平台" prop="platform">
+        <el-form-item :label="$t('collection.platform')" prop="platform">
           <el-select v-model="form.platform" :placeholder="$t('collection.selectPlatform')">
             <el-option v-for="p in platformDict" :key="p.dictValue" :label="p.dictLabel" :value="p.dictValue" />
           </el-select>
         </el-form-item>
-        <el-form-item label="账号名称" prop="accountName">
+        <el-form-item :label="$t('collection.accountName')" prop="accountName">
           <el-input v-model="form.accountName" :placeholder="$t('collection.inputAccountName')" />
         </el-form-item>
-        <el-form-item label="账号ID">
+        <el-form-item :label="$t('collection.accountId')">
           <el-input v-model="form.accountId" :placeholder="$t('collection.inputAccountId')" />
         </el-form-item>
-        <el-form-item label="账号链接">
+        <el-form-item :label="$t('collection.accountUrl')">
           <el-input v-model="form.accountUrl" :placeholder="$t('collection.inputAccountUrl')" />
         </el-form-item>
-        <el-form-item label="分组">
+        <el-form-item :label="$t('collection.group')">
           <el-input v-model="form.groupName" :placeholder="$t('collection.inputGroupName')" />
         </el-form-item>
       </el-form>

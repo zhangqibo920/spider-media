@@ -13,6 +13,14 @@ import java.util.List;
 public interface ISysConfigService {
 
     /**
+     * 根据主键ID查询单条配置
+     *
+     * @param id 配置主键ID
+     * @return 配置实体，不存在返回 null
+     */
+    SysConfig selectById(Long id);
+
+    /**
      * 按分组查询配置列表
      *
      * @param group 配置分组（configKey 前缀）

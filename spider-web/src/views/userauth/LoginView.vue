@@ -38,8 +38,8 @@
               maxlength="4"
               @keyup.enter="handleLogin"
             />
-            <div class="captcha-img" @click="refreshCaptcha" title="点击刷新验证码">
-              <img v-if="captchaImg" :src="captchaImg" alt="验证码" />
+            <div class="captcha-img" @click="refreshCaptcha" :title="$t('login.clickToRefresh')">
+              <img v-if="captchaImg" :src="captchaImg" :alt="$t('login.captchaAlt')" />
               <div v-else class="captcha-loading">{{ $t('login.loading') }}</div>
             </div>
           </div>
@@ -89,7 +89,7 @@ const rules = {
   password: [{ required: true, message: t('login.password'), trigger: 'blur' }],
   captchaCode: [
     { required: true, message: t('login.captcha'), trigger: 'blur' },
-    { min: 4, max: 4, message: '验证码为 4 位字符', trigger: 'blur' },
+    { min: 4, max: 4, message: t('login.captchaRule'), trigger: 'blur' },
   ],
 }
 

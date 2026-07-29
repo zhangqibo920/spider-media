@@ -15,6 +15,14 @@ import java.util.List;
 public interface SysConfigMapper {
 
     /**
+     * 根据主键ID查询单条配置
+     *
+     * @param id 配置主键ID
+     * @return 配置实体，不存在返回 null
+     */
+    SysConfig selectById(@Param("id") Long id);
+
+    /**
      * 按配置键前缀查询配置列表（用于获取某个模块下的所有配置）
      *
      * @param configKey 配置键前缀（如 "sys.upload" 匹配所有上传相关配置）

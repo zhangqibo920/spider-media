@@ -79,10 +79,10 @@
             <el-descriptions-item :label="$t('dashboard.runningStatus')">
               <el-tag type="success">{{ $t('dashboard.running') }}</el-tag>
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('dashboard.aiModel')">DeepSeek / 智谱</el-descriptions-item>
-            <el-descriptions-item :label="$t('dashboard.hotTopics')">{{ stats.hotTopics }} {{ currentLang === 'en' ? 'items' : '条' }}</el-descriptions-item>
-            <el-descriptions-item :label="$t('dashboard.publishAccounts')">{{ stats.publishAccounts }} {{ currentLang === 'en' ? 'accounts' : '个' }}</el-descriptions-item>
-            <el-descriptions-item :label="$t('dashboard.scheduledTasks')">{{ stats.scheduledTasks }} {{ currentLang === 'en' ? 'tasks' : '个' }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.aiModel')">{{ $t('dashboard.aiModelDetail') }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.hotTopics')">{{ stats.hotTopics }} {{ $t('dashboard.articleUnit') }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.publishAccounts')">{{ stats.publishAccounts }} {{ $t('dashboard.accountUnit') }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.scheduledTasks')">{{ stats.scheduledTasks }} {{ $t('dashboard.taskUnit') }}</el-descriptions-item>
           </el-descriptions>
         </el-card>
       </el-col>
@@ -92,11 +92,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { getDashboardStats } from '@/api/dashboard'
-import { getCurrentLanguage } from '@/i18n'
 
-const currentLang = getCurrentLanguage()
-
+const { t } = useI18n()
 const stats = ref({
   targetAccounts: 0,
   articles: 0,
@@ -112,7 +112,7 @@ onMounted(async () => {
     const res = await getDashboardStats()
     stats.value = res.data
   } catch {
-    // keep defaults
+    ElMessage.error(t('common.operationFailed'))
   }
 })
 </script>

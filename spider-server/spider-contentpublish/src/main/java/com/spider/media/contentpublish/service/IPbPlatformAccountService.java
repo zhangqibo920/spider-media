@@ -13,6 +13,14 @@ import java.util.List;
 public interface IPbPlatformAccountService {
 
     /**
+     * 根据主键ID查询平台账号
+     *
+     * @param id 账号主键ID
+     * @return 平台账号实体，不存在返回 null
+     */
+    PbPlatformAccount selectById(Long id);
+
+    /**
      * 查询指定用户的所有平台账号列表
      *
      * @param userId 用户ID

@@ -51,6 +51,11 @@ public class DcTargetAccountController extends BaseController {
         return list(targetAccountService.selectTargetAccountList(account));
     }
 
+    @GetMapping("/account/{id}")
+    public R<DcTargetAccount> getTargetAccount(@PathVariable Long id) {
+        return ok(targetAccountService.selectById(id));
+    }
+
     /**
      * 新增对标账号
      *

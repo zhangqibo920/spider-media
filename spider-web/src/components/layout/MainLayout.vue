@@ -40,10 +40,10 @@
         </div>
         <div class="header-right">
           <el-dropdown style="margin-right: 12px" @command="handleLangChange">
-            <span class="lang-switcher">{{ currentLang === 'en' ? 'EN' : '中' }}</span>
+            <span class="lang-switcher">{{ currentLang === 'en' ? 'EN' : t('layout.langShortZh') }}</span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="zh-CN">中文</el-dropdown-item>
+                <el-dropdown-item command="zh-CN">{{ t('layout.langZh') }}</el-dropdown-item>
                 <el-dropdown-item command="en">English</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -102,6 +102,7 @@ import { useUserStore } from '@/stores/user'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '@/api/hotmonitor'
 import { setLanguage, getCurrentLanguage } from '@/i18n'
+import { useI18n } from 'vue-i18n'
 
 interface MenuItem {
   path: string
@@ -114,6 +115,7 @@ const router = useRouter()
 const route = useRoute()
 const appStore = useAppStore()
 const userStore = useUserStore()
+const { t } = useI18n()
 
 const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
 const activeMenu = computed(() => route.path)

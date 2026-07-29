@@ -1,6 +1,7 @@
 package com.spider.media.aicreation.entity;
 
 import com.spider.media.common.base.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -49,8 +50,9 @@ public class AiModel extends BaseEntity {
     @Size(max = 50, message = "模型提供方长度不能超过50")
     private String provider;
 
-    /** API 密钥 */
+    /** API 密钥（仅在创建/更新时接收前端传入，查询时不返回） */
     @NotBlank(message = "API密钥不能为空")
+    @JsonIgnore
     private String apiKey;
 
     /** API 基础地址 */

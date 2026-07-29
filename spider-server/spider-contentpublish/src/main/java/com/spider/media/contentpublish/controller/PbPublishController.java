@@ -50,6 +50,11 @@ public class PbPublishController extends BaseController {
         return list(platformAccountService.selectAccountList(userId));
     }
 
+    @GetMapping("/account/{id}")
+    public R<PbPlatformAccount> getPlatformAccount(@PathVariable Long id) {
+        return ok(platformAccountService.selectById(id));
+    }
+
     /**
      * 添加发布账号
      *
@@ -95,6 +100,11 @@ public class PbPublishController extends BaseController {
      * @param task 发布任务实体
      * @return 创建后的任务实体
      */
+    @GetMapping("/task/{id}")
+    public R<PbPublishTask> getPublishTask(@PathVariable Long id) {
+        return ok(publishTaskService.selectById(id));
+    }
+
     @PostMapping("/task")
     public R<PbPublishTask> createTask(@Valid @RequestBody PbPublishTask task) {
         task.setUserId(LoginUser.getUserId());

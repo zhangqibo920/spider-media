@@ -28,6 +28,11 @@ public class SysConfigServiceImpl implements ISysConfigService {
     }
 
     @Override
+    public SysConfig selectById(Long id) {
+        return configMapper.selectById(id);
+    }
+
+    @Override
     public List<SysConfig> selectConfigList(String group) {
         return configMapper.selectByGroup(group);
     }

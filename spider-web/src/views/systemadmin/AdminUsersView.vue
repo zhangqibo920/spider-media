@@ -28,14 +28,14 @@
   </el-card>
 
   <el-dialog v-model="showEditUserDialog" :title="$t('sysAdmin.editUser')" width="480px">
-    <el-form :model="editUserForm" label-width="80px">
+    <el-form ref="editUserRef" :model="editUserForm" :rules="editUserRules" label-width="80px">
       <el-form-item :label="$t('sysAdmin.username')">
         <el-input v-model="editUserForm.userName" disabled />
       </el-form-item>
-      <el-form-item :label="$t('sysAdmin.nickname')">
+      <el-form-item :label="$t('sysAdmin.nickname')" prop="nickName">
         <el-input v-model="editUserForm.nickName" />
       </el-form-item>
-      <el-form-item :label="$t('sysAdmin.email')">
+      <el-form-item :label="$t('sysAdmin.email')" prop="email">
         <el-input v-model="editUserForm.email" />
       </el-form-item>
       <el-form-item :label="$t('sysAdmin.role')">
@@ -91,6 +91,11 @@ const users = ref<any[]>([])
 
 const showEditUserDialog = ref(false)
 const editUserForm = reactive({ userId: 0, userName: '', nickName: '', email: '', role: 'USER', status: '0' })
+const editUserRef = ref<FormInstance>()
+const editUserRules = {
+  nickName: [{ required: true, message: t('common.required'), trigger: 'blur' }],
+  email: [{ required: true, message: t('common.required'), trigger: 'blur' }, { type: 'email', message: t('common.emailInvalid'), trigger: 'blur' }],
+}
 
 const showChangePasswordDialog = ref(false)
 const changingPassword = ref(false)
@@ -135,6 +140,8 @@ const startEditUser = (row: any) => {
   showEditUserDialog.value = true
 }
 const handleSaveUser = async () => {
+  const valid = await editUserRef.value?.validate().catch(() => false)
+  if (!valid) return
   try { await updateUser(editUserForm); ElMessage.success(t('common.saveSuccess')); showEditUserDialog.value = false; loadUsers() } catch { ElMessage.error(t('common.saveFailed')) }
 }
 const handleDeleteUser = async (row: any) => {

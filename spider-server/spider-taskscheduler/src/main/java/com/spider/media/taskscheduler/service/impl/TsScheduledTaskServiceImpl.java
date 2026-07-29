@@ -49,6 +49,11 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
     }
 
     @Override
+    public TsScheduledTask selectById(Long id) {
+        return scheduledTaskMapper.selectById(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public TsScheduledTask createTask(TsScheduledTask task) {
         task.setStatus(0);

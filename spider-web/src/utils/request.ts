@@ -1,6 +1,9 @@
 import axios, { AxiosError, type AxiosRequestConfig, type Canceler } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import i18n from '@/i18n'
+
+const t = i18n.global.t
 
 /**
  * 扩展 AxiosRequestConfig，增加 cancelRepeat 配置项
@@ -87,13 +90,13 @@ request.interceptors.response.use(
     if (res && typeof res === 'object' && 'code' in res && res.code !== 0) {
       // 兼容后端在 HTTP 200 响应中返回 code=401/403 的情况
       if (res.code === 401) {
-        handleUnauthorized(res.message || '登录已过期，请重新登录')
+        handleUnauthorized(res.message || t('request.unauthorized'))
       } else if (res.code === 403) {
-        ElMessage.error(res.message || '没有权限执行此操作')
+        ElMessage.error(res.message || t('request.forbidden'))
       } else {
-        ElMessage.error(res.message || '请求失败')
+        ElMessage.error(res.message || t('request.requestFailed'))
       }
-      return Promise.reject(new Error(res.message || '请求失败'))
+      return Promise.reject(new Error(res.message || t('request.requestFailed')))
     }
     return res
   },
@@ -114,7 +117,7 @@ request.interceptors.response.use(
     if (status === 401) {
       const msg = (respData && typeof respData === 'object' && respData.message)
         ? respData.message
-        : '登录已过期，请重新登录'
+        : t('request.unauthorized')
       handleUnauthorized(msg)
       return Promise.reject(error)
     }
@@ -123,30 +126,30 @@ request.interceptors.response.use(
     if (status === 403) {
       const msg = (respData && typeof respData === 'object' && respData.message)
         ? respData.message
-        : '没有权限执行此操作'
+        : t('request.forbidden')
       ElMessage.error(msg)
       return Promise.reject(error)
     }
 
     // HTTP 429：限流
     if (status === 429) {
-      ElMessage.error(respData?.message || '请求过于频繁，请稍后再试')
+      ElMessage.error(respData?.message || t('request.tooManyRequests'))
       return Promise.reject(error)
     }
 
     // HTTP 5xx：服务端错误
     if (status && status >= 500) {
-      ElMessage.error('服务异常，请稍后重试')
+      ElMessage.error(t('request.serverError'))
       return Promise.reject(error)
     }
 
     // 网络错误 / 超时 / 其他
     if (error.code === 'ECONNABORTED') {
-      ElMessage.error('请求超时，请检查网络后重试')
+      ElMessage.error(t('request.timeout'))
     } else if (!error.response) {
-      ElMessage.error('网络异常，请检查网络连接')
+      ElMessage.error(t('request.networkError'))
     } else {
-      ElMessage.error(respData?.message || error.message || '请求失败')
+      ElMessage.error(respData?.message || error.message || t('request.requestFailed'))
     }
     return Promise.reject(error)
   }

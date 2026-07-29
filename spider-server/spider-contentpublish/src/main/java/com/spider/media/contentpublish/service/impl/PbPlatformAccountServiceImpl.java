@@ -38,6 +38,11 @@ public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
      * @return 该用户的平台账号列表，按创建时间倒序
      */
     @Override
+    public PbPlatformAccount selectById(Long id) {
+        return platformAccountMapper.selectById(id);
+    }
+
+    @Override
     public List<PbPlatformAccount> selectAccountList(Long userId) {
         return platformAccountMapper.selectByUserId(userId);
     }

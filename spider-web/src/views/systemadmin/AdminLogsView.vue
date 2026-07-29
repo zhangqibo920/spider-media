@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { getOperationLogs } from '@/api/admin'
 
@@ -41,6 +42,9 @@ const loadLogs = async () => {
     const res = await getOperationLogs(logPage.value, logSize.value)
     logs.value = res.data.list
     logTotal.value = res.data.total
+  } catch {
+    ElMessage.error(t('common.operationFailed'))
+    loadingLogs.value = false
   } finally { loadingLogs.value = false }
 }
 

@@ -13,6 +13,14 @@ import java.util.List;
 public interface IDcTargetAccountService {
 
     /**
+     * 根据主键ID查询对标账号
+     *
+     * @param id 对标账号主键ID
+     * @return 对标账号实体，不存在返回 null
+     */
+    DcTargetAccount selectById(Long id);
+
+    /**
      * 查询当前用户的对标账号列表（支持按平台和分组筛选）
      *
      * @param account 包含筛选条件的对标账号实体

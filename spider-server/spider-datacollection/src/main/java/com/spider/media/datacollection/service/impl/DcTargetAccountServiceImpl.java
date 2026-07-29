@@ -35,6 +35,11 @@ public class DcTargetAccountServiceImpl implements IDcTargetAccountService {
      * <p>自动从 SecurityContext 获取当前用户ID，确保只能查看自己的对标账号。</p>
      */
     @Override
+    public DcTargetAccount selectById(Long id) {
+        return targetAccountMapper.selectById(id);
+    }
+
+    @Override
     public List<DcTargetAccount> selectTargetAccountList(DcTargetAccount account) {
         Long userId = LoginUser.getUserId();
         return targetAccountMapper.selectList(userId, account.getPlatform(), account.getGroupName());

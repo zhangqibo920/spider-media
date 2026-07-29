@@ -10,7 +10,6 @@ import java.util.List;
  * <p>定义用户注册、登录、查询、更新、删除等核心业务方法。
  * 由 {@link com.spider.media.system.service.impl.SysUserServiceImpl} 提供具体实现。</p>
  */
-import java.util.List;
 
 public interface ISysUserService {
 
@@ -39,6 +38,14 @@ public interface ISysUserService {
      * @return 用户实体，不存在返回 null
      */
     SysUser selectUserByUserName(String userName);
+
+    /**
+     * 根据用户ID查询用户
+     *
+     * @param userId 用户ID
+     * @return 用户实体，不存在返回 null
+     */
+    SysUser selectByUserId(Long userId);
 
     /**
      * 查询所有用户列表

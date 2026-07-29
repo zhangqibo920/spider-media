@@ -39,6 +39,11 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
     }
 
     @Override
+    public PbPublishTask selectById(Long id) {
+        return publishTaskMapper.selectById(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public PbPublishTask createTask(PbPublishTask task) {
         task.setStatus(0);

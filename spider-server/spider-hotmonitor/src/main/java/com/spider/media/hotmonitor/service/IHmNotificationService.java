@@ -10,8 +10,6 @@ public interface IHmNotificationService {
 
     int countUnread(Long userId);
 
-    void create(HmNotification notification, String username);
-
     void markAsRead(Long id);
 
     void markAllAsRead(Long userId);

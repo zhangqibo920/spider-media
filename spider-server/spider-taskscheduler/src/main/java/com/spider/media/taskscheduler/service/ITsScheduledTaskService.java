@@ -13,6 +13,14 @@ import com.spider.media.taskscheduler.entity.TsScheduledTask;
 public interface ITsScheduledTaskService {
 
     /**
+     * 根据主键ID查询定时任务
+     *
+     * @param id 任务ID
+     * @return 任务实体，不存在返回 null
+     */
+    TsScheduledTask selectById(Long id);
+
+    /**
      * 创建定时任务
      *
      * @param task 任务实体（包含任务名、类型、Cron表达式等）
