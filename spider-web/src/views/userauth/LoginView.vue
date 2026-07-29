@@ -12,7 +12,7 @@
         <el-form-item prop="username">
           <el-input
             v-model="form.username"
-            placeholder="请输入用户名"
+            :placeholder="$t('login.username')"
             :prefix-icon="User"
             size="large"
           />
@@ -21,7 +21,7 @@
           <el-input
             v-model="form.password"
             type="password"
-            placeholder="请输入密码"
+            :placeholder="$t('login.password')"
             :prefix-icon="Lock"
             size="large"
             show-password
@@ -32,7 +32,7 @@
           <div class="captcha-row">
             <el-input
               v-model="form.captchaCode"
-              placeholder="请输入验证码"
+              :placeholder="$t('login.captcha')"
               :prefix-icon="Key"
               size="large"
               maxlength="4"
@@ -40,19 +40,19 @@
             />
             <div class="captcha-img" @click="refreshCaptcha" title="点击刷新验证码">
               <img v-if="captchaImg" :src="captchaImg" alt="验证码" />
-              <div v-else class="captcha-loading">加载中...</div>
+              <div v-else class="captcha-loading">{{ $t('login.loading') }}</div>
             </div>
           </div>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" size="large" :loading="loading" @click="handleLogin" style="width: 100%">
-            登 录
+            {{ $t('login.login') }}
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="login-footer">
-        还没有账号？<router-link to="/register">立即注册</router-link>
+        {{ $t('login.noAccount') }}<router-link to="/register">{{ $t('login.registerNow') }}</router-link>
       </div>
     </el-card>
   </div>
@@ -66,10 +66,12 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { getCaptcha } from '@/api/auth'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const { t } = useI18n()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -83,15 +85,14 @@ const form = reactive({
 })
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  username: [{ required: true, message: t('login.username'), trigger: 'blur' }],
+  password: [{ required: true, message: t('login.password'), trigger: 'blur' }],
   captchaCode: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { required: true, message: t('login.captcha'), trigger: 'blur' },
     { min: 4, max: 4, message: '验证码为 4 位字符', trigger: 'blur' },
   ],
 }
 
-/** 加载/刷新验证码 */
 async function refreshCaptcha() {
   try {
     const res = await getCaptcha()
@@ -99,7 +100,7 @@ async function refreshCaptcha() {
     captchaImg.value = res.data.img
     form.captchaCode = ''
   } catch {
-    ElMessage.error('验证码加载失败，请刷新页面重试')
+    ElMessage.error(t('login.captchaFailed'))
   }
 }
 
@@ -110,11 +111,10 @@ const handleLogin = async () => {
   loading.value = true
   try {
     await userStore.handleLogin(form.username, form.password, captchaId.value, form.captchaCode)
-    ElMessage.success('登录成功')
+    ElMessage.success(t('login.loginSuccess'))
     const redirect = (route.query.redirect as string) || '/dashboard'
     router.push(redirect)
   } catch {
-    // 登录失败后刷新验证码（验证码一次性使用）
     refreshCaptcha()
   } finally {
     loading.value = false

@@ -1,0 +1,48 @@
+import type { Component } from 'vue'
+import {
+  Menu, House, User, Setting, Document, Files, Folder, List,
+  Search, Edit, Plus, Delete, Download, Upload, Refresh, Bell,
+  Lock, Unlock, Key, Link, Share, Star, Collection, Timer, Clock,
+  DataAnalysis, DataBoard, DataLine, PieChart, Histogram,
+  Monitor, Camera, Picture, MagicStick, Aim, Brush,
+  Trophy, GoldMedal,
+  Headset, Message, ChatLineRound, Promotion, Guide,
+  Compass, Location, MapLocation, CopyDocument,
+  CirclePlus, CircleCheck, CircleClose,
+  SuccessFilled, WarningFilled, InfoFilled, QuestionFilled, Warning,
+  Switch, Sort, Top, Bottom, Back, Right,
+  ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
+  CaretTop, CaretBottom, CaretLeft, CaretRight,
+  Fold, Expand, Remove, Minus, Operation,
+  Sunny, Cloudy, Moon, StarFilled,
+  TrendCharts, VideoCamera,
+  UploadFilled,
+  DArrowLeft, DArrowRight,
+  ChatDotSquare, ChatLineSquare, ChatSquare, ChatRound, ChatDotRound,
+  Present, Coffee,
+} from '@element-plus/icons-vue'
+
+export const iconMap: Record<string, Component> = {
+  Menu, House, User, Setting, Document, Files, Folder, List,
+  Search, Edit, Plus, Delete, Download, Upload, Refresh, Bell,
+  Lock, Unlock, Key, Link, Share, Star, Collection, Timer, Clock,
+  DataAnalysis, DataBoard, DataLine, PieChart, Histogram,
+  Monitor, Camera, Picture, MagicStick, Aim, Brush,
+  Trophy, GoldMedal,
+  Headset, Message, ChatLineRound, Promotion, Guide,
+  Compass, Location, MapLocation, CopyDocument,
+  CirclePlus, CircleCheck, CircleClose,
+  SuccessFilled, WarningFilled, InfoFilled, QuestionFilled, Warning,
+  Switch, Sort, Top, Bottom, Back, Right,
+  ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
+  CaretTop, CaretBottom, CaretLeft, CaretRight,
+  Fold, Expand, Remove, Minus, Operation,
+  Sunny, Cloudy, Moon, StarFilled,
+  TrendCharts, VideoCamera,
+  UploadFilled,
+  DArrowLeft, DArrowRight,
+  ChatDotSquare, ChatLineSquare, ChatSquare, ChatRound, ChatDotRound,
+  Present, Coffee,
+}
+
+export const iconNames = Object.keys(iconMap)

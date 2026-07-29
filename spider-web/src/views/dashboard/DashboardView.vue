@@ -5,7 +5,7 @@
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-title">对标账号</div>
+              <div class="stat-title">{{ $t('dashboard.targetAccounts') }}</div>
               <div class="stat-value">{{ stats.targetAccounts }}</div>
             </div>
             <el-icon class="stat-icon" :size="40"><User /></el-icon>
@@ -16,7 +16,7 @@
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-title">采集文章</div>
+              <div class="stat-title">{{ $t('dashboard.collectedArticles') }}</div>
               <div class="stat-value">{{ stats.articles }}</div>
             </div>
             <el-icon class="stat-icon" :size="40"><Document /></el-icon>
@@ -27,7 +27,7 @@
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-title">AI生成</div>
+              <div class="stat-title">{{ $t('dashboard.aiGenerated') }}</div>
               <div class="stat-value">{{ stats.aiGenerated }}</div>
             </div>
             <el-icon class="stat-icon" :size="40"><MagicStick /></el-icon>
@@ -38,7 +38,7 @@
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-info">
-              <div class="stat-title">已发布</div>
+              <div class="stat-title">{{ $t('dashboard.published') }}</div>
               <div class="stat-value">{{ stats.published }}</div>
             </div>
             <el-icon class="stat-icon" :size="40"><Promotion /></el-icon>
@@ -49,22 +49,22 @@
 
     <el-row :gutter="20" style="margin-top: 20px">
       <el-col :span="12">
-        <el-card>
+          <el-card>
           <template #header>
-            <span>快捷操作</span>
+            <span>{{ $t('dashboard.quickActions') }}</span>
           </template>
           <el-space wrap>
             <el-button type="primary" @click="$router.push('/collection')">
-              <el-icon><Download /></el-icon> 数据采集
+              <el-icon><Download /></el-icon> {{ $t('dashboard.dataCollection') }}
             </el-button>
             <el-button type="success" @click="$router.push('/ai-creation')">
-              <el-icon><MagicStick /></el-icon> AI创作
+              <el-icon><MagicStick /></el-icon> {{ $t('dashboard.aiCreation') }}
             </el-button>
             <el-button type="warning" @click="$router.push('/publish')">
-              <el-icon><Promotion /></el-icon> 内容发布
+              <el-icon><Promotion /></el-icon> {{ $t('dashboard.contentPublish') }}
             </el-button>
             <el-button @click="$router.push('/scheduler')">
-              <el-icon><Timer /></el-icon> 任务调度
+              <el-icon><Timer /></el-icon> {{ $t('dashboard.taskSchedule') }}
             </el-button>
           </el-space>
         </el-card>
@@ -72,17 +72,17 @@
       <el-col :span="12">
         <el-card>
           <template #header>
-            <span>系统状态</span>
+            <span>{{ $t('dashboard.systemStatus') }}</span>
           </template>
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="系统版本">V1.0.0</el-descriptions-item>
-            <el-descriptions-item label="运行状态">
-              <el-tag type="success">正常运行</el-tag>
+            <el-descriptions-item :label="$t('dashboard.systemVersion')">V1.0.0</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.runningStatus')">
+              <el-tag type="success">{{ $t('dashboard.running') }}</el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="AI模型">DeepSeek / 智谱</el-descriptions-item>
-            <el-descriptions-item label="热点话题">{{ stats.hotTopics }} 条</el-descriptions-item>
-            <el-descriptions-item label="发布账号">{{ stats.publishAccounts }} 个</el-descriptions-item>
-            <el-descriptions-item label="定时任务">{{ stats.scheduledTasks }} 个</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.aiModel')">DeepSeek / 智谱</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.hotTopics')">{{ stats.hotTopics }} {{ currentLang === 'en' ? 'items' : '条' }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.publishAccounts')">{{ stats.publishAccounts }} {{ currentLang === 'en' ? 'accounts' : '个' }}</el-descriptions-item>
+            <el-descriptions-item :label="$t('dashboard.scheduledTasks')">{{ stats.scheduledTasks }} {{ currentLang === 'en' ? 'tasks' : '个' }}</el-descriptions-item>
           </el-descriptions>
         </el-card>
       </el-col>
@@ -93,6 +93,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getDashboardStats } from '@/api/dashboard'
+import { getCurrentLanguage } from '@/i18n'
+
+const currentLang = getCurrentLanguage()
 
 const stats = ref({
   targetAccounts: 0,

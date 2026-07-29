@@ -9,22 +9,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.37",
-    "vue-router": "^4.4.3",
-    "pinia": "^2.2.2",
+    "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.7.5",
     "element-plus": "^2.8.1",
-    "@element-plus/icons-vue": "^2.3.1",
-    "nprogress": "^0.2.0"
+    "nprogress": "^0.2.0",
+    "pinia": "^2.2.2",
+    "vue": "^3.4.37",
+    "vue-i18n": "^9.14.5",
+    "vue-router": "^4.4.3"
   },
   "devDependencies": {
+    "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^5.1.2",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.2",
-    "vue-tsc": "^2.1.0",
     "sass": "^1.78.0",
+    "typescript": "^5.5.4",
     "unplugin-auto-import": "^0.18.2",
     "unplugin-vue-components": "^0.27.4",
-    "@types/nprogress": "^0.2.3"
+    "vite": "^5.4.2",
+    "vue-tsc": "^2.1.0"
   }
 }

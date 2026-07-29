@@ -2,7 +2,7 @@
   <el-container class="main-layout">
     <el-aside :width="sidebarCollapsed ? '64px' : '220px'" class="sidebar">
       <div class="logo">
-        <span v-if="!sidebarCollapsed" class="logo-text">SpiderMedia</span>
+        <span v-if="!sidebarCollapsed" class="logo-text">{{ $t('layout.logo') }}</span>
         <span v-else class="logo-icon">S</span>
       </div>
       <el-menu
@@ -39,6 +39,15 @@
           </el-icon>
         </div>
         <div class="header-right">
+          <el-dropdown style="margin-right: 12px" @command="handleLangChange">
+            <span class="lang-switcher">{{ currentLang === 'en' ? 'EN' : '中' }}</span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="zh-CN">中文</el-dropdown-item>
+                <el-dropdown-item command="en">English</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="notification-badge">
             <el-icon class="notification-bell" @click="showNotificationDrawer = true" :size="20">
               <Bell />
@@ -49,12 +58,12 @@
               <el-avatar :size="32" :src="userInfo?.avatar">
                 {{ userInfo?.nickName?.charAt(0) || 'U' }}
               </el-avatar>
-              <span class="username">{{ userInfo?.nickName || userInfo?.userName || '用户' }}</span>
+              <span class="username">{{ userInfo?.nickName || userInfo?.userName || 'U' }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                <el-dropdown-item command="profile">{{ $t('layout.profile') }}</el-dropdown-item>
+                <el-dropdown-item command="logout" divided>{{ $t('layout.logout') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -67,11 +76,11 @@
     </el-container>
   </el-container>
 
-  <el-drawer v-model="showNotificationDrawer" title="通知" size="350px" @open="loadNotifications">
+  <el-drawer v-model="showNotificationDrawer" :title="$t('layout.notifications')" size="350px" @open="loadNotifications">
     <template #header>
       <div class="drawer-header">
-        <span>通知</span>
-        <el-button text size="small" @click="handleMarkAllRead" v-if="unreadCount > 0">全部已读</el-button>
+        <span>{{ $t('layout.notifications') }}</span>
+        <el-button text size="small" @click="handleMarkAllRead" v-if="unreadCount > 0">{{ $t('layout.markAllRead') }}</el-button>
       </div>
     </template>
     <div v-loading="notifLoading">
@@ -80,7 +89,7 @@
         <div class="notif-content">{{ n.content }}</div>
         <div class="notif-time">{{ n.createTime }}</div>
       </div>
-      <el-empty v-if="!notifLoading && notifications.length === 0" description="暂无通知" />
+      <el-empty v-if="!notifLoading && notifications.length === 0" :description="$t('layout.noNotifications')" />
     </div>
   </el-drawer>
 </template>
@@ -92,6 +101,7 @@ import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '@/api/hotmonitor'
+import { setLanguage, getCurrentLanguage } from '@/i18n'
 
 interface MenuItem {
   path: string
@@ -133,6 +143,12 @@ const menuItems = computed<MenuItem[]>(() => {
 
 const toggleSidebar = () => {
   appStore.toggleSidebar()
+}
+
+const currentLang = ref(getCurrentLanguage() as string)
+
+const handleLangChange = (lang: string) => {
+  setLanguage(lang)
 }
 
 const showNotificationDrawer = ref(false)
@@ -379,6 +395,8 @@ onUnmounted(() => {
 .notification-badge { line-height: 1; }
 .notification-bell { cursor: pointer; color: #606266; transition: color 0.2s; vertical-align: middle; }
 .notification-bell:hover { color: #1677ff; }
+.lang-switcher { cursor: pointer; font-size: 14px; font-weight: 600; color: #606266; user-select: none; }
+.lang-switcher:hover { color: #1677ff; }
 
 .drawer-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .notif-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }

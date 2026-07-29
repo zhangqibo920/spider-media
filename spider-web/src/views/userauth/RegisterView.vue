@@ -3,7 +3,7 @@
     <el-card class="register-card">
       <template #header>
         <div class="card-header">
-          <h2>注册账号</h2>
+          <h2>{{ $t('register.title') }}</h2>
         </div>
       </template>
 
@@ -11,7 +11,7 @@
         <el-form-item prop="username">
           <el-input
             v-model="form.username"
-            placeholder="请输入用户名"
+            :placeholder="$t('register.username')"
             :prefix-icon="User"
             size="large"
           />
@@ -20,7 +20,7 @@
           <el-input
             v-model="form.password"
             type="password"
-            placeholder="请输入密码"
+            :placeholder="$t('register.password')"
             :prefix-icon="Lock"
             size="large"
             show-password
@@ -30,7 +30,7 @@
           <el-input
             v-model="form.confirmPassword"
             type="password"
-            placeholder="请确认密码"
+            :placeholder="$t('register.confirmPassword')"
             :prefix-icon="Lock"
             size="large"
             show-password
@@ -39,13 +39,13 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" size="large" :loading="loading" @click="handleRegister" style="width: 100%">
-            注 册
+            {{ $t('register.register') }}
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="register-footer">
-        已有账号？<router-link to="/login">立即登录</router-link>
+        {{ $t('register.hasAccount') }}<router-link to="/login">{{ $t('register.loginNow') }}</router-link>
       </div>
     </el-card>
   </div>
@@ -58,9 +58,11 @@ import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const userStore = useUserStore()
+const { t } = useI18n()
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -73,17 +75,17 @@ const form = reactive({
 
 const validateConfirmPassword = (_rule: any, value: string, callback: Function) => {
   if (value !== form.password) {
-    callback(new Error('两次输入的密码不一致'))
+    callback(new Error(t('register.passwordMismatch')))
   } else {
     callback()
   }
 }
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  username: [{ required: true, message: t('register.username'), trigger: 'blur' }],
+  password: [{ required: true, message: t('register.password'), trigger: 'blur' }],
   confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
+    { required: true, message: t('register.confirmPassword'), trigger: 'blur' },
     { validator: validateConfirmPassword, trigger: 'blur' },
   ],
 }
@@ -95,10 +97,10 @@ const handleRegister = async () => {
   loading.value = true
   try {
     await userStore.handleRegister(form.username, form.password)
-    ElMessage.success('注册成功，请登录')
+    ElMessage.success(t('register.registerSuccess'))
     router.push('/login')
   } catch (error) {
-    ElMessage.error('注册失败')
+    ElMessage.error(t('register.registerFailed'))
   } finally {
     loading.value = false
   }

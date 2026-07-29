@@ -137,7 +137,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMenus, addMenu, updateMenu, deleteMenu } from '@/api/admin'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { iconMap, iconNames as elementIcons } from '@/utils/icon-map'
 import DictTag from '@/components/DictTag.vue'
 
 const loading = ref(false)
@@ -146,7 +146,6 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const menuList = ref<any[]>([])
 const formRef = ref()
-const elementIcons = Object.keys(ElementPlusIconsVue).filter(k => k !== 'default')
 
 const defaultForm = {
   menuId: 0,
