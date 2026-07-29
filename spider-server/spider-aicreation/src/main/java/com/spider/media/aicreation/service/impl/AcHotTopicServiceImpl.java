@@ -100,11 +100,12 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
             }
 
             // 在事务中执行数据库操作（@Async 方法中的 @Transactional 会失效）
+            List<AcHotTopic> finalTopics = topics;
             int saved = transactionTemplate.execute(status -> {
                 hotTopicMapper.deleteByUserId(userId, platform);
                 LocalDateTime now = LocalDateTime.now();
                 int count = 0;
-                for (AcHotTopic topic : topics) {
+                for (AcHotTopic topic : finalTopics) {
                     topic.setUserId(userId);
                     topic.setPlatform(platform);
                     topic.setCreateBy("system");
