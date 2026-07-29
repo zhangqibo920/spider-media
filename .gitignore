@@ -57,6 +57,9 @@ application-local.yml
 *.sqlite
 spider-server/**/src/main/resources/db/*.sql
 
+# IDE workspace artifacts
+.mimocode/
+
 # Internal docs
 *.md
 !README.md
