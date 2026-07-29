@@ -7,6 +7,7 @@ import cn.hutool.core.util.IdUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -39,19 +40,24 @@ public class CaptchaService {
     private static final String CAPTCHA_KEY_PREFIX = "captcha:";
 
     /** 验证码有效期（分钟） */
-    private static final long CAPTCHA_EXPIRE_MINUTES = 5;
+    @Value("${captcha.expire-minutes:5}")
+    private long expireMinutes;
 
     /** 验证码图片宽度 */
-    private static final int WIDTH = 120;
+    @Value("${captcha.width:120}")
+    private int width;
 
     /** 验证码图片高度 */
-    private static final int HEIGHT = 40;
+    @Value("${captcha.height:40}")
+    private int height;
 
     /** 验证码字符数 */
-    private static final int CODE_COUNT = 4;
+    @Value("${captcha.code-count:4}")
+    private int codeCount;
 
     /** 干扰线数量 */
-    private static final int LINE_COUNT = 30;
+    @Value("${captcha.line-count:30}")
+    private int lineCount;
 
     private final StringRedisTemplate redisTemplate;
 
@@ -70,7 +76,7 @@ public class CaptchaService {
      */
     public Map<String, String> generateCaptcha() {
         // 生成图形验证码（Hutool LineCaptcha）
-        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(WIDTH, HEIGHT, CODE_COUNT, LINE_COUNT);
+        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(width, height, codeCount, lineCount);
         String code = captcha.getCode();
         String captchaId = IdUtil.fastSimpleUUID();
 
@@ -79,7 +85,7 @@ public class CaptchaService {
             redisTemplate.opsForValue().set(
                     CAPTCHA_KEY_PREFIX + captchaId,
                     code,
-                    CAPTCHA_EXPIRE_MINUTES,
+                    expireMinutes,
                     TimeUnit.MINUTES
             );
         } catch (Exception e) {

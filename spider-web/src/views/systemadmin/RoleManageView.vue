@@ -79,7 +79,6 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import { getRoles, addRole, updateRole, deleteRole, getRoleMenuIds, updateRoleMenus } from '@/api/role'
 import { getMenus } from '@/api/admin'
-import DictTag from '@/components/DictTag.vue'
 
 const loading = ref(false)
 const submitting = ref(false)

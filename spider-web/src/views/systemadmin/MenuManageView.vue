@@ -140,7 +140,6 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import { getMenus, addMenu, updateMenu, deleteMenu } from '@/api/admin'
 import { iconMap, iconNames as elementIcons } from '@/utils/icon-map'
-import DictTag from '@/components/DictTag.vue'
 
 const loading = ref(false)
 const submitting = ref(false)

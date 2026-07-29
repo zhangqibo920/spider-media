@@ -150,6 +150,18 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
+  const routeRoles = to.meta.roles
+  if (routeRoles && routeRoles.length > 0) {
+    const userRoleKeys = userStore.roles.map(r => r.roleKey)
+    if (userStore.userInfo?.role) userRoleKeys.push(userStore.userInfo.role)
+    const hasRole = routeRoles.some(role => userRoleKeys.includes(role))
+    if (!hasRole) {
+      NProgress.done()
+      next({ name: 'NotFound' })
+      return
+    }
+  }
+
   if (!userStore.routesLoaded) {
     await userStore.fetchMenuTree()
     if (userStore.menuTree.length > 0) {

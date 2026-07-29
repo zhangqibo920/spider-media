@@ -71,7 +71,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import type { FormInstance } from 'element-plus'
 import { getSystemConfigs, addSystemConfig, updateSystemConfig, deleteSystemConfig } from '@/api/admin'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 

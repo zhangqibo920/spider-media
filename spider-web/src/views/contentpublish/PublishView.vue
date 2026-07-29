@@ -124,7 +124,6 @@ import {
   getPublishTasks, createPublishTask, publishNow, schedulePublish
 } from '@/api/publish'
 import { useDict } from '@/composables/useDict'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 

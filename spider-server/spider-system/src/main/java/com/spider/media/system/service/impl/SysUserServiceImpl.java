@@ -153,7 +153,7 @@ public class SysUserServiceImpl implements ISysUserService {
                         "用户名或密码错误，剩余尝试次数 " + remaining);
             }
             throw new ServiceException(ErrorCodeEnums.SYS_USER_LOCKED,
-                    "失败次数过多，账号已被锁定 " + 5 + " 分钟");
+                    "失败次数过多，账号已被锁定 " + loginAttemptService.getLockDurationMinutes() + " 分钟");
         }
         if ("1".equals(user.getStatus())) {
             throw new ServiceException(ErrorCodeEnums.SYS_USER_NOT_FOUND, "用户已停用");

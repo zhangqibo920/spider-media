@@ -121,6 +121,11 @@ public class AcGeneratedArticleServiceImpl implements IAcGeneratedArticleService
     }
 
     @Override
+    public void deleteGeneratedArticle(Long id) {
+        generatedArticleMapper.deleteById(id);
+    }
+
+    @Override
     public PageResult<AcGeneratedArticle> selectArticlePage(AcGeneratedArticlePageReqVO pageReqVO) {
         return PageUtils.selectPage(pageReqVO, () ->
                 generatedArticleMapper.selectPage(

@@ -89,4 +89,28 @@ public class AcCreationController extends BaseController {
         pageReqVO.setUserId(LoginUser.getUserId());
         return page(generatedArticleService.selectArticlePage(pageReqVO));
     }
+
+    /**
+     * 删除热点话题
+     *
+     * @param id 热点话题ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/hotTopic/{id}")
+    public R<Void> deleteHotTopic(@PathVariable Long id) {
+        hotTopicService.deleteHotTopic(id);
+        return ok();
+    }
+
+    /**
+     * 删除 AI 生成文章
+     *
+     * @param id 文章ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/article/{id}")
+    public R<Void> deleteGeneratedArticle(@PathVariable Long id) {
+        generatedArticleService.deleteGeneratedArticle(id);
+        return ok();
+    }
 }

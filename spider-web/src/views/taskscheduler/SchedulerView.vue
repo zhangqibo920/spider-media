@@ -65,7 +65,6 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getScheduledTasks, createScheduledTask, enableTask, disableTask } from '@/api/scheduler'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 

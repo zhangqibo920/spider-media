@@ -82,7 +82,6 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles } from '@/api/ai'
 import { useDict } from '@/composables/useDict'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 

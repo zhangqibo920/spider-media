@@ -60,4 +60,9 @@
         WHERE id = #{id}
     </update>
 
+    <update id="deleteById">
+        UPDATE ac_generated_article SET del_flag = '2'
+        WHERE id = #{id}
+    </update>
+
 </mapper>

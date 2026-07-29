@@ -26,4 +26,6 @@ public interface AcHotTopicMapper {
     int insert(AcHotTopic topic);
 
     int deleteByUserId(@Param("userId") Long userId, @Param("platform") String platform);
+
+    int deleteById(@Param("id") Long id);
 }

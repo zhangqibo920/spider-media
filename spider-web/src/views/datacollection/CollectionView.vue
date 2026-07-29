@@ -105,7 +105,6 @@ import type { FormInstance } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { getTargetAccounts, addTargetAccount, deleteTargetAccount, triggerCollect, getCollectedArticles } from '@/api/collection'
 import { useDict } from '@/composables/useDict'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 

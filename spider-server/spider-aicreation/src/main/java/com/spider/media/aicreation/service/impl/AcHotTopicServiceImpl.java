@@ -130,6 +130,11 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
         return hotTopicMapper.selectByUserId(userId);
     }
 
+    @Override
+    public void deleteHotTopic(Long id) {
+        hotTopicMapper.deleteById(id);
+    }
+
     /**
      * 抓取微博热搜榜（最多30条）
      */

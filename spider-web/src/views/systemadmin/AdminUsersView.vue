@@ -82,7 +82,6 @@ import { useI18n } from 'vue-i18n'
 import type { FormInstance } from 'element-plus'
 import { getUsers, updateUser, deleteUser, resetPassword } from '@/api/admin'
 import { getRoles } from '@/api/role'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 

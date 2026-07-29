@@ -30,4 +30,11 @@ public interface IAcHotTopicService {
      * @return 热点话题列表
      */
     List<AcHotTopic> selectHotTopicList(Long userId);
+
+    /**
+     * 根据 ID 删除热点话题（软删除）
+     *
+     * @param id 热点话题ID
+     */
+    void deleteHotTopic(Long id);
 }

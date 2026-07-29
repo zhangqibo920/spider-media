@@ -42,4 +42,12 @@ public interface AcGeneratedArticleMapper {
      * @return 受影响的行数
      */
     int update(AcGeneratedArticle article);
+
+    /**
+     * 根据 ID 删除 AI 生成文章（软删除）
+     *
+     * @param id 文章ID
+     * @return 受影响的行数
+     */
+    int deleteById(@Param("id") Long id);
 }

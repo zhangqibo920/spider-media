@@ -146,11 +146,11 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import type { FormInstance } from 'element-plus'
+import { getDictTypeList, getDictDataByType } from '@/api/dict'
 import {
-  getDictTypeList, addDictType, updateDictType, deleteDictType,
-  getDictDataByType, addDictData, updateDictData, deleteDictData
+  addDictType, updateDictType, deleteDictType,
+  addDictData, updateDictData, deleteDictData
 } from '@/api/dictManage'
-import DictTag from '@/components/DictTag.vue'
 import { reloadDict } from '@/composables/useDict'
 
 // ========== Dict Type ==========

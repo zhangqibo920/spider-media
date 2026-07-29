@@ -71,7 +71,6 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { updateProfile, changePassword } from '@/api/profile'
-import DictTag from '@/components/DictTag.vue'
 
 const { t } = useI18n()
 const userStore = useUserStore()

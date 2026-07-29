@@ -3,6 +3,7 @@ package com.spider.media.system.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -34,13 +35,16 @@ public class LoginAttemptService {
     private static final String LOCK_KEY_PREFIX = "login_lock:";
 
     /** 最大失败次数（达到后锁定账号） */
-    private static final int MAX_ATTEMPTS = 5;
+    @Value("${login.attempt.max-attempts:5}")
+    private int maxAttempts;
 
     /** 失败计数窗口（分钟）—— 滑动窗口，超过此时间自动清零 */
-    private static final long FAIL_WINDOW_MINUTES = 10;
+    @Value("${login.attempt.fail-window-minutes:10}")
+    private long failWindowMinutes;
 
     /** 锁定时长（分钟） */
-    private static final long LOCK_DURATION_MINUTES = 5;
+    @Value("${login.attempt.lock-duration-minutes:5}")
+    private long lockDurationMinutes;
 
     private final StringRedisTemplate redisTemplate;
 
@@ -85,18 +89,18 @@ public class LoginAttemptService {
         if (count != null) {
             // 第一次失败时设置 TTL（滑动窗口）
             if (count == 1) {
-                redisTemplate.expire(failKey, FAIL_WINDOW_MINUTES, TimeUnit.MINUTES);
+                redisTemplate.expire(failKey, failWindowMinutes, TimeUnit.MINUTES);
             }
             // 达到阈值，设置锁定标记
-            if (count >= MAX_ATTEMPTS) {
+            if (count >= maxAttempts) {
                 redisTemplate.opsForValue().set(
                         LOCK_KEY_PREFIX + username,
                         "1",
-                        LOCK_DURATION_MINUTES,
+                        lockDurationMinutes,
                         TimeUnit.MINUTES
                 );
                 log.warn("账号 {} 因连续登录失败 {} 次被锁定 {} 分钟",
-                        username, count, LOCK_DURATION_MINUTES);
+                        username, count, lockDurationMinutes);
             }
         }
     }
@@ -130,6 +134,10 @@ public class LoginAttemptService {
     }
 
     public int getMaxAttempts() {
-        return MAX_ATTEMPTS;
+        return this.maxAttempts;
+    }
+
+    public long getLockDurationMinutes() {
+        return this.lockDurationMinutes;
     }
 }

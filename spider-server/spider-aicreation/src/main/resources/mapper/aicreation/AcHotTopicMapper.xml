@@ -82,4 +82,9 @@
         WHERE user_id = #{userId} AND platform = #{platform}
     </update>
 
+    <update id="deleteById">
+        UPDATE ac_hot_topic SET del_flag = '2'
+        WHERE id = #{id}
+    </update>
+
 </mapper>

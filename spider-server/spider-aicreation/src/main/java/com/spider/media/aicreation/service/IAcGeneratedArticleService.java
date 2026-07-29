@@ -31,4 +31,11 @@ public interface IAcGeneratedArticleService {
      * @return 分页结果
      */
     PageResult<AcGeneratedArticle> selectArticlePage(AcGeneratedArticlePageReqVO pageReqVO);
+
+    /**
+     * 根据 ID 删除 AI 生成文章（软删除）
+     *
+     * @param id 文章ID
+     */
+    void deleteGeneratedArticle(Long id);
 }

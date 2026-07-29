@@ -1,6 +1,8 @@
 package com.spider.media.common.controller;
 
 import com.spider.media.common.result.R;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,8 @@ import java.util.Map;
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
+    private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
+
     private final JdbcTemplate jdbcTemplate;
 
     public DashboardController(JdbcTemplate jdbcTemplate) {
@@ -36,7 +40,7 @@ public class DashboardController {
             Long count = jdbcTemplate.queryForObject(sql, Long.class);
             return count != null ? count : 0;
         } catch (Exception e) {
-            // 查询异常时返回 0，不影响整体统计
+            log.warn("Dashboard count query failed: {}", e.getMessage());
         }
         return 0;
     }

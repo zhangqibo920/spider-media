@@ -12,6 +12,7 @@ import com.spider.media.hotmonitor.service.IHmMonitorService;
 import com.spider.media.hotmonitor.service.fetcher.IHotSourceFetcher;
 import com.spider.media.hotmonitor.skill.HmSkillEngine;
 import com.spider.media.hotmonitor.websocket.WebSocketSessionManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 public class HmMonitorServiceImpl implements IHmMonitorService {
 
     private static final Logger log = LoggerFactory.getLogger(HmMonitorServiceImpl.class);
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final HmKeywordMapper keywordMapper;
     private final AcHotTopicMapper hotTopicMapper;
@@ -125,10 +129,13 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
                 notification.setCreateTime(LocalDateTime.now());
                 notificationMapper.insert(notification);
 
-                String wsMsg = "{\"type\":\"notification\",\"unreadCount\":1,\"title\":\"" +
-                        notification.getTitle() + "\",\"content\":\"" +
-                        notification.getContent() + "\",\"time\":\"" +
-                        notification.getCreateTime() + "\"}";
+                Map<String, Object> wsPayload = new java.util.HashMap<>();
+                wsPayload.put("type", "notification");
+                wsPayload.put("unreadCount", 1);
+                wsPayload.put("title", notification.getTitle());
+                wsPayload.put("content", notification.getContent());
+                wsPayload.put("time", notification.getCreateTime().toString());
+                String wsMsg = objectMapper.writeValueAsString(wsPayload);
                 WebSocketSessionManager.sendToUser(keyword.getUserId(), wsMsg);
             }
         }
