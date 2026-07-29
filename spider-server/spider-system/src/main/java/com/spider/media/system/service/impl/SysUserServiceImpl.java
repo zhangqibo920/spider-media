@@ -267,6 +267,34 @@ public class SysUserServiceImpl implements ISysUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public int updateProfile(SysUser user) {
+        if (user.getUserId() == null) {
+            throw new ServiceException(ErrorCodeEnums.PARAM_ERROR, "用户ID不能为空");
+        }
+        user.setUpdateTime(LocalDateTime.now());
+        return userMapper.updateProfile(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new ServiceException(ErrorCodeEnums.PARAM_ERROR, "新密码长度不能少于 6 位");
+        }
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ServiceException(ErrorCodeEnums.SYS_USER_NOT_FOUND);
+        }
+        if (!SecurityUtils.matchesPassword(oldPassword, user.getPassword())) {
+            throw new ServiceException(ErrorCodeEnums.SYS_PASSWORD_ERROR, "旧密码错误");
+        }
+        user.setPassword(SecurityUtils.encryptPassword(newPassword));
+        user.setUpdateTime(LocalDateTime.now());
+        userMapper.updatePassword(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void syncUserRole(Long userId) {
         List<SysUserRole> existing = userRoleMapper.selectByUserId(userId);
         if (!existing.isEmpty()) {

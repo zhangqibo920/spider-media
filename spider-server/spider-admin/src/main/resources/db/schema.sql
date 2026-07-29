@@ -149,7 +149,9 @@ CREATE TABLE `hm_keyword` (
     `status`          CHAR(1)      DEFAULT '0' COMMENT '0=激活 1=暂停',
     `interval_min`    INT          DEFAULT 30 COMMENT '抓取间隔(分钟)',
     `notify_email`    CHAR(1)      DEFAULT '0' COMMENT '是否邮件通知 0=否 1=是',
+    `notify_email_addr` VARCHAR(200) DEFAULT '' COMMENT '通知邮箱地址',
     `notify_site`     CHAR(1)      DEFAULT '1' COMMENT '是否站内通知 0=否 1=是',
+    `sources`         VARCHAR(500) DEFAULT '' COMMENT '监控来源(逗号分隔)',
     `last_fetch_time` DATETIME     DEFAULT NULL COMMENT '上次抓取时间',
     `del_flag`        CHAR(1)      DEFAULT '0' COMMENT '删除标志',
     `create_by`       VARCHAR(64)  DEFAULT '' COMMENT '创建者',
@@ -306,21 +308,18 @@ CREATE TABLE `sys_config` (
 DROP TABLE IF EXISTS `sys_oper_log`;
 CREATE TABLE `sys_oper_log` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '日志ID',
-    `title` VARCHAR(50) DEFAULT '' COMMENT '模块标题',
-    `business_type` INT DEFAULT 0 COMMENT '业务类型',
-    `method` VARCHAR(200) DEFAULT '' COMMENT '方法名称',
-    `request_method` VARCHAR(10) DEFAULT '' COMMENT '请求方式',
-    `oper_name` VARCHAR(50) DEFAULT '' COMMENT '操作人员',
-    `oper_url` VARCHAR(500) DEFAULT '' COMMENT '请求URL',
-    `oper_ip` VARCHAR(128) DEFAULT '' COMMENT '主机地址',
-    `oper_param` TEXT COMMENT '请求参数',
-    `json_result` TEXT COMMENT '返回参数',
-    `status` INT DEFAULT 0 COMMENT '操作状态（0正常 1异常）',
+    `username` VARCHAR(50) DEFAULT '' COMMENT '操作人员',
+    `module` VARCHAR(50) DEFAULT '' COMMENT '操作模块',
+    `action` VARCHAR(50) DEFAULT '' COMMENT '操作类型',
+    `description` VARCHAR(500) DEFAULT '' COMMENT '操作描述',
+    `ip` VARCHAR(128) DEFAULT '' COMMENT '操作IP',
+    `method` VARCHAR(10) DEFAULT '' COMMENT '请求方式',
+    `params` TEXT COMMENT '请求参数',
+    `status` INT DEFAULT 0 COMMENT '操作状态（0成功 其他=失败）',
     `error_msg` TEXT COMMENT '错误消息',
-    `oper_time` DATETIME DEFAULT NULL COMMENT '操作时间',
-    `cost_time` BIGINT DEFAULT 0 COMMENT '消耗时间',
+    `create_time` DATETIME DEFAULT NULL COMMENT '操作时间',
     PRIMARY KEY (`id`),
-    KEY `idx_oper_time` (`oper_time`)
+    KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志记录';
 
 -- =============================================

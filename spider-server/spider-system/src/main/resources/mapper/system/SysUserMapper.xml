@@ -58,6 +58,13 @@
         SELECT <include refid="Base_Column_List"/> FROM sys_user WHERE user_id = #{userId} AND del_flag = '0'
     </select>
 
+    <update id="updateProfile">
+        UPDATE sys_user
+        SET nick_name = #{nickName}, email = #{email}, phonenumber = #{phonenumber},
+            update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE user_id = #{userId}
+    </update>
+
     <update id="updatePassword">
         UPDATE sys_user
         SET password = #{password}, update_by = #{updateBy}, update_time = #{updateTime}

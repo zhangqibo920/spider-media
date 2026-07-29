@@ -69,4 +69,12 @@ public interface SysUserMapper {
      * @return 受影响的行数
      */
     int updatePassword(SysUser user);
+
+    /**
+     * 当前用户更新个人信息（仅 nickName, email, phonenumber）
+     *
+     * @param user 包含 userId 和待更新字段
+     * @return 受影响的行数
+     */
+    int updateProfile(SysUser user);
 }

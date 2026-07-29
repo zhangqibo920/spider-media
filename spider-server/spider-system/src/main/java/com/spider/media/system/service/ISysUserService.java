@@ -86,4 +86,21 @@ public interface ISysUserService {
      * @param userId 用户ID
      */
     void syncUserRole(Long userId);
+
+    /**
+     * 当前用户更新自己的个人信息（仅限 nickName, email, phonenumber）
+     *
+     * @param user 包含要更新的字段
+     * @return 受影响的行数
+     */
+    int updateProfile(SysUser user);
+
+    /**
+     * 当前用户修改自己的密码（需验证旧密码）
+     *
+     * @param userId      用户ID
+     * @param oldPassword 旧密码（明文）
+     * @param newPassword 新密码（明文）
+     */
+    void changePassword(Long userId, String oldPassword, String newPassword);
 }

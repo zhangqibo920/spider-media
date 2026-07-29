@@ -45,6 +45,9 @@
         <el-card style="margin-top: 20px">
           <template #header><span>修改密码</span></template>
           <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-width="100px" style="max-width: 500px">
+            <el-form-item label="旧密码" prop="oldPassword">
+              <el-input v-model="passwordForm.oldPassword" type="password" placeholder="请输入旧密码" show-password />
+            </el-form-item>
             <el-form-item label="新密码" prop="newPassword">
               <el-input v-model="passwordForm.newPassword" type="password" placeholder="请输入新密码" show-password />
             </el-form-item>
@@ -66,8 +69,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import { updateUser } from '@/api/admin'
-import { resetPassword } from '@/api/admin'
+import { updateProfile, changePassword } from '@/api/profile'
 import DictTag from '@/components/DictTag.vue'
 
 const userStore = useUserStore()
@@ -85,6 +87,7 @@ const form = reactive({
 })
 
 const passwordForm = reactive({
+  oldPassword: '',
   newPassword: '',
   confirmPassword: '',
 })
@@ -98,6 +101,9 @@ const validateConfirmPassword = (_rule: any, value: string, callback: Function) 
 }
 
 const passwordRules = {
+  oldPassword: [
+    { required: true, message: '请输入旧密码', trigger: 'blur' },
+  ],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
     { min: 6, message: '密码长度不能少于6位', trigger: 'blur' },
@@ -120,8 +126,7 @@ const handleSave = async () => {
   if (!userInfo.value) return
   saving.value = true
   try {
-    await updateUser({
-      userId: userInfo.value.userId,
+    await updateProfile({
       nickName: form.nickName,
       email: form.email,
       phonenumber: form.phonenumber,
@@ -141,8 +146,9 @@ const handleChangePassword = async () => {
 
   changingPassword.value = true
   try {
-    await resetPassword(userInfo.value.userId, passwordForm.newPassword)
+    await changePassword(passwordForm.oldPassword, passwordForm.newPassword)
     ElMessage.success('密码修改成功')
+    passwordForm.oldPassword = ''
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
     passwordFormRef.value?.resetFields()
