@@ -63,6 +63,19 @@ public class DcCollectedArticleServiceImpl implements IDcCollectedArticleService
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteArticleById(Long id, Long userId) {
+        DcCollectedArticle article = collectedArticleMapper.selectPage(id, null, null).stream().findFirst().orElse(null);
+        if (article == null) {
+            throw new ServiceException(ErrorCodeEnums.DC_ARTICLE_NOT_FOUND);
+        }
+        if (userId == null || !article.getUserId().equals(userId)) {
+            throw new ServiceException(ErrorCodeEnums.FORBIDDEN, "无权操作他人的采集文章");
+        }
+        collectedArticleMapper.deleteById(id);
+    }
+
+    @Override
     public PageResult<DcCollectedArticle> selectArticlePage(DcCollectedArticlePageReqVO pageReqVO) {
         return PageUtils.selectPage(pageReqVO, () ->
                 collectedArticleMapper.selectPage(

@@ -56,6 +56,14 @@
                 #{groupName}, #{status}, #{description}, #{createBy}, #{createTime})
     </insert>
 
+    <update id="updateById">
+        UPDATE dc_target_account
+        SET platform = #{platform}, account_name = #{accountName}, account_id = #{accountId},
+            account_url = #{accountUrl}, group_name = #{groupName}, status = #{status},
+            description = #{description}, update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id} AND del_flag = '0'
+    </update>
+
     <update id="deleteById">
         UPDATE dc_target_account SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
     </update>

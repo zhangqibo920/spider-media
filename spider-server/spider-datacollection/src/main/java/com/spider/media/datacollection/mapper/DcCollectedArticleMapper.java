@@ -50,4 +50,12 @@ public interface DcCollectedArticleMapper {
      * @return 已存在的文章实体，不存在返回 null
      */
     DcCollectedArticle selectByUrl(@Param("url") String url);
+
+    /**
+     * 逻辑删除单篇采集文章
+     *
+     * @param id 文章ID
+     * @return 受影响的行数
+     */
+    int deleteById(@Param("id") Long id);
 }

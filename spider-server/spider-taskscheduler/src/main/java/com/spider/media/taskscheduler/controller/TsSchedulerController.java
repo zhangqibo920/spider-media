@@ -40,6 +40,30 @@ public class TsSchedulerController extends BaseController {
     }
 
     /**
+     * 更新定时任务
+     *
+     * @param task 待更新的任务实体
+     * @return 操作结果
+     */
+    @PutMapping("/task")
+    public R<Void> updateTask(@Valid @RequestBody TsScheduledTask task) {
+        scheduledTaskService.updateTask(task);
+        return ok();
+    }
+
+    /**
+     * 删除定时任务
+     *
+     * @param id 任务ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/task/{id}")
+    public R<Void> deleteTask(@PathVariable Long id) {
+        scheduledTaskService.deleteTask(id);
+        return ok();
+    }
+
+    /**
      * 启用定时任务
      *
      * @param id 任务ID

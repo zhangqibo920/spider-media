@@ -46,4 +46,12 @@ public interface PbPlatformAccountMapper {
      * @return 受影响的行数，1表示删除成功
      */
     int deleteById(@Param("id") Long id);
+
+    /**
+     * 更新平台账号
+     *
+     * @param account 待更新的账号实体
+     * @return 受影响的行数
+     */
+    int updateById(PbPlatformAccount account);
 }

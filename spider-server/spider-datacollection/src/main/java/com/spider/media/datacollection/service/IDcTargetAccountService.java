@@ -52,4 +52,12 @@ public interface IDcTargetAccountService {
      * @throws com.spider.media.common.exception.ServiceException 账号不存在或不属于当前用户时抛出
      */
     DcTargetAccount validateOwnership(Long id, Long userId);
+
+    /**
+     * 更新对标账号
+     *
+     * @param account 包含更新字段的对标账号实体
+     * @return 受影响的行数
+     */
+    int updateTargetAccount(DcTargetAccount account);
 }

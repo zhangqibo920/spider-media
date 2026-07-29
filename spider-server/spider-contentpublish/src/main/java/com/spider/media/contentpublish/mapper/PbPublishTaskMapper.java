@@ -50,4 +50,12 @@ public interface PbPublishTaskMapper {
      * @return 受影响的行数
      */
     int updateById(PbPublishTask task);
+
+    /**
+     * 逻辑删除发布任务
+     *
+     * @param id 任务ID
+     * @return 受影响的行数
+     */
+    int deleteById(@Param("id") Long id);
 }

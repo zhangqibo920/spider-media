@@ -35,4 +35,12 @@ public interface IDcCollectedArticleService {
      * @throws com.spider.media.common.exception.ServiceException 账号不存在或不属于当前用户时抛出
      */
     void collectArticles(Long targetAccountId, Long operatorId);
+
+    /**
+     * 逻辑删除单篇采集文章
+     *
+     * @param id      文章ID
+     * @param userId  当前操作用户ID
+     */
+    void deleteArticleById(Long id, Long userId);
 }

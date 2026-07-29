@@ -86,6 +86,15 @@
         条件中包含 del_flag = '0'，防止重复删除已删除的记录。
         这样做可以保留历史数据，便于审计和数据恢复。
     -->
+    <update id="updateById">
+        UPDATE pb_platform_account
+        SET platform = #{platform}, account_name = #{accountName}, account_id = #{accountId},
+            access_token = #{accessToken}, refresh_token = #{refreshToken},
+            token_expire_time = #{tokenExpireTime}, status = #{status}, group_name = #{groupName},
+            update_by = #{updateBy}, update_time = #{updateTime}
+        WHERE id = #{id} AND del_flag = '0'
+    </update>
+
     <update id="deleteById">
         UPDATE pb_platform_account SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
     </update>

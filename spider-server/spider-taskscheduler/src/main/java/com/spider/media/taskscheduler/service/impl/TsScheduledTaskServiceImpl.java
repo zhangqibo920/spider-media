@@ -91,6 +91,28 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateTask(TsScheduledTask task) {
+        TsScheduledTask existing = scheduledTaskMapper.selectById(task.getId());
+        if (existing == null) {
+            throw new ServiceException(ErrorCodeEnums.TS_TASK_NOT_FOUND);
+        }
+        task.setUpdateBy(LoginUser.getUsername());
+        task.setUpdateTime(LocalDateTime.now());
+        scheduledTaskMapper.updateById(task);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTask(Long taskId) {
+        TsScheduledTask existing = scheduledTaskMapper.selectById(taskId);
+        if (existing == null) {
+            throw new ServiceException(ErrorCodeEnums.TS_TASK_NOT_FOUND);
+        }
+        scheduledTaskMapper.deleteById(taskId);
+    }
+
+    @Override
     public PageResult<TsScheduledTask> selectTaskPage(TsScheduledTaskPageReqVO pageReqVO) {
         return PageUtils.selectPage(pageReqVO, () ->
                 scheduledTaskMapper.selectPage(

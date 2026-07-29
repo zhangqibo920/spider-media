@@ -65,6 +65,19 @@ public class DcTargetAccountController extends BaseController {
     }
 
     /**
+     * 更新对标账号
+     *
+     * <p>更新前校验账号归属，仅允许更新自己的对标账号。</p>
+     *
+     * @param account 包含更新字段的对标账号实体
+     * @return 操作结果
+     */
+    @PutMapping("/account")
+    public R<Integer> edit(@Valid @RequestBody DcTargetAccount account) {
+        return ok(targetAccountService.updateTargetAccount(account));
+    }
+
+    /**
      * 删除对标账号
      *
      * <p>删除前校验账号归属，仅允许删除自己的对标账号。</p>
@@ -75,6 +88,18 @@ public class DcTargetAccountController extends BaseController {
     @DeleteMapping("/account/{id}")
     public R<Integer> remove(@PathVariable Long id) {
         return ok(targetAccountService.deleteTargetAccountById(id, LoginUser.getUserId()));
+    }
+
+    /**
+     * 删除单篇采集文章
+     *
+     * @param id 文章ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/article/{id}")
+    public R<Void> removeArticle(@PathVariable Long id) {
+        collectedArticleService.deleteArticleById(id, LoginUser.getUserId());
+        return ok();
     }
 
     /**

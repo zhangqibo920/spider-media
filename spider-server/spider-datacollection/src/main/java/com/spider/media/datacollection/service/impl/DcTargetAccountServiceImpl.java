@@ -72,6 +72,19 @@ public class DcTargetAccountServiceImpl implements IDcTargetAccountService {
     }
 
     /**
+     * 更新对标账号（仅允许更新自己的账号）
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateTargetAccount(DcTargetAccount account) {
+        Long userId = LoginUser.getUserId();
+        validateOwnership(account.getId(), userId);
+        account.setUpdateBy(LoginUser.getUsername());
+        account.setUpdateTime(LocalDateTime.now());
+        return targetAccountMapper.updateById(account);
+    }
+
+    /**
      * 校验对标账号归属
      *
      * <p>统一校验入口，供删除、采集等操作复用。

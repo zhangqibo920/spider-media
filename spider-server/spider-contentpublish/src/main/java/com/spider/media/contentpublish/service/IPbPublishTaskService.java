@@ -55,6 +55,22 @@ public interface IPbPublishTaskService {
     PbPublishTask validateOwnership(Long taskId, Long operatorId);
 
     /**
+     * 更新发布任务
+     *
+     * @param task 待更新的任务实体
+     * @return 更新后的任务实体
+     */
+    PbPublishTask updateTask(PbPublishTask task);
+
+    /**
+     * 逻辑删除发布任务
+     *
+     * @param taskId     任务ID
+     * @param operatorId 当前操作用户ID
+     */
+    void deleteTask(Long taskId, Long operatorId);
+
+    /**
      * 分页查询发布任务列表
      *
      * @param pageReqVO 分页查询参数（用户ID、平台、状态）

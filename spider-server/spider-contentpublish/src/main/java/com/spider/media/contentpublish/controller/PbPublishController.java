@@ -63,6 +63,18 @@ public class PbPublishController extends BaseController {
     }
 
     /**
+     * 更新发布账号
+     *
+     * @param account 待更新的账号实体
+     * @return 操作结果
+     */
+    @PutMapping("/account")
+    public R<Integer> updateAccount(@Valid @RequestBody PbPlatformAccount account) {
+        account.setUserId(LoginUser.getUserId());
+        return ok(platformAccountService.updateAccount(account));
+    }
+
+    /**
      * 删除发布账号
      *
      * <p>删除前校验账号归属，仅允许删除自己的平台账号。</p>
@@ -87,6 +99,30 @@ public class PbPublishController extends BaseController {
     public R<PbPublishTask> createTask(@Valid @RequestBody PbPublishTask task) {
         task.setUserId(LoginUser.getUserId());
         return ok(publishTaskService.createTask(task));
+    }
+
+    /**
+     * 更新发布任务
+     *
+     * @param task 待更新的任务实体
+     * @return 更新后的任务实体
+     */
+    @PutMapping("/task")
+    public R<PbPublishTask> updateTask(@Valid @RequestBody PbPublishTask task) {
+        task.setUserId(LoginUser.getUserId());
+        return ok(publishTaskService.updateTask(task));
+    }
+
+    /**
+     * 删除发布任务
+     *
+     * @param id 任务ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/task/{id}")
+    public R<Void> deleteTask(@PathVariable Long id) {
+        publishTaskService.deleteTask(id, LoginUser.getUserId());
+        return ok();
     }
 
     /**

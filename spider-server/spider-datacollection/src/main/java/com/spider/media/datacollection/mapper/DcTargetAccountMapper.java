@@ -50,4 +50,12 @@ public interface DcTargetAccountMapper {
      * @return 受影响的行数
      */
     int deleteById(@Param("id") Long id);
+
+    /**
+     * 更新对标账号
+     *
+     * @param account 包含更新字段的对标账号实体
+     * @return 受影响的行数
+     */
+    int updateById(DcTargetAccount account);
 }

@@ -78,6 +78,19 @@ public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
     }
 
     /**
+     * 更新平台账号
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updateAccount(PbPlatformAccount account) {
+        Long userId = account.getUserId();
+        validateOwnership(account.getId(), userId);
+        account.setUpdateBy(String.valueOf(userId));
+        account.setUpdateTime(LocalDateTime.now());
+        return platformAccountMapper.updateById(account);
+    }
+
+    /**
      * 校验平台账号归属
      */
     @Override

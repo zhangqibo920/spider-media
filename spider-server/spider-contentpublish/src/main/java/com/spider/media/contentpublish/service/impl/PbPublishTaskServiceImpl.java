@@ -150,6 +150,29 @@ public class PbPublishTaskServiceImpl implements IPbPublishTaskService {
     }
 
     /**
+     * 更新发布任务
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PbPublishTask updateTask(PbPublishTask task) {
+        PbPublishTask existing = validateOwnership(task.getId(), task.getUserId());
+        task.setUpdateBy(String.valueOf(task.getUserId()));
+        task.setUpdateTime(LocalDateTime.now());
+        publishTaskMapper.updateById(task);
+        return task;
+    }
+
+    /**
+     * 逻辑删除发布任务
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTask(Long taskId, Long operatorId) {
+        validateOwnership(taskId, operatorId);
+        publishTaskMapper.deleteById(taskId);
+    }
+
+    /**
      * 校验发布任务归属
      */
     @Override

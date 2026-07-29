@@ -50,4 +50,12 @@ public interface TsScheduledTaskMapper {
      * @return 受影响的行数
      */
     int updateById(TsScheduledTask task);
+
+    /**
+     * 逻辑删除定时任务
+     *
+     * @param id 任务ID
+     * @return 受影响的行数
+     */
+    int deleteById(@Param("id") Long id);
 }

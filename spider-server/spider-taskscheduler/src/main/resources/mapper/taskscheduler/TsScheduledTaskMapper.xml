@@ -61,6 +61,10 @@
                 #{createBy}, #{createTime})
     </insert>
 
+    <update id="deleteById">
+        UPDATE ts_scheduled_task SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
+    </update>
+
     <update id="updateById">
         UPDATE ts_scheduled_task
         SET status = #{status},

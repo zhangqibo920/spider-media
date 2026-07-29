@@ -35,6 +35,20 @@ public interface ITsScheduledTaskService {
     void disableTask(Long taskId);
 
     /**
+     * 更新定时任务
+     *
+     * @param task 待更新的任务实体
+     */
+    void updateTask(TsScheduledTask task);
+
+    /**
+     * 逻辑删除定时任务
+     *
+     * @param taskId 任务ID
+     */
+    void deleteTask(Long taskId);
+
+    /**
      * 分页查询定时任务列表
      *
      * @param pageReqVO 分页查询参数（用户ID、任务名、状态）
