@@ -7,39 +7,47 @@ import com.spider.media.common.result.ErrorCodeEnums;
 import com.spider.media.framework.security.LoginUser;
 import com.spider.media.taskscheduler.controller.vo.TsScheduledTaskPageReqVO;
 import com.spider.media.taskscheduler.entity.TsScheduledTask;
+import com.spider.media.taskscheduler.job.QuartzJobDispatcher;
 import com.spider.media.taskscheduler.mapper.TsScheduledTaskMapper;
 import com.spider.media.taskscheduler.service.ITsScheduledTaskService;
+import jakarta.annotation.PostConstruct;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * 定时任务业务层实现类
- *
- * <p>实现定时任务的创建、启用、停用、分页查询等操作。
- * 创建时初始化执行次数和失败次数为 0，状态默认为停止。
- * 启用/停用时会校验任务是否存在。</p>
- */
 @Service
 public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
 
     private static final Logger log = LoggerFactory.getLogger(TsScheduledTaskServiceImpl.class);
+    private static final String JOB_GROUP = "SPIDER_MEDIA_GROUP";
 
-    /** 定时任务数据访问对象 */
     private final TsScheduledTaskMapper scheduledTaskMapper;
+    private final Scheduler scheduler;
 
-    public TsScheduledTaskServiceImpl(TsScheduledTaskMapper scheduledTaskMapper) {
+    public TsScheduledTaskServiceImpl(TsScheduledTaskMapper scheduledTaskMapper, Scheduler scheduler) {
         this.scheduledTaskMapper = scheduledTaskMapper;
+        this.scheduler = scheduler;
     }
 
-    /**
-     * 创建定时任务
-     *
-     * <p>初始化任务状态为停止（0），执行次数和失败次数为 0。</p>
-     */
+    @PostConstruct
+    public void reloadActiveTasks() {
+        List<TsScheduledTask> activeTasks = scheduledTaskMapper.selectPage(null, null, 1);
+        for (TsScheduledTask task : activeTasks) {
+            try {
+                scheduleJob(task);
+                log.info("恢复定时任务: taskId={}, taskName={}", task.getId(), task.getTaskName());
+            } catch (SchedulerException e) {
+                log.error("恢复定时任务失败: taskId={}", task.getId(), e);
+            }
+        }
+        log.info("定时任务恢复完成, 共恢复{}个任务", activeTasks.size());
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TsScheduledTask createTask(TsScheduledTask task) {
@@ -52,11 +60,6 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         return task;
     }
 
-    /**
-     * 启用定时任务
-     *
-     * @throws ServiceException 任务不存在时抛出异常
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void enableTask(Long taskId) {
@@ -64,18 +67,18 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         if (task == null) {
             throw new ServiceException(ErrorCodeEnums.TS_TASK_NOT_FOUND);
         }
-        task.setStatus(1);
-        task.setUpdateBy(LoginUser.getUsername());
-        task.setUpdateTime(LocalDateTime.now());
-        scheduledTaskMapper.updateById(task);
-        log.info("启用任务: {}", task.getTaskName());
+        try {
+            scheduleJob(task);
+            task.setStatus(1);
+            task.setUpdateBy(LoginUser.getUsername());
+            task.setUpdateTime(LocalDateTime.now());
+            scheduledTaskMapper.updateById(task);
+            log.info("启用任务: {}", task.getTaskName());
+        } catch (SchedulerException e) {
+            throw new ServiceException(ErrorCodeEnums.TS_TASK_ENABLE_FAILED, "启用定时任务失败: " + e.getMessage());
+        }
     }
 
-    /**
-     * 停用定时任务
-     *
-     * @throws ServiceException 任务不存在时抛出异常
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void disableTask(Long taskId) {
@@ -83,11 +86,16 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         if (task == null) {
             throw new ServiceException(ErrorCodeEnums.TS_TASK_NOT_FOUND);
         }
-        task.setStatus(0);
-        task.setUpdateBy(LoginUser.getUsername());
-        task.setUpdateTime(LocalDateTime.now());
-        scheduledTaskMapper.updateById(task);
-        log.info("停用任务: {}", task.getTaskName());
+        try {
+            unscheduleJob(task.getId());
+            task.setStatus(0);
+            task.setUpdateBy(LoginUser.getUsername());
+            task.setUpdateTime(LocalDateTime.now());
+            scheduledTaskMapper.updateById(task);
+            log.info("停用任务: {}", task.getTaskName());
+        } catch (SchedulerException e) {
+            throw new ServiceException(ErrorCodeEnums.TS_TASK_DISABLE_FAILED, "停用定时任务失败: " + e.getMessage());
+        }
     }
 
     @Override
@@ -100,6 +108,14 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         task.setUpdateBy(LoginUser.getUsername());
         task.setUpdateTime(LocalDateTime.now());
         scheduledTaskMapper.updateById(task);
+        if (existing.getStatus() == 1) {
+            try {
+                unscheduleJob(task.getId());
+                scheduleJob(task);
+            } catch (SchedulerException e) {
+                throw new ServiceException(ErrorCodeEnums.TS_TASK_ENABLE_FAILED, "更新定时任务调度失败: " + e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -108,6 +124,11 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
         TsScheduledTask existing = scheduledTaskMapper.selectById(taskId);
         if (existing == null) {
             throw new ServiceException(ErrorCodeEnums.TS_TASK_NOT_FOUND);
+        }
+        try {
+            unscheduleJob(taskId);
+        } catch (SchedulerException e) {
+            log.error("删除定时任务时取消调度失败: taskId={}", taskId, e);
         }
         scheduledTaskMapper.deleteById(taskId);
     }
@@ -121,5 +142,41 @@ public class TsScheduledTaskServiceImpl implements ITsScheduledTaskService {
                         pageReqVO.getStatus()
                 )
         );
+    }
+
+    private void scheduleJob(TsScheduledTask task) throws SchedulerException {
+        JobKey jobKey = jobKey(task.getId());
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
+        JobDetail jobDetail = JobBuilder.newJob(QuartzJobDispatcher.class)
+                .withIdentity(jobKey)
+                .usingJobData("taskId", task.getId())
+                .usingJobData("taskType", task.getTaskType())
+                .usingJobData("taskName", task.getTaskName())
+                .storeDurably(false)
+                .build();
+
+        CronTrigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity(triggerKey(task.getId()))
+                .withSchedule(CronScheduleBuilder.cronSchedule(task.getCronExpression())
+                        .withMisfireHandlingInstructionDoNothing())
+                .build();
+
+        scheduler.scheduleJob(jobDetail, trigger);
+    }
+
+    private void unscheduleJob(Long taskId) throws SchedulerException {
+        scheduler.unscheduleJob(triggerKey(taskId));
+        scheduler.deleteJob(jobKey(taskId));
+    }
+
+    private static JobKey jobKey(Long taskId) {
+        return JobKey.jobKey("task_" + taskId, JOB_GROUP);
+    }
+
+    private static TriggerKey triggerKey(Long taskId) {
+        return TriggerKey.triggerKey("trigger_" + taskId, JOB_GROUP);
     }
 }
