@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
 
@@ -37,9 +37,13 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
     private final AcHotTopicMapper hotTopicMapper;
     /** HTTP 客户端（用于抓取各平台热搜 API，由 WebClientConfig 统一配置超时） */
     private final WebClient webClient;
+    /** 编程式事务模板，用于 @Async 方法内部的事务控制 */
+    private final TransactionTemplate transactionTemplate;
 
-    public AcHotTopicServiceImpl(AcHotTopicMapper hotTopicMapper, WebClient.Builder webClientBuilder) {
+    public AcHotTopicServiceImpl(AcHotTopicMapper hotTopicMapper, WebClient.Builder webClientBuilder,
+                                  TransactionTemplate transactionTemplate) {
         this.hotTopicMapper = hotTopicMapper;
+        this.transactionTemplate = transactionTemplate;
         // 在统一超时配置基础上，添加爬虫专用 Header 和内存缓冲区
         this.webClient = webClientBuilder
                 .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
@@ -61,7 +65,6 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
      */
     @Override
     @Async
-    @Transactional(rollbackFor = Exception.class)
     public void fetchHotTopics(String platform, Long userId) {
         log.info("开始抓取热点话题, platform={}, userId={}", platform, userId);
         try {
@@ -96,24 +99,25 @@ public class AcHotTopicServiceImpl implements IAcHotTopicService {
                     break;
             }
 
-            // 先删除该用户在该平台的旧热点数据
-            hotTopicMapper.deleteByUserId(userId, platform);
-
-            // 保存新抓取的热点数据
-            LocalDateTime now = LocalDateTime.now();
-            int saved = 0;
-            for (AcHotTopic topic : topics) {
-                topic.setUserId(userId);
-                topic.setPlatform(platform);
-                topic.setCreateBy("system");
-                topic.setCreateTime(now);
-                try {
-                    hotTopicMapper.insert(topic);
-                    saved++;
-                } catch (Exception e) {
-                    log.debug("保存热点话题失败: {}", topic.getTitle());
+            // 在事务中执行数据库操作（@Async 方法中的 @Transactional 会失效）
+            int saved = transactionTemplate.execute(status -> {
+                hotTopicMapper.deleteByUserId(userId, platform);
+                LocalDateTime now = LocalDateTime.now();
+                int count = 0;
+                for (AcHotTopic topic : topics) {
+                    topic.setUserId(userId);
+                    topic.setPlatform(platform);
+                    topic.setCreateBy("system");
+                    topic.setCreateTime(now);
+                    try {
+                        hotTopicMapper.insert(topic);
+                        count++;
+                    } catch (Exception e) {
+                        log.debug("保存热点话题失败: {}", topic.getTitle());
+                    }
                 }
-            }
+                return count;
+            });
             log.info("热点抓取完成, platform={}, 新增{}条", platform, saved);
         } catch (Exception e) {
             log.error("热点抓取失败, platform={}", platform, e);
