@@ -6,7 +6,6 @@ import com.spider.media.hotmonitor.service.IHmNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,14 +25,6 @@ public class HmNotificationServiceImpl implements IHmNotificationService {
     @Override
     public int countUnread(Long userId) {
         return notificationMapper.countUnread(userId);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void create(HmNotification notification, String username) {
-        notification.setCreateBy(username);
-        notification.setCreateTime(LocalDateTime.now());
-        notificationMapper.insert(notification);
     }
 
     @Override
