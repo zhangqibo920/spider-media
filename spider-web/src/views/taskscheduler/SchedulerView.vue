@@ -25,16 +25,18 @@
         </el-table-column>
         <el-table-column prop="runCount" :label="$t('scheduler.executeCount')" width="80" />
         <el-table-column prop="failCount" :label="$t('scheduler.failCount')" width="80" />
-        <el-table-column :label="$t('common.operation')" width="150">
+        <el-table-column :label="$t('common.operation')" width="200">
           <template #default="{ row }">
             <el-button v-if="row.status === 0" type="success" link @click="handleEnable(row.id)">{{ $t('scheduler.enable') }}</el-button>
             <el-button v-if="row.status === 1" type="warning" link @click="handleDisable(row.id)">{{ $t('scheduler.disable') }}</el-button>
+            <el-button type="primary" link @click="handleEdit(row)">{{ $t('common.edit') }}</el-button>
+            <el-button type="danger" link @click="handleDelete(row.id)">{{ $t('common.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog v-model="showCreateDialog" :title="$t('scheduler.createScheduledTask')" width="500px" @closed="resetForm">
+    <el-dialog v-model="showCreateDialog" :title="editingTask ? $t('scheduler.editScheduledTask') : $t('scheduler.createScheduledTask')" width="500px" @closed="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="$t('scheduler.taskName')" prop="taskName">
           <el-input v-model="form.taskName" :placeholder="$t('scheduler.taskNamePlaceholder')" />
@@ -62,14 +64,15 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { getScheduledTasks, createScheduledTask, enableTask, disableTask } from '@/api/scheduler'
+import { getScheduledTasks, createScheduledTask, updateScheduledTask, deleteScheduledTask, enableTask, disableTask } from '@/api/scheduler'
 
 const { t } = useI18n()
 
 const loading = ref(false)
 const showCreateDialog = ref(false)
+const editingTask = ref<any>(null)
 const tasks = ref<any[]>([])
 const formRef = ref<FormInstance>()
 
@@ -99,12 +102,40 @@ const handleCreate = async () => {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   try {
-    await createScheduledTask(form)
-    ElMessage.success(t('scheduler.createSuccess'))
+    if (editingTask.value) {
+      await updateScheduledTask({ ...form, id: editingTask.value.id })
+      ElMessage.success(t('scheduler.editSuccess'))
+    } else {
+      await createScheduledTask(form)
+      ElMessage.success(t('scheduler.createSuccess'))
+    }
     showCreateDialog.value = false
     loadTasks()
   } catch {
-    ElMessage.error(t('scheduler.createFailed'))
+    ElMessage.error(editingTask.value ? t('scheduler.editFailed') : t('scheduler.createFailed'))
+  }
+}
+
+const handleEdit = (row: any) => {
+  editingTask.value = row
+  form.taskName = row.taskName
+  form.taskType = row.taskType
+  form.cronExpression = row.cronExpression
+  showCreateDialog.value = true
+}
+
+const handleDelete = async (id: number) => {
+  try {
+    await ElMessageBox.confirm(t('scheduler.deleteConfirm'), t('common.warning'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
+      type: 'warning',
+    })
+    await deleteScheduledTask(id)
+    ElMessage.success(t('scheduler.deleteSuccess'))
+    loadTasks()
+  } catch {
+    // cancelled or failed
   }
 }
 
@@ -112,6 +143,7 @@ const resetForm = () => {
   form.taskName = ''
   form.taskType = ''
   form.cronExpression = ''
+  editingTask.value = null
 }
 
 const handleEnable = async (id: number) => {

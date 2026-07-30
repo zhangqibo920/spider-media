@@ -4,6 +4,14 @@ export function createScheduledTask(data: any) {
   return request.post('/scheduler/task', data)
 }
 
+export function updateScheduledTask(data: any) {
+  return request.put('/scheduler/task', data)
+}
+
+export function deleteScheduledTask(id: number) {
+  return request.delete(`/scheduler/task/${id}`)
+}
+
 export function enableTask(id: number) {
   return request.post(`/scheduler/task/${id}/enable`)
 }

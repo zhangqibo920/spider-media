@@ -4,6 +4,10 @@ export function addTargetAccount(data: any) {
   return request.post('/collection/account', data)
 }
 
+export function updateTargetAccount(data: any) {
+  return request.put('/collection/account', data)
+}
+
 export function getTargetAccounts() {
   return request.get('/collection/account/list')
 }
@@ -18,4 +22,8 @@ export function triggerCollect(id: number) {
 
 export function getCollectedArticles(id: number, page = 1, size = 20) {
   return request.get('/collection/article/page', { params: { targetAccountId: id, page, size } })
+}
+
+export function deleteCollectedArticle(id: number) {
+  return request.delete(`/collection/article/${id}`)
 }

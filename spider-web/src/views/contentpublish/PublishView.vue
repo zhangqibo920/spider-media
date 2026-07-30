@@ -21,8 +21,9 @@
                 <DictTag dict-type="pb_account_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('common.operation')" width="80">
+            <el-table-column :label="$t('common.operation')" width="130">
               <template #default="{ row }">
+                <el-button type="primary" link @click="handleEditAccount(row)">{{ $t('common.edit') }}</el-button>
                 <el-popconfirm :title="$t('common.confirmDelete')" @confirm="handleDeleteAccount(row.id)">
                   <template #reference><el-button type="danger" link>{{ $t('common.delete') }}</el-button></template>
                 </el-popconfirm>
@@ -52,10 +53,12 @@
                 <DictTag dict-type="pb_publish_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('common.operation')" width="150">
+            <el-table-column :label="$t('common.operation')" width="250">
               <template #default="{ row }">
                 <el-button v-if="row.status === 0" type="success" link @click="handlePublish(row.id)">{{ $t('publish.publishNow') }}</el-button>
                 <el-button v-if="row.status === 0" type="primary" link @click="openScheduleDialog(row.id)">{{ $t('publish.schedule') }}</el-button>
+                <el-button type="primary" link @click="handleEditTask(row)">{{ $t('common.edit') }}</el-button>
+                <el-button type="danger" link @click="handleDeleteTask(row.id)">{{ $t('common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -63,7 +66,7 @@
       </el-col>
     </el-row>
 
-    <el-dialog v-model="showAddAccountDialog" :title="$t('publish.addAccount')" width="500px" @closed="resetAccountForm">
+    <el-dialog v-model="showAddAccountDialog" :title="editingAccount ? $t('publish.editAccount') : $t('publish.addAccount')" width="500px" @closed="resetAccountForm">
       <el-form ref="accountFormRef" :model="accountForm" :rules="accountRules" label-width="80px">
         <el-form-item :label="$t('publish.platform')" prop="platform">
           <el-select v-model="accountForm.platform" :placeholder="$t('publish.selectPlatform')">
@@ -80,7 +83,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="showCreateTaskDialog" :title="$t('publish.createTask')" width="600px" @closed="resetTaskForm">
+    <el-dialog v-model="showCreateTaskDialog" :title="editingTask ? $t('publish.editTask') : $t('publish.createTask')" width="600px" @closed="resetTaskForm">
       <el-form ref="taskFormRef" :model="taskForm" :rules="taskRules" label-width="80px">
         <el-form-item :label="$t('publish.account')" prop="platformAccountId">
           <el-select v-model="taskForm.platformAccountId" :placeholder="$t('publish.selectAccount')">
@@ -116,12 +119,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  getPlatformAccounts, addPlatformAccount, deletePlatformAccount,
-  getPublishTasks, createPublishTask, publishNow, schedulePublish
+  getPlatformAccounts, addPlatformAccount, updatePlatformAccount, deletePlatformAccount,
+  getPublishTasks, createPublishTask, updatePublishTask, deletePublishTask, publishNow, schedulePublish
 } from '@/api/publish'
 import { useDict } from '@/composables/useDict'
 
@@ -140,6 +143,8 @@ const accountFormRef = ref<FormInstance>()
 const taskFormRef = ref<FormInstance>()
 const scheduleTaskId = ref(0)
 const scheduleTime = ref<Date | null>(null)
+const editingAccount = ref<any>(null)
+const editingTask = ref<any>(null)
 
 const accountForm = reactive({ platform: '', accountName: '' })
 const accountRules = {
@@ -165,15 +170,58 @@ const loadTasks = async () => {
 const handleAddAccount = async () => {
   const valid = await accountFormRef.value?.validate().catch(() => false)
   if (!valid) return
-  try { await addPlatformAccount(accountForm); ElMessage.success(t('publish.addSuccess')); showAddAccountDialog.value = false; loadAccounts() } catch { ElMessage.error(t('publish.addFailed')) }
+  try {
+    if (editingAccount.value) {
+      await updatePlatformAccount({ ...editingAccount.value, ...accountForm })
+      ElMessage.success(t('common.updateSuccess'))
+    } else {
+      await addPlatformAccount(accountForm)
+      ElMessage.success(t('publish.addSuccess'))
+    }
+    showAddAccountDialog.value = false
+    loadAccounts()
+  } catch { ElMessage.error(editingAccount.value ? t('common.updateFailed') : t('publish.addFailed')) }
 }
 const handleDeleteAccount = async (id: number) => {
   try { await deletePlatformAccount(id); ElMessage.success(t('common.deleteSuccess')); loadAccounts() } catch { ElMessage.error(t('common.deleteFailed')) }
 }
+const handleEditAccount = (row: any) => {
+  editingAccount.value = row
+  accountForm.platform = row.platform
+  accountForm.accountName = row.accountName
+  showAddAccountDialog.value = true
+}
+const handleEditTask = (row: any) => {
+  editingTask.value = row
+  taskForm.platformAccountId = row.platformAccountId
+  taskForm.title = row.title
+  taskForm.content = row.content
+  showCreateTaskDialog.value = true
+}
+const handleDeleteTask = async (id: number) => {
+  try {
+    await ElMessageBox.confirm(t('common.confirmDelete'), t('common.operation'), { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' })
+    await deletePublishTask(id)
+    ElMessage.success(t('common.deleteSuccess'))
+    loadTasks()
+  } catch {
+    // cancelled or failed
+  }
+}
 const handleCreateTask = async () => {
   const valid = await taskFormRef.value?.validate().catch(() => false)
   if (!valid) return
-  try { await createPublishTask(taskForm); ElMessage.success(t('publish.createSuccess')); showCreateTaskDialog.value = false; loadTasks() } catch { ElMessage.error(t('publish.createFailed')) }
+  try {
+    if (editingTask.value) {
+      await updatePublishTask({ id: editingTask.value.id, ...taskForm })
+      ElMessage.success(t('common.updateSuccess'))
+    } else {
+      await createPublishTask(taskForm)
+      ElMessage.success(t('publish.createSuccess'))
+    }
+    showCreateTaskDialog.value = false
+    loadTasks()
+  } catch { ElMessage.error(editingTask.value ? t('common.updateFailed') : t('publish.createFailed')) }
 }
 const handlePublish = async (id: number) => {
   try {
@@ -203,8 +251,8 @@ const handleSchedule = async () => {
   } catch { ElMessage.error(t('publish.scheduleFailed')) }
 }
 
-const resetAccountForm = () => { accountForm.platform = ''; accountForm.accountName = '' }
-const resetTaskForm = () => { taskForm.platformAccountId = null; taskForm.title = ''; taskForm.content = '' }
+const resetAccountForm = () => { accountForm.platform = ''; accountForm.accountName = ''; editingAccount.value = null }
+const resetTaskForm = () => { taskForm.platformAccountId = null; taskForm.title = ''; taskForm.content = ''; editingTask.value = null }
 onMounted(() => { loadAccounts(); loadTasks() })
 </script>
 

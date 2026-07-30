@@ -4,6 +4,10 @@ export function addPlatformAccount(data: any) {
   return request.post('/publish/account', data)
 }
 
+export function updatePlatformAccount(data: any) {
+  return request.put('/publish/account', data)
+}
+
 export function getPlatformAccounts() {
   return request.get('/publish/account/list')
 }
@@ -14,6 +18,14 @@ export function deletePlatformAccount(id: number) {
 
 export function createPublishTask(data: any) {
   return request.post('/publish/task', data)
+}
+
+export function updatePublishTask(data: any) {
+  return request.put('/publish/task', data)
+}
+
+export function deletePublishTask(id: number) {
+  return request.delete(`/publish/task/${id}`)
 }
 
 export function publishNow(id: number) {

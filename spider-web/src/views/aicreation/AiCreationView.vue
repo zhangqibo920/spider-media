@@ -24,9 +24,10 @@
             <el-table-column prop="platform" :label="$t('collection.platform')" width="80">
               <template #default="{ row }"><el-tag size="small">{{ row.platform }}</el-tag></template>
             </el-table-column>
-            <el-table-column :label="$t('common.operation')" width="80">
+            <el-table-column :label="$t('common.operation')" width="120">
               <template #default="{ row }">
                 <el-button type="primary" link @click="handleGenerate(row.id)">{{ $t('hotFeed.generateArticle') }}</el-button>
+                <el-button type="danger" link @click="handleDeleteTopic(row)">{{ $t('common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -45,9 +46,10 @@
                 <DictTag dict-type="ac_article_status" :value="row.status" size="small" />
               </template>
             </el-table-column>
-            <el-table-column :label="$t('common.operation')" width="80">
+            <el-table-column :label="$t('common.operation')" width="120">
               <template #default="{ row }">
                 <el-button type="primary" link @click="showArticleDetail(row)">{{ $t('aiCreation.viewArticle') }}</el-button>
+                <el-button type="danger" link @click="handleDeleteArticle(row)">{{ $t('common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -78,9 +80,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles } from '@/api/ai'
+import { getHotTopics, fetchHotTopics, generateArticle, getGeneratedArticles, deleteHotTopic, deleteGeneratedArticle } from '@/api/ai'
 import { useDict } from '@/composables/useDict'
 
 const { t } = useI18n()
@@ -126,6 +128,22 @@ const handleGenerate = async (topicId: number) => {
   try { await generateArticle(topicId); ElMessage.success(t('aiCreation.generateTriggered')); loadArticles() } catch { ElMessage.error(t('aiCreation.generateFailed')) }
 }
 const showArticleDetail = (article: any) => { currentArticle.value = article; showDetailDialog.value = true }
+const handleDeleteTopic = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(t('common.confirmDelete', { name: row.title }), t('common.tip'), { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' })
+    await deleteHotTopic(row.id)
+    ElMessage.success(t('common.deleteSuccess'))
+    loadHotTopics()
+  } catch { /* cancelled or error */ }
+}
+const handleDeleteArticle = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(t('common.confirmDelete', { name: row.title }), t('common.tip'), { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' })
+    await deleteGeneratedArticle(row.id)
+    ElMessage.success(t('common.deleteSuccess'))
+    loadArticles()
+  } catch { /* cancelled or error */ }
+}
 
 onMounted(() => { loadHotTopics(); loadArticles() })
 </script>
