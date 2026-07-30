@@ -129,14 +129,18 @@ public class HmMonitorServiceImpl implements IHmMonitorService {
                 notification.setCreateTime(LocalDateTime.now());
                 notificationMapper.insert(notification);
 
-                Map<String, Object> wsPayload = new java.util.HashMap<>();
-                wsPayload.put("type", "notification");
-                wsPayload.put("unreadCount", 1);
-                wsPayload.put("title", notification.getTitle());
-                wsPayload.put("content", notification.getContent());
-                wsPayload.put("time", notification.getCreateTime().toString());
-                String wsMsg = objectMapper.writeValueAsString(wsPayload);
-                WebSocketSessionManager.sendToUser(keyword.getUserId(), wsMsg);
+                try {
+                    Map<String, Object> wsPayload = new java.util.HashMap<>();
+                    wsPayload.put("type", "notification");
+                    wsPayload.put("unreadCount", 1);
+                    wsPayload.put("title", notification.getTitle());
+                    wsPayload.put("content", notification.getContent());
+                    wsPayload.put("time", notification.getCreateTime().toString());
+                    String wsMsg = objectMapper.writeValueAsString(wsPayload);
+                    WebSocketSessionManager.sendToUser(keyword.getUserId(), wsMsg);
+                } catch (Exception e) {
+                    log.warn("WebSocket消息序列化失败", e);
+                }
             }
         }
 
