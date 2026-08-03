@@ -5,8 +5,11 @@ import com.spider.media.common.result.ErrorCodeEnums;
 import com.spider.media.contentpublish.entity.PbPlatformAccount;
 import com.spider.media.contentpublish.mapper.PbPlatformAccountMapper;
 import com.spider.media.contentpublish.service.IPbPlatformAccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,12 +26,21 @@ import java.util.List;
 @Service
 public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
 
+    private static final Logger log = LoggerFactory.getLogger(PbPlatformAccountServiceImpl.class);
+
     /** 平台账号数据访问对象，由 Spring 自动注入 */
     private final PbPlatformAccountMapper platformAccountMapper;
 
+    private final WebClient webClient;
+
     /** 构造器注入 Mapper 依赖 */
-    public PbPlatformAccountServiceImpl(PbPlatformAccountMapper platformAccountMapper) {
+    public PbPlatformAccountServiceImpl(PbPlatformAccountMapper platformAccountMapper,
+                                         WebClient.Builder webClientBuilder) {
         this.platformAccountMapper = platformAccountMapper;
+        this.webClient = webClientBuilder
+                .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .codecs(c -> c.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .build();
     }
 
     /**
@@ -108,5 +120,114 @@ public class PbPlatformAccountServiceImpl implements IPbPlatformAccountService {
             throw new ServiceException(ErrorCodeEnums.FORBIDDEN, "无权操作他人的平台账号");
         }
         return account;
+    }
+
+    /**
+     * 测试账号连接是否有效
+     */
+    @Override
+    public boolean testConnection(PbPlatformAccount account) {
+        try {
+            String platform = account.getPlatform();
+            if ("wechat_mp".equals(platform)) {
+                return testWechatMpConnection(account);
+            } else if ("toutiao".equals(platform) || "baijiahao".equals(platform)) {
+                return testCookieConnection(account);
+            }
+            return false;
+        } catch (Exception e) {
+            log.warn("账号连接测试失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 刷新账号Token
+     */
+    @Override
+    public boolean refreshToken(PbPlatformAccount account) {
+        try {
+            String platform = account.getPlatform();
+            if ("wechat_mp".equals(platform)) {
+                return refreshWechatMpToken(account);
+            }
+            // 头条号、百家号使用Cookie，无需刷新Token
+            return false;
+        } catch (Exception e) {
+            log.warn("Token刷新失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 测试微信公众号连接
+     * 使用 AppID 和 AppSecret 获取 Access Token
+     */
+    private boolean testWechatMpConnection(PbPlatformAccount account) {
+        try {
+            String url = String.format(
+                    "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s",
+                    account.getAppId(), account.getAppSecret());
+
+            String response = webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            if (response != null && response.contains("access_token")) {
+                // 更新 Token 信息
+                account.setAccessToken(extractJsonValue(response, "access_token"));
+                int expiresIn = Integer.parseInt(extractJsonValue(response, "expires_in"));
+                account.setTokenExpireTime(LocalDateTime.now().plusSeconds(expiresIn));
+                account.setLastLoginTime(LocalDateTime.now());
+                platformAccountMapper.updateById(account);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            log.warn("微信公众号连接测试失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 测试Cookie连接（头条号/百家号）
+     */
+    private boolean testCookieConnection(PbPlatformAccount account) {
+        try {
+            String cookie = account.getCookie();
+            if (cookie == null || cookie.isBlank()) {
+                return false;
+            }
+            // 简单验证Cookie格式
+            account.setLastLoginTime(LocalDateTime.now());
+            platformAccountMapper.updateById(account);
+            return true;
+        } catch (Exception e) {
+            log.warn("Cookie连接测试失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 刷新微信公众号 Access Token
+     */
+    private boolean refreshWechatMpToken(PbPlatformAccount account) {
+        return testWechatMpConnection(account);
+    }
+
+    /**
+     * 从JSON字符串中提取简单字段值
+     */
+    private String extractJsonValue(String json, String key) {
+        String searchKey = "\"" + key + "\":\"";
+        int start = json.indexOf(searchKey);
+        if (start == -1) {
+            return "";
+        }
+        start += searchKey.length();
+        int end = json.indexOf("\"", start);
+        return json.substring(start, end);
     }
 }

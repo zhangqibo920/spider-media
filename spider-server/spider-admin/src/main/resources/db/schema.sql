@@ -199,19 +199,27 @@ ALTER TABLE `ac_hot_topic`
     ADD INDEX `idx_keyword_id` (`keyword_id`);
 
 -- =============================================
--- 平台账号表
+-- 平台账号表（支持多账号）
 -- =============================================
 DROP TABLE IF EXISTS `pb_platform_account`;
 CREATE TABLE `pb_platform_account` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '账号ID',
     `user_id` BIGINT NOT NULL COMMENT '用户ID',
-    `platform` VARCHAR(20) NOT NULL COMMENT '平台类型',
+    `platform` VARCHAR(50) NOT NULL COMMENT '平台类型: wechat_mp/toutiao/baijiahao',
     `account_name` VARCHAR(100) NOT NULL COMMENT '账号名称',
-    `account_id` VARCHAR(100) DEFAULT '' COMMENT '账号ID',
+    `account_id` VARCHAR(100) DEFAULT '' COMMENT '平台账号ID',
+    -- 微信公众号专用字段
+    `app_id` VARCHAR(100) DEFAULT '' COMMENT 'AppID（微信公众号）',
+    `app_secret` VARCHAR(200) DEFAULT '' COMMENT 'AppSecret（微信公众号）',
+    -- 头条/百家号专用字段（Cookie登录）
+    `cookie` TEXT COMMENT '登录Cookie（头条号/百家号）',
+    -- 通用Token字段
     `access_token` TEXT COMMENT 'Access Token',
     `refresh_token` TEXT COMMENT 'Refresh Token',
     `token_expire_time` DATETIME DEFAULT NULL COMMENT 'Token过期时间',
+    -- 账号状态
     `status` CHAR(1) DEFAULT '0' COMMENT '状态（0正常 1停用）',
+    `last_login_time` DATETIME DEFAULT NULL COMMENT '最后登录/验证时间',
     `group_name` VARCHAR(50) DEFAULT '' COMMENT '分组名称',
     `del_flag` CHAR(1) DEFAULT '0' COMMENT '删除标志',
     `create_by` VARCHAR(64) DEFAULT '' COMMENT '创建者',
@@ -221,8 +229,9 @@ CREATE TABLE `pb_platform_account` (
     `remark` VARCHAR(500) DEFAULT '' COMMENT '备注',
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
-    KEY `idx_platform` (`platform`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='平台账号表';
+    KEY `idx_platform` (`platform`),
+    UNIQUE KEY `idx_user_platform_account` (`user_id`, `platform`, `account_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='平台账号表（支持多账号）';
 
 -- =============================================
 -- 发布任务表
@@ -438,7 +447,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`
 (1, '工作台',     0, '/dashboard',   'dashboard/DashboardView',   '',  'Odometer',  1, 'C', '0', 'system', NOW()),
 (2, '数据采集',   0, '/collection',  'datacollection/CollectionView', '', 'Download',  2, 'C', '0', 'system', NOW()),
 (3, 'AI创作',    0, '/ai-creation', '',                       '', 'MagicStick', 3, 'M', '0', 'system', NOW()),
-(4, '内容发布',   0, '/publish',     'contentpublish/PublishView', '', 'Promotion',  4, 'C', '0', 'system', NOW()),
+(4, '内容发布',   0, '/publish',     '',                       '', 'Promotion',  4, 'M', '0', 'system', NOW()),
 (5, '任务调度',   0, '/scheduler',   'taskscheduler/SchedulerView', '', 'Timer',      5, 'C', '0', 'system', NOW()),
 (6, '系统管理',   0, '/admin',       '',                      '', 'Setting',    6, 'M', '0', 'system', NOW()),
 (7, '个人中心',   0, '/profile',     'userauth/ProfileView',  '', 'User',       7, 'C', '1', 'system', NOW()),
@@ -452,11 +461,14 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `path`, `component`
 -- 热点监控（属于 AI创作 的子菜单，menu_id=3）
 (15, '热点抓取',  3, 'fetch',    'aicreation/AiCreationView',    '', 'TrendCharts', 0, 'C', '0', 'system', NOW()),
 (16, '关键词管理', 3, 'keywords', 'hotmonitor/KeywordManageView', '', 'Search',       1, 'C', '0', 'system', NOW()),
-(17, '热点信息流', 3, 'hot-feed', 'hotmonitor/HotFeedView',       '', 'TrendCharts', 2, 'C', '0', 'system', NOW());
+(17, '热点信息流', 3, 'hot-feed', 'hotmonitor/HotFeedView',       '', 'TrendCharts', 2, 'C', '0', 'system', NOW()),
+-- 内容发布子菜单（属于内容发布 的子菜单，menu_id=4）
+(18, '账号管理', 4, 'accounts',  'contentpublish/AccountManageView', '', 'UserFilled',  1, 'C', '0', 'system', NOW()),
+(19, '发布任务', 4, 'tasks',     'contentpublish/PublishTaskView',   '', 'Promotion',   2, 'C', '0', 'system', NOW());
 
 -- 分配角色-菜单（ADMIN 拥有所有菜单，USER 排除系统管理）
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7),
 (1, 8), (1, 9), (1, 10), (1, 11), (1, 12), (1, 13), (1, 14),
-(1, 15), (1, 16), (1, 17),
-(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 7), (2, 15), (2, 16), (2, 17);
+(1, 15), (1, 16), (1, 17), (1, 18), (1, 19),
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 7), (2, 15), (2, 16), (2, 17), (2, 18), (2, 19);

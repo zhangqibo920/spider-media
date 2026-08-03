@@ -16,6 +16,14 @@ export function deletePlatformAccount(id: number) {
   return request.delete(`/publish/account/${id}`)
 }
 
+export function testAccountConnection(id: number) {
+  return request.post(`/publish/account/test/${id}`)
+}
+
+export function refreshAccountToken(id: number) {
+  return request.post(`/publish/account/refresh/${id}`)
+}
+
 export function createPublishTask(data: any) {
   return request.post('/publish/task', data)
 }

@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -90,6 +91,40 @@ public class PbPublishController extends BaseController {
     @DeleteMapping("/account/{id}")
     public R<Integer> deleteAccount(@PathVariable Long id) {
         return ok(platformAccountService.deleteAccountById(id, LoginUser.getUserId()));
+    }
+
+    /**
+     * 测试账号连接是否有效
+     *
+     * @param id 账号ID
+     * @return 测试结果
+     */
+    @PostMapping("/account/test/{id}")
+    public R<Map<String, Object>> testAccountConnection(@PathVariable Long id) {
+        Long userId = LoginUser.getUserId();
+        PbPlatformAccount account = platformAccountService.validateOwnership(id, userId);
+        boolean success = platformAccountService.testConnection(account);
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", success);
+        result.put("message", success ? "连接测试成功" : "连接测试失败，请检查凭证是否正确");
+        return ok(result);
+    }
+
+    /**
+     * 刷新账号Token
+     *
+     * @param id 账号ID
+     * @return 操作结果
+     */
+    @PostMapping("/account/refresh/{id}")
+    public R<Map<String, Object>> refreshAccountToken(@PathVariable Long id) {
+        Long userId = LoginUser.getUserId();
+        PbPlatformAccount account = platformAccountService.validateOwnership(id, userId);
+        boolean success = platformAccountService.refreshToken(account);
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", success);
+        result.put("message", success ? "Token刷新成功" : "Token刷新失败");
+        return ok(result);
     }
 
     // ========== 发布任务管理 ==========

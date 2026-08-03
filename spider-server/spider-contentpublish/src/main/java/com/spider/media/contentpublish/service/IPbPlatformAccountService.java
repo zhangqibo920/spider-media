@@ -67,4 +67,20 @@ public interface IPbPlatformAccountService {
      * @return 受影响的行数
      */
     int updateAccount(PbPlatformAccount account);
+
+    /**
+     * 测试账号连接是否有效
+     *
+     * @param account 平台账号实体
+     * @return 连接测试是否成功
+     */
+    boolean testConnection(PbPlatformAccount account);
+
+    /**
+     * 刷新账号Token
+     *
+     * @param account 平台账号实体
+     * @return 刷新是否成功
+     */
+    boolean refreshToken(PbPlatformAccount account);
 }

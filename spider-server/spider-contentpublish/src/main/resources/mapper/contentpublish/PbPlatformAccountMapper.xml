@@ -21,10 +21,14 @@
         <result column="platform" property="platform"/>
         <result column="account_name" property="accountName"/>
         <result column="account_id" property="accountId"/>
+        <result column="app_id" property="appId"/>
+        <result column="app_secret" property="appSecret"/>
+        <result column="cookie" property="cookie"/>
         <result column="access_token" property="accessToken"/>
         <result column="refresh_token" property="refreshToken"/>
         <result column="token_expire_time" property="tokenExpireTime"/>
         <result column="status" property="status"/>
+        <result column="last_login_time" property="lastLoginTime"/>
         <result column="group_name" property="groupName"/>
         <result column="create_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
@@ -36,8 +40,9 @@
 
     <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
     <sql id="Base_Column_List">
-        id, user_id, platform, account_name, account_id, access_token, refresh_token,
-        token_expire_time, status, group_name, create_by, create_time, update_by, update_time, remark, del_flag
+        id, user_id, platform, account_name, account_id, app_id, app_secret, cookie,
+        access_token, refresh_token, token_expire_time, status, last_login_time, group_name,
+        create_by, create_time, update_by, update_time, remark, del_flag
     </sql>
 
     <!--
@@ -72,11 +77,13 @@
     -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO pb_platform_account (user_id, platform, account_name, account_id,
+                                         app_id, app_secret, cookie,
                                          access_token, refresh_token, token_expire_time,
-                                         status, group_name, create_by, create_time)
+                                         status, last_login_time, group_name, create_by, create_time)
         VALUES (#{userId}, #{platform}, #{accountName}, #{accountId},
+                #{appId}, #{appSecret}, #{cookie},
                 #{accessToken}, #{refreshToken}, #{tokenExpireTime},
-                #{status}, #{groupName}, #{createBy}, #{createTime})
+                #{status}, #{lastLoginTime}, #{groupName}, #{createBy}, #{createTime})
     </insert>
 
     <!--
@@ -89,8 +96,10 @@
     <update id="updateById">
         UPDATE pb_platform_account
         SET platform = #{platform}, account_name = #{accountName}, account_id = #{accountId},
+            app_id = #{appId}, app_secret = #{appSecret}, cookie = #{cookie},
             access_token = #{accessToken}, refresh_token = #{refreshToken},
-            token_expire_time = #{tokenExpireTime}, status = #{status}, group_name = #{groupName},
+            token_expire_time = #{tokenExpireTime}, status = #{status},
+            last_login_time = #{lastLoginTime}, group_name = #{groupName},
             update_by = #{updateBy}, update_time = #{updateTime}
         WHERE id = #{id} AND del_flag = '0'
     </update>

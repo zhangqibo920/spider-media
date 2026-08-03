@@ -127,7 +127,8 @@ public class ZhihuFetcher implements IHotSourceFetcher {
         try {
             String cookie = resolveCookie();
             if (cookie.isEmpty()) {
-                log.warn("未配置知乎 Cookie，API 方式不可用");
+                log.warn("未配置知乎 Cookie，API 方式不可用。请在 application.yml 中配置 fetcher.zhihu.cookie");
+                log.info("获取 Cookie 方法：登录知乎后，打开浏览器开发者工具 Network 面板，复制 Cookie 值");
                 return topics;
             }
 
@@ -158,9 +159,13 @@ public class ZhihuFetcher implements IHotSourceFetcher {
                 }
             }
         } catch (WebClientResponseException e) {
-            log.warn("知乎 API 抓取失败 ({}), 请检查 fetcher.zhihu.cookie 是否有效", e.getStatusCode());
+            if (e.getStatusCode().value() == 401) {
+                log.warn("知乎 API 返回 401 Unauthorized，请检查 fetcher.zhihu.cookie 是否有效或已过期");
+            } else {
+                log.warn("知乎 API 抓取失败 ({}), 请检查网络连接", e.getStatusCode());
+            }
         } catch (Exception e) {
-            log.warn("知乎 API 抓取异常", e);
+            log.warn("知乎 API 抓取异常: {}", e.getMessage());
         }
         return topics;
     }
@@ -169,6 +174,7 @@ public class ZhihuFetcher implements IHotSourceFetcher {
         if (configuredCookie != null && !configuredCookie.trim().isEmpty()) {
             return configuredCookie.trim();
         }
+        log.debug("未配置知乎 Cookie，尝试从响应获取（可能不足以访问 API）");
         try {
             return webClient.get()
                     .uri("https://www.zhihu.com/")
@@ -186,6 +192,7 @@ public class ZhihuFetcher implements IHotSourceFetcher {
                     })
                     .blockOptional().orElse("");
         } catch (Exception e) {
+            log.debug("获取知乎 Cookie 失败: {}", e.getMessage());
             return "";
         }
     }
