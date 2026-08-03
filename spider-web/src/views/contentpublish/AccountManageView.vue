@@ -4,9 +4,32 @@
       <template #header>
         <div class="card-header">
           <span>{{ $t('account.platformAccounts') }}</span>
-          <el-button type="primary" @click="openAddDialog()">
-            <el-icon><Plus /></el-icon> {{ $t('account.addAccount') }}
-          </el-button>
+          <div class="header-actions">
+            <el-dropdown @command="handleAddCommand">
+              <el-button type="primary">
+                <el-icon><Plus /></el-icon> {{ $t('account.addAccount') }}
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="wechat_mp">
+                    <el-icon><ChatDotRound /></el-icon> 微信公众号
+                  </el-dropdown-item>
+                  <el-dropdown-item command="toutiao">
+                    <el-icon><Iphone /></el-icon> 头条号（扫码登录）
+                  </el-dropdown-item>
+                  <el-dropdown-item command="baijiahao">
+                    <el-icon><Document /></el-icon> 百家号（扫码登录）
+                  </el-dropdown-item>
+                  <el-dropdown-item divided command="toutiao_manual">
+                    <el-icon><Edit /></el-icon> 头条号（手动绑定Cookie）
+                  </el-dropdown-item>
+                  <el-dropdown-item command="baijiahao_manual">
+                    <el-icon><Edit /></el-icon> 百家号（手动绑定Cookie）
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </div>
       </template>
 
@@ -49,6 +72,9 @@
                   <span v-if="account.tokenExpireTime" class="expire-time">
                     {{ $t('account.tokenExpire') }}: {{ formatTime(account.tokenExpireTime) }}
                   </span>
+                  <span v-if="account.lastLoginTime" class="expire-time">
+                    最后登录: {{ formatTime(account.lastLoginTime) }}
+                  </span>
                 </div>
               </div>
               <div class="account-actions">
@@ -73,13 +99,13 @@
       </div>
 
       <el-empty v-if="accounts.length === 0" :description="$t('account.noAccounts')">
-        <el-button type="primary" @click="openAddDialog()">
+        <el-button type="primary" @click="handleAddCommand('wechat_mp')">
           {{ $t('account.addFirstAccount') }}
         </el-button>
       </el-empty>
     </el-card>
 
-    <!-- 新增/编辑账号弹窗 -->
+    <!-- 新增/编辑账号弹窗（微信公众号） -->
     <el-dialog
       v-model="showDialog"
       :title="isEditing ? $t('account.editAccount') : $t('account.addAccount')"
@@ -97,7 +123,6 @@
             v-model="form.platform"
             :placeholder="$t('account.selectPlatform')"
             :disabled="isEditing"
-            @change="onPlatformChange"
           >
             <el-option
               v-for="p in platformOptions"
@@ -132,18 +157,6 @@
             />
           </el-form-item>
         </template>
-
-        <!-- 头条号/百家号字段 -->
-        <template v-if="form.platform === 'toutiao' || form.platform === 'baijiahao'">
-          <el-form-item :label="$t('account.cookie')" prop="cookie">
-            <el-input
-              v-model="form.cookie"
-              type="textarea"
-              :rows="4"
-              :placeholder="$t('account.cookiePlaceholder')"
-            />
-          </el-form-item>
-        </template>
       </el-form>
 
       <template #footer>
@@ -153,6 +166,13 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 扫码登录弹窗 -->
+    <QrCodeDialog
+      v-model="showQrCodeDialog"
+      :platform="qrCodePlatform"
+      @success="onQrCodeSuccess"
+    />
   </div>
 </template>
 
@@ -161,6 +181,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import QrCodeDialog from '@/components/QrCodeDialog.vue'
 import {
   getPlatformAccounts,
   addPlatformAccount,
@@ -193,6 +214,10 @@ const editingId = ref<number | null>(null)
 const submitting = ref(false)
 const formRef = ref<FormInstance>()
 
+// 扫码登录相关
+const showQrCodeDialog = ref(false)
+const qrCodePlatform = ref<'toutiao' | 'baijiahao'>('toutiao')
+
 const form = reactive({
   platform: '',
   accountName: '',
@@ -205,8 +230,7 @@ const rules: FormRules = {
   platform: [{ required: true, message: () => t('account.validateSelectPlatform'), trigger: 'change' }],
   accountName: [{ required: true, message: () => t('account.validateAccountName'), trigger: 'blur' }],
   appId: [{ required: true, message: '请输入 AppID', trigger: 'blur' }],
-  appSecret: [{ required: true, message: '请输入 AppSecret', trigger: 'blur' }],
-  cookie: [{ required: true, message: () => t('account.validateCookie'), trigger: 'blur' }]
+  appSecret: [{ required: true, message: '请输入 AppSecret', trigger: 'blur' }]
 }
 
 // 按平台分组
@@ -232,11 +256,38 @@ const loadAccounts = async () => {
   }
 }
 
-// 打开新增弹窗
-const openAddDialog = () => {
-  isEditing.value = false
-  editingId.value = null
-  showDialog.value = true
+// 处理新增命令
+const handleAddCommand = (command: string) => {
+  if (command === 'toutiao') {
+    // 头条号扫码登录
+    qrCodePlatform.value = 'toutiao'
+    showQrCodeDialog.value = true
+  } else if (command === 'baijiahao') {
+    // 百家号扫码登录
+    qrCodePlatform.value = 'baijiahao'
+    showQrCodeDialog.value = true
+  } else if (command === 'toutiao_manual') {
+    // 头条号手动绑定
+    isEditing.value = false
+    editingId.value = null
+    form.platform = 'toutiao'
+    form.accountName = ''
+    showDialog.value = true
+  } else if (command === 'baijiahao_manual') {
+    // 百家号手动绑定
+    isEditing.value = false
+    editingId.value = null
+    form.platform = 'baijiahao'
+    form.accountName = ''
+    showDialog.value = true
+  } else {
+    // 微信公众号
+    isEditing.value = false
+    editingId.value = null
+    form.platform = command
+    form.accountName = ''
+    showDialog.value = true
+  }
 }
 
 // 打开编辑弹窗
@@ -249,13 +300,6 @@ const openEditDialog = (account: any) => {
   form.appSecret = account.appSecret || ''
   form.cookie = account.cookie || ''
   showDialog.value = true
-}
-
-// 平台切换时清空相关字段
-const onPlatformChange = () => {
-  form.appId = ''
-  form.appSecret = ''
-  form.cookie = ''
 }
 
 // 提交表单
@@ -320,6 +364,11 @@ const handleTestConnection = async (account: any) => {
   }
 }
 
+// 扫码登录成功回调
+const onQrCodeSuccess = () => {
+  loadAccounts()
+}
+
 // 重置表单
 const resetForm = () => {
   form.platform = ''
@@ -365,6 +414,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .platform-section {

@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     DictTag: typeof import('./components/DictTag.vue')['default']
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']
@@ -53,6 +54,7 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
     MainLayout: typeof import('./components/layout/MainLayout.vue')['default']
+    QrCodeDialog: typeof import('./components/QrCodeDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
