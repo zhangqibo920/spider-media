@@ -168,10 +168,10 @@
     </el-dialog>
 
     <!-- 扫码登录弹窗 -->
-    <QrCodeDialog
-      v-model="showQrCodeDialog"
-      :platform="qrCodePlatform"
-      @success="onQrCodeSuccess"
+    <BindAccountDialog
+      v-model="showBindDialog"
+      :platform="bindPlatform"
+      @success="onBindSuccess"
     />
   </div>
 </template>
@@ -181,7 +181,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import QrCodeDialog from '@/components/QrCodeDialog.vue'
+import BindAccountDialog from '@/components/BindAccountDialog.vue'
 import {
   getPlatformAccounts,
   addPlatformAccount,
@@ -215,8 +215,8 @@ const submitting = ref(false)
 const formRef = ref<FormInstance>()
 
 // 扫码登录相关
-const showQrCodeDialog = ref(false)
-const qrCodePlatform = ref<'toutiao' | 'baijiahao'>('toutiao')
+const showBindDialog = ref(false)
+const bindPlatform = ref<'toutiao' | 'baijiahao'>('toutiao')
 
 const form = reactive({
   platform: '',
@@ -260,12 +260,12 @@ const loadAccounts = async () => {
 const handleAddCommand = (command: string) => {
   if (command === 'toutiao') {
     // 头条号扫码登录
-    qrCodePlatform.value = 'toutiao'
-    showQrCodeDialog.value = true
+    bindPlatform.value = 'toutiao'
+    showBindDialog.value = true
   } else if (command === 'baijiahao') {
     // 百家号扫码登录
-    qrCodePlatform.value = 'baijiahao'
-    showQrCodeDialog.value = true
+    bindPlatform.value = 'baijiahao'
+    showBindDialog.value = true
   } else if (command === 'toutiao_manual') {
     // 头条号手动绑定
     isEditing.value = false
@@ -365,7 +365,7 @@ const handleTestConnection = async (account: any) => {
 }
 
 // 扫码登录成功回调
-const onQrCodeSuccess = () => {
+const onBindSuccess = () => {
   loadAccounts()
 }
 
