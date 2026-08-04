@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import { getDictDataByType, getDictTypeList } from '@/api/dict'
 
 // ========== Dict Type ==========
 

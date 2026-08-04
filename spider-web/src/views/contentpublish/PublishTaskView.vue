@@ -165,6 +165,7 @@ import {
   publishNow,
   schedulePublish
 } from '@/api/publish'
+import { formatTime } from '@/utils/date'
 
 const { t } = useI18n()
 
@@ -365,11 +366,6 @@ const getStatusLabel = (status: number) => {
     3: t('publish.statusFailed')
   }
   return map[status] || ''
-}
-
-const formatTime = (time: string) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString()
 }
 
 onMounted(() => {

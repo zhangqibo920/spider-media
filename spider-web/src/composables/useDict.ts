@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted, getCurrentInstance } from 'vue'
 import { getDictDataByType } from '@/api/dict'
 import { DICT_FALLBACK } from '@/constants'
 
@@ -66,17 +66,25 @@ export function useDict(dictType: string) {
     }
   )
 
+  // 组件卸载时自动清理 watch
+  const instance = getCurrentInstance()
+  if (instance) {
+    onUnmounted(() => {
+      stopWatch()
+    })
+  }
+
   return { dict }
 }
 
 export function getDictLabel(dict: DictData[] | ReturnType<typeof ref<DictData[]>>, value: string, fallback?: string): string {
-  const list = Array.isArray(dict) ? dict : dict.value
+  const list = Array.isArray(dict) ? dict : (dict?.value ?? [])
   const item = list.find(d => d.dictValue === String(value))
   return item ? item.dictLabel : (fallback ?? String(value))
 }
 
 export function getDictCssClass(dict: DictData[] | ReturnType<typeof ref<DictData[]>>, value: string, fallback = 'info'): string {
-  const list = Array.isArray(dict) ? dict : dict.value
+  const list = Array.isArray(dict) ? dict : (dict?.value ?? [])
   const item = list.find(d => d.dictValue === String(value))
   return item?.cssClass || fallback
 }

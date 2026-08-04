@@ -63,7 +63,7 @@
           <el-tree-select
             v-model="form.parentId"
             :data="menuTreeSelect"
-            :props="{ label: 'menuName', value: 'menuId', children: 'children' }"
+            :props="{ label: 'menuName', value: 'menuId', children: 'children' } as any"
             :placeholder="t('sysAdmin.parentMenuPlaceholder')"
             check-strictly
             clearable
@@ -139,7 +139,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import { getMenus, addMenu, updateMenu, deleteMenu } from '@/api/admin'
-import { iconMap, iconNames as elementIcons } from '@/utils/icon-map'
+import { iconNames as elementIcons } from '@/utils/icon-map'
 
 const loading = ref(false)
 const submitting = ref(false)

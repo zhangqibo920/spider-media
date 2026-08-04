@@ -12,19 +12,19 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="wechat_mp">
-                    <el-icon><ChatDotRound /></el-icon> 微信公众号
+                    <el-icon><ChatDotRound /></el-icon> {{ $t('account.platformWechatMp') }}
                   </el-dropdown-item>
                   <el-dropdown-item command="toutiao">
-                    <el-icon><Iphone /></el-icon> 头条号（扫码登录）
+                    <el-icon><Iphone /></el-icon> {{ $t('account.platformToutiao') }}{{ $t('account.addMethodScan') }}
                   </el-dropdown-item>
                   <el-dropdown-item command="baijiahao">
-                    <el-icon><Document /></el-icon> 百家号（扫码登录）
+                    <el-icon><Document /></el-icon> {{ $t('account.platformBaijiahao') }}{{ $t('account.addMethodScan') }}
                   </el-dropdown-item>
                   <el-dropdown-item divided command="toutiao_manual">
-                    <el-icon><Edit /></el-icon> 头条号（手动绑定Cookie）
+                    <el-icon><Edit /></el-icon> {{ $t('account.platformToutiao') }}{{ $t('account.addMethodManual') }}
                   </el-dropdown-item>
                   <el-dropdown-item command="baijiahao_manual">
-                    <el-icon><Edit /></el-icon> 百家号（手动绑定Cookie）
+                    <el-icon><Edit /></el-icon> {{ $t('account.platformBaijiahao') }}{{ $t('account.addMethodManual') }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -73,7 +73,7 @@
                     {{ $t('account.tokenExpire') }}: {{ formatTime(account.tokenExpireTime) }}
                   </span>
                   <span v-if="account.lastLoginTime" class="expire-time">
-                    最后登录: {{ formatTime(account.lastLoginTime) }}
+                    {{ $t('account.lastLoginTime') }}: {{ formatTime(account.lastLoginTime) }}
                   </span>
                 </div>
               </div>
@@ -145,7 +145,7 @@
           <el-form-item label="AppID" prop="appId">
             <el-input
               v-model="form.appId"
-              placeholder="请输入微信公众号 AppID"
+              :placeholder="$t('account.validateAppId')"
             />
           </el-form-item>
           <el-form-item label="AppSecret" prop="appSecret">
@@ -153,7 +153,7 @@
               v-model="form.appSecret"
               type="password"
               show-password
-              placeholder="请输入微信公众号 AppSecret"
+              :placeholder="$t('account.validateAppSecret')"
             />
           </el-form-item>
         </template>
@@ -189,15 +189,16 @@ import {
   deletePlatformAccount,
   testAccountConnection
 } from '@/api/publish'
+import { formatTime } from '@/utils/date'
 
 const { t } = useI18n()
 
 // 平台选项配置
-const platformOptions = [
-  { value: 'wechat_mp', label: '微信公众号' },
-  { value: 'toutiao', label: '头条号' },
-  { value: 'baijiahao', label: '百家号' }
-]
+const platformOptions = computed(() => [
+  { value: 'wechat_mp', label: t('account.platformWechatMp') },
+  { value: 'toutiao', label: t('account.platformToutiao') },
+  { value: 'baijiahao', label: t('account.platformBaijiahao') }
+])
 
 // 平台配置
 const platformConfig: Record<string, { color: string; tagType: '' | 'success' | 'warning' | 'danger' | 'info' }> = {
@@ -229,8 +230,8 @@ const form = reactive({
 const rules: FormRules = {
   platform: [{ required: true, message: () => t('account.validateSelectPlatform'), trigger: 'change' }],
   accountName: [{ required: true, message: () => t('account.validateAccountName'), trigger: 'blur' }],
-  appId: [{ required: true, message: '请输入 AppID', trigger: 'blur' }],
-  appSecret: [{ required: true, message: '请输入 AppSecret', trigger: 'blur' }]
+  appId: [{ required: true, message: () => t('account.validateAppId'), trigger: 'blur' }],
+  appSecret: [{ required: true, message: () => t('account.validateAppSecret'), trigger: 'blur' }]
 }
 
 // 按平台分组
@@ -383,7 +384,7 @@ const resetForm = () => {
 
 // 工具函数
 const getPlatformLabel = (platform: string) => {
-  return platformOptions.find(p => p.value === platform)?.label || platform
+  return platformOptions.value.find(p => p.value === platform)?.label || platform
 }
 
 const getPlatformTagType = (platform: string) => {
@@ -397,11 +398,6 @@ const getPlatformColor = (platform: string) => {
 const maskSecret = (str: string) => {
   if (!str) return ''
   return str.substring(0, 6) + '****' + str.substring(str.length - 4)
-}
-
-const formatTime = (time: string) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString()
 }
 
 onMounted(() => {

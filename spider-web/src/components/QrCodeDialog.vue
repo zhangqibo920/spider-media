@@ -13,22 +13,22 @@
           <img v-if="qrCodeUrl" :src="qrCodeUrl" class="qr-code-image" />
           <div v-else class="qr-code-loading">
             <el-icon class="is-loading" :size="32"><Loading /></el-icon>
-            <span>加载中...</span>
+            <span>{{ t('common.loading') }}</span>
           </div>
         </div>
       </div>
 
       <div class="scan-instructions">
-        <p class="instruction-title">请使用{{ platformLabel }}APP扫描二维码登录</p>
+        <p class="instruction-title">{{ t('account.scanInstructions', { platform: platformLabel }) }}</p>
         <ol class="instruction-steps">
           <li v-if="platform === 'toutiao'">
-            打开<strong>今日头条APP</strong>，点击右上角"+"选择"扫一扫"
+            {{ t('account.scanStep1', { platform: '今日头条' }) }}
           </li>
           <li v-else-if="platform === 'baijiahao'">
-            打开<strong>百度APP</strong>，点击左上角"+"选择"扫一扫"
+            {{ t('account.scanStep1', { platform: '百度' }) }}
           </li>
-          <li>扫描上方二维码</li>
-          <li>在手机上确认登录</li>
+          <li>{{ t('account.scanStep3') }}</li>
+          <li>{{ t('account.scanStep4') }}</li>
         </ol>
       </div>
 
@@ -39,9 +39,9 @@
       </div>
 
       <div class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="handleClose">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="refreshQrCode" :disabled="status === 'WAITING'">
-          刷新二维码
+          {{ t('account.refreshQrCode') }}
         </el-button>
       </div>
     </div>
@@ -57,44 +57,44 @@
       />
 
       <el-form :model="bindForm" label-width="100px">
-        <el-form-item label="账号名称">
-          <el-input v-model="bindForm.accountName" placeholder="请输入账号名称（可选）" />
+        <el-form-item :label="$t('account.accountName')">
+          <el-input v-model="bindForm.accountName" :placeholder="$t('account.accountNamePlaceholder')" />
         </el-form-item>
         <el-form-item label="Cookie">
           <el-input
             v-model="bindForm.cookie"
             type="textarea"
             :rows="6"
-            placeholder="请从浏览器复制Cookie粘贴到此处"
+            :placeholder="$t('account.cookiePlaceholder')"
           />
         </el-form-item>
       </el-form>
 
       <div class="cookie-steps">
-        <p class="steps-title">获取Cookie步骤：</p>
+        <p class="steps-title">{{ t('account.getCookieSteps') }}：</p>
         <ol v-if="platform === 'toutiao'" class="instruction-steps">
-          <li>浏览器打开 <strong>mp.toutiao.com</strong></li>
-          <li>登录你的头条号账号</li>
-          <li>按 <strong>F12</strong> 打开开发者工具</li>
-          <li>切换到 <strong>Network</strong> 面板</li>
-          <li>刷新页面，找到任意请求</li>
-          <li>复制请求头中的 <strong>Cookie</strong> 值</li>
+          <li>{{ t('account.cookieStep1', { site: 'mp.toutiao.com' }) }}</li>
+          <li>{{ t('account.cookieStep2', { platform: t('account.platformToutiao') }) }}</li>
+          <li>{{ t('account.cookieStep3') }}</li>
+          <li>{{ t('account.cookieStep4') }}</li>
+          <li>{{ t('account.cookieStep5') }}</li>
+          <li>{{ t('account.cookieStep6') }}</li>
         </ol>
         <ol v-else class="instruction-steps">
-          <li>浏览器打开 <strong>baijiahao.baidu.com</strong></li>
-          <li>登录你的百家号账号</li>
-          <li>按 <strong>F12</strong> 打开开发者工具</li>
-          <li>切换到 <strong>Network</strong> 面板</li>
-          <li>刷新页面，找到任意请求</li>
-          <li>复制请求头中的 <strong>Cookie</strong> 值</li>
+          <li>{{ t('account.cookieStep1', { site: 'baijiahao.baidu.com' }) }}</li>
+          <li>{{ t('account.cookieStep2', { platform: t('account.platformBaijiahao') }) }}</li>
+          <li>{{ t('account.cookieStep3') }}</li>
+          <li>{{ t('account.cookieStep4') }}</li>
+          <li>{{ t('account.cookieStep5') }}</li>
+          <li>{{ t('account.cookieStep6') }}</li>
         </ol>
       </div>
 
       <div class="dialog-footer">
-        <el-button @click="currentStep = 'scan'">返回扫码</el-button>
-        <el-button @click="handleClose">取消</el-button>
+        <el-button @click="currentStep = 'scan'">{{ t('account.backToScan') }}</el-button>
+        <el-button @click="handleClose">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleBindCookie" :loading="binding">
-          绑定账号
+          {{ t('account.bindAccount') }}
         </el-button>
       </div>
     </div>
@@ -103,11 +103,11 @@
     <div v-else-if="currentStep === 'success'" class="success-content">
       <el-result
         icon="success"
-        title="绑定成功"
-        :sub-title="`已成功绑定${platformLabel}账号`"
+        :title="$t('account.bindSuccess')"
+        :sub-title="$t('account.bindSuccessDetail', { platform: platformLabel })"
       >
         <template #extra>
-          <el-button type="primary" @click="handleClose">完成</el-button>
+          <el-button type="primary" @click="handleClose">{{ $t('common.confirm') }}</el-button>
         </template>
       </el-result>
     </div>
@@ -118,7 +118,7 @@
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { getToutiaoQrCode, getBaijiahaoQrCode, bindToutiaoCookie, bindBaijiahaoCookie } from '@/api/publish'
+import { getToutiaoQrCode, getBaijiahaoQrCode, bindToutiaoCookie, bindBaijiahaoCookie, pollToutiaoStatus, pollBaijiahaoStatus } from '@/api/publish'
 
 const { t } = useI18n()
 
@@ -150,24 +150,24 @@ const bindForm = ref({
 })
 
 const platformLabel = computed(() => {
-  return props.platform === 'toutiao' ? '头条号' : '百家号'
+  return props.platform === 'toutiao' ? t('account.platformToutiao') : t('account.platformBaijiahao')
 })
 
 const dialogTitle = computed(() => {
-  return `绑定${platformLabel.value}账号`
+  return t('account.bindAccount', { platform: platformLabel.value })
 })
 
 const bindAlertTitle = computed(() => {
-  return `${platformLabel.value}扫码登录需要APP支持，您可以使用以下方式手动绑定Cookie`
+  return t('account.bindAlert', { platform: platformLabel.value })
 })
 
 const statusText = computed(() => {
   const statusMap: Record<string, string> = {
-    WAITING: '等待扫码...',
-    SCANNED: '已扫码，请在手机上确认',
-    CONFIRMED: '登录成功',
-    EXPIRED: '二维码已过期，请刷新',
-    FAILED: '登录失败，请重试'
+    WAITING: t('account.waitingScan'),
+    SCANNED: t('account.scanned'),
+    CONFIRMED: t('account.scanSuccess'),
+    EXPIRED: t('account.qrCodeExpired'),
+    FAILED: t('account.scanFailed')
   }
   return statusMap[status.value] || ''
 })
@@ -190,7 +190,7 @@ const fetchQrCode = async () => {
     // 开始轮询状态
     startPolling()
   } catch {
-    ElMessage.error('获取二维码失败')
+    ElMessage.error(t('account.getQrCodeFailed'))
   }
 }
 
@@ -200,8 +200,8 @@ const startPolling = () => {
   pollTimer = setInterval(async () => {
     try {
       const res = props.platform === 'toutiao'
-        ? await fetch(`api/publish/qrcode/toutiao/poll/${qrCodeToken.value}`).then(r => r.json())
-        : await fetch(`api/publish/qrcode/baijiahao/poll/${qrCodeToken.value}`).then(r => r.json())
+        ? await pollToutiaoStatus(qrCodeToken.value)
+        : await pollBaijiahaoStatus(qrCodeToken.value)
 
       const newStatus = res.data?.status
       if (newStatus) {

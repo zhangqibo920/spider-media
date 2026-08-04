@@ -9,16 +9,16 @@
     <!-- 步骤一：打开登录页面 -->
     <div v-if="currentStep === 1" class="step-content">
       <el-steps :active="currentStep" finish-status="success" align-center style="margin-bottom: 24px">
-        <el-step title="打开登录页" description="跳转到平台登录页面" />
-        <el-step title="扫码登录" description="使用APP扫描二维码" />
-        <el-step title="复制Cookie" description="获取登录凭证" />
-        <el-step title="绑定账号" description="完成账号绑定" />
+        <el-step :title="$t('account.stepOpenLogin')" :description="$t('account.stepOpenLoginDesc')" />
+        <el-step :title="$t('account.stepScanLogin')" :description="$t('account.stepScanLoginDesc')" />
+        <el-step :title="$t('account.stepCopyCookie')" :description="$t('account.stepCopyCookieDesc')" />
+        <el-step :title="$t('account.stepBindAccount')" :description="$t('account.stepBindAccountDesc')" />
       </el-steps>
 
       <div class="login-page-preview">
         <div class="preview-header">
           <el-icon :size="24" :style="{ color: platformColor }"><Platform /></el-icon>
-          <span>{{ platformLabel }}创作平台</span>
+          <span>{{ platformLabel }}{{ $t('account.creationPlatform') }}</span>
         </div>
         <div class="preview-url">{{ platformLoginUrl }}</div>
       </div>
@@ -26,12 +26,12 @@
       <div class="action-buttons">
         <el-button type="primary" size="large" @click="openLoginPage">
           <el-icon><Link /></el-icon>
-          打开{{ platformLabel }}登录页面
+          {{ $t('account.openPlatformLogin', { platform: platformLabel }) }}
         </el-button>
       </div>
 
       <el-alert
-        title="请在新窗口中完成扫码登录"
+        :title="$t('account.completeScanInNewWindow')"
         type="info"
         show-icon
         :closable="false"
@@ -42,22 +42,22 @@
     <!-- 步骤二：等待扫码（用户自行操作） -->
     <div v-else-if="currentStep === 2" class="step-content">
       <el-steps :active="currentStep" finish-status="success" align-center style="margin-bottom: 24px">
-        <el-step title="打开登录页" />
-        <el-step title="扫码登录" description="使用APP扫描二维码" />
-        <el-step title="复制Cookie" description="获取登录凭证" />
-        <el-step title="绑定账号" description="完成账号绑定" />
+        <el-step :title="$t('account.stepOpenLogin')" />
+        <el-step :title="$t('account.stepScanLogin')" :description="$t('account.stepScanLoginDesc')" />
+        <el-step :title="$t('account.stepCopyCookie')" :description="$t('account.stepCopyCookieDesc')" />
+        <el-step :title="$t('account.stepBindAccount')" :description="$t('account.stepBindAccountDesc')" />
       </el-steps>
 
       <div class="waiting-tip">
         <el-icon class="is-loading" :size="48" color="#409eff"><Loading /></el-icon>
-        <p>请在新打开的窗口中完成扫码登录</p>
-        <p class="sub-tip">登录成功后，点击下方按钮继续</p>
+        <p>{{ $t('account.completeScanInNewWindow') }}</p>
+        <p class="sub-tip">{{ $t('account.clickAfterLogin') }}</p>
       </div>
 
       <div class="action-buttons">
-        <el-button @click="currentStep = 1">返回上一步</el-button>
+        <el-button @click="currentStep = 1">{{ $t('common.prev') }}</el-button>
         <el-button type="primary" @click="currentStep = 3">
-          登录完成，下一步
+          {{ $t('account.loginCompleteNext') }}
         </el-button>
       </div>
     </div>
@@ -65,15 +65,15 @@
     <!-- 步骤三：获取Cookie -->
     <div v-else-if="currentStep === 3" class="step-content">
       <el-steps :active="currentStep" finish-status="success" align-center style="margin-bottom: 24px">
-        <el-step title="打开登录页" />
-        <el-step title="扫码登录" />
-        <el-step title="复制Cookie" description="获取登录凭证" />
-        <el-step title="绑定账号" description="完成账号绑定" />
+        <el-step :title="$t('account.stepOpenLogin')" />
+        <el-step :title="$t('account.stepScanLogin')" />
+        <el-step :title="$t('account.stepCopyCookie')" :description="$t('account.stepCopyCookieDesc')" />
+        <el-step :title="$t('account.stepBindAccount')" :description="$t('account.stepBindAccountDesc')" />
       </el-steps>
 
       <div class="cookie-steps">
         <el-alert
-          title="请按照以下步骤获取Cookie"
+          :title="$t('account.followStepsToGetCookie')"
           type="warning"
           show-icon
           :closable="false"
@@ -90,18 +90,18 @@
         <div class="copy-buttons">
           <el-button type="success" @click="copyBookmarklet">
             <el-icon><DocumentCopy /></el-icon>
-            复制一键获取脚本
+            {{ $t('account.copyOneClickScript') }}
           </el-button>
-          <el-tooltip content="将此脚本添加到浏览器书签栏，登录后点击即可自动复制Cookie" placement="top">
+          <el-tooltip :content="$t('account.bookmarkletTooltip')" placement="top">
             <el-icon><QuestionFilled /></el-icon>
           </el-tooltip>
         </div>
       </div>
 
       <div class="action-buttons">
-        <el-button @click="currentStep = 2">返回上一步</el-button>
+        <el-button @click="currentStep = 2">{{ $t('common.prev') }}</el-button>
         <el-button type="primary" @click="currentStep = 4">
-          已获取Cookie，下一步
+          {{ $t('account.cookieObtainedNext') }}
         </el-button>
       </div>
     </div>
@@ -109,30 +109,30 @@
     <!-- 步骤四：绑定账号 -->
     <div v-else-if="currentStep === 4" class="step-content">
       <el-steps :active="currentStep" finish-status="success" align-center style="margin-bottom: 24px">
-        <el-step title="打开登录页" />
-        <el-step title="扫码登录" />
-        <el-step title="复制Cookie" />
-        <el-step title="绑定账号" description="完成账号绑定" />
+        <el-step :title="$t('account.stepOpenLogin')" />
+        <el-step :title="$t('account.stepScanLogin')" />
+        <el-step :title="$t('account.stepCopyCookie')" />
+        <el-step :title="$t('account.stepBindAccount')" :description="$t('account.stepBindAccountDesc')" />
       </el-steps>
 
       <el-form :model="bindForm" label-width="100px">
-        <el-form-item label="账号名称">
-          <el-input v-model="bindForm.accountName" :placeholder="`请输入${platformLabel}账号名称`" />
+        <el-form-item :label="$t('account.accountName')">
+          <el-input v-model="bindForm.accountName" :placeholder="$t('account.accountNamePlaceholder')" />
         </el-form-item>
         <el-form-item label="Cookie" prop="cookie">
           <el-input
             v-model="bindForm.cookie"
             type="textarea"
             :rows="6"
-            placeholder="请粘贴从浏览器获取的Cookie"
+            :placeholder="$t('account.cookiePlaceholder')"
           />
         </el-form-item>
       </el-form>
 
       <div class="action-buttons">
-        <el-button @click="currentStep = 3">返回上一步</el-button>
+        <el-button @click="currentStep = 3">{{ $t('common.prev') }}</el-button>
         <el-button type="primary" @click="handleBindCookie" :loading="binding">
-          绑定账号
+          {{ $t('account.bindAccount') }}
         </el-button>
       </div>
     </div>
@@ -141,11 +141,11 @@
     <div v-else-if="currentStep === 5" class="step-content">
       <el-result
         icon="success"
-        title="绑定成功"
-        :sub-title="`已成功绑定${platformLabel}账号`"
+        :title="$t('account.bindSuccess')"
+        :sub-title="$t('account.bindSuccessDetail', { platform: platformLabel })"
       >
         <template #extra>
-          <el-button type="primary" @click="handleClose">完成</el-button>
+          <el-button type="primary" @click="handleClose">{{ $t('common.confirm') }}</el-button>
         </template>
       </el-result>
     </div>
@@ -155,7 +155,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { bindToutiaoCookie, bindBaijiahaoCookie } from '@/api/publish'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   modelValue: boolean
@@ -181,7 +184,7 @@ const bindForm = ref({
 })
 
 const platformLabel = computed(() => {
-  return props.platform === 'toutiao' ? '头条号' : '百家号'
+  return props.platform === 'toutiao' ? t('account.platformToutiao') : t('account.platformBaijiahao')
 })
 
 const platformColor = computed(() => {
@@ -195,25 +198,25 @@ const platformLoginUrl = computed(() => {
 })
 
 const dialogTitle = computed(() => {
-  return `绑定${platformLabel.value}账号`
+  return t('account.bindAccountTitle', { platform: platformLabel.value })
 })
 
 const cookieSteps = computed(() => {
   if (props.platform === 'toutiao') {
     return [
-      '在已登录的头条号页面，按 <strong>F12</strong> 打开开发者工具',
-      '切换到 <strong>Application</strong>（应用程序）面板',
-      '在左侧找到 <strong>Cookies</strong> → 点击 <strong>https://mp.toutiao.com</strong>',
-      '点击上方 <strong>cookies.com</strong> 或按 <strong>Ctrl+A</strong> 全选',
-      '按 <strong>Ctrl+C</strong> 复制，然后粘贴到下方输入框'
+      t('account.cookieStepsToutiao[0]'),
+      t('account.cookieStepsToutiao[1]'),
+      t('account.cookieStepsToutiao[2]'),
+      t('account.cookieStepsToutiao[3]'),
+      t('account.cookieStepsToutiao[4]')
     ]
   } else {
     return [
-      '在已登录的百家号页面，按 <strong>F12</strong> 打开开发者工具',
-      '切换到 <strong>Application</strong>（应用程序）面板',
-      '在左侧找到 <strong>Cookies</strong> → 点击 <strong>https://baijiahao.baidu.com</strong>',
-      '点击上方表格区域，按 <strong>Ctrl+A</strong> 全选',
-      '按 <strong>Ctrl+C</strong> 复制，然后粘贴到下方输入框'
+      t('account.cookieStepsBaijiahao[0]'),
+      t('account.cookieStepsBaijiahao[1]'),
+      t('account.cookieStepsBaijiahao[2]'),
+      t('account.cookieStepsBaijiahao[3]'),
+      t('account.cookieStepsBaijiahao[4]')
     ]
   }
 })
@@ -232,16 +235,16 @@ const openLoginPage = () => {
 // 复制书签脚本
 const copyBookmarklet = () => {
   navigator.clipboard.writeText(bookmarkletCode.value).then(() => {
-    ElMessage.success('一键获取脚本已复制，请添加到浏览器书签栏')
+    ElMessage.success(t('account.scriptCopied'))
   }).catch(() => {
-    ElMessage.error('复制失败，请手动复制')
+    ElMessage.error(t('account.copyFailed'))
   })
 }
 
 // 绑定Cookie
 const handleBindCookie = async () => {
   if (!bindForm.value.cookie.trim()) {
-    ElMessage.warning('请输入Cookie')
+    ElMessage.warning(t('account.validateCookie'))
     return
   }
 

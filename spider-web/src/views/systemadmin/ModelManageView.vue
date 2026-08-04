@@ -32,7 +32,7 @@
           <template #default="{ row }">
             <el-switch
               :model-value="row.enabled === 'Y'"
-              @change="(val: boolean) => handleToggle(row, val)"
+              @change="(val: string | number | boolean) => handleToggle(row, val as boolean)"
               :loading="row._toggling"
             />
           </template>
