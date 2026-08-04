@@ -10,7 +10,6 @@ export interface User {
   email?: string
   phonenumber?: string
   avatar?: string
-  password?: string
   status: string
   role: string
   createTime?: string

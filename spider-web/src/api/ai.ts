@@ -17,7 +17,7 @@ export function generateArticle(hotTopicId: number, model = 'deepseek') {
 }
 
 export function getGeneratedArticles(page = 1, size = 20) {
-  return request.get('/ai/article/page', { params: { page, size } })
+  return request.get('/ai/article/page', { params: { pageNo: page, pageSize: size } })
 }
 
 export function deleteGeneratedArticle(id: number) {

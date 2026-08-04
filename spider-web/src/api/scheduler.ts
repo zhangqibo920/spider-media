@@ -21,5 +21,5 @@ export function disableTask(id: number) {
 }
 
 export function getScheduledTasks(page = 1, size = 20) {
-  return request.get('/scheduler/task/page', { params: { page, size } })
+  return request.get('/scheduler/task/page', { params: { pageNo: page, pageSize: size } })
 }

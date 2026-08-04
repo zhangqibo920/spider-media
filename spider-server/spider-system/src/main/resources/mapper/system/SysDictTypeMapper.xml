@@ -7,6 +7,7 @@
         <result column="dict_name" property="dictName"/>
         <result column="dict_type" property="dictType"/>
         <result column="status" property="status"/>
+        <result column="del_flag" property="delFlag"/>
         <result column="create_by" property="createBy"/>
         <result column="create_time" property="createTime"/>
         <result column="update_by" property="updateBy"/>
@@ -16,35 +17,35 @@
 
     <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
     <sql id="Base_Column_List">
-        id, dict_name, dict_type, status, create_by, create_time, update_by, update_time, remark
+        id, dict_name, dict_type, status, del_flag, create_by, create_time, update_by, update_time, remark
     </sql>
 
     <select id="selectAll" resultMap="BaseResultMap">
-        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE status = '0' ORDER BY id
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE status = '0' AND del_flag = '0' ORDER BY id
     </select>
 
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE id = #{id}
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE id = #{id} AND del_flag = '0'
     </select>
 
     <select id="selectByDictType" resultMap="BaseResultMap">
-        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE dict_type = #{dictType} AND status = '0'
+        SELECT <include refid="Base_Column_List"/> FROM sys_dict_type WHERE dict_type = #{dictType} AND status = '0' AND del_flag = '0'
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO sys_dict_type (dict_name, dict_type, status, create_by, create_time, remark)
-        VALUES (#{dictName}, #{dictType}, #{status}, #{createBy}, #{createTime}, #{remark})
+        INSERT INTO sys_dict_type (dict_name, dict_type, status, del_flag, create_by, create_time, remark)
+        VALUES (#{dictName}, #{dictType}, #{status}, '0', #{createBy}, #{createTime}, #{remark})
     </insert>
 
     <update id="update">
         UPDATE sys_dict_type
         SET dict_name = #{dictName}, status = #{status}, remark = #{remark},
             update_by = #{updateBy}, update_time = #{updateTime}
-        WHERE id = #{id}
+        WHERE id = #{id} AND del_flag = '0'
     </update>
 
-    <delete id="deleteById">
-        DELETE FROM sys_dict_type WHERE id = #{id}
-    </delete>
+    <update id="deleteById">
+        UPDATE sys_dict_type SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
+    </update>
 
 </mapper>

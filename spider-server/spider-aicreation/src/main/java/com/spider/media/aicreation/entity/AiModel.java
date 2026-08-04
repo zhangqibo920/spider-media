@@ -1,7 +1,7 @@
 package com.spider.media.aicreation.entity;
 
 import com.spider.media.common.base.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
  *   <li>model_key: 模型唯一标识（如 "deepseek-chat"、"glm-4"）</li>
  *   <li>model_name: 模型显示名称（如 "DeepSeek Chat"、"智谱 GLM-4"）</li>
  *   <li>provider: 模型提供方（如 "deepseek"、"zhipu"）</li>
- *   <li>api_key: API 密钥</li>
+ *   <li>api_key: API 密钥（仅写入时不返回）</li>
  *   <li>base_url: API 基础地址</li>
  *   <li>enabled: 是否启用</li>
  *   <li>test_status: 最近一次测试状态（SUCCESS/FAILED/UNTESTED）</li>
@@ -52,7 +52,7 @@ public class AiModel extends BaseEntity {
 
     /** API 密钥（仅在创建/更新时接收前端传入，查询时不返回） */
     @NotBlank(message = "API密钥不能为空")
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String apiKey;
 
     /** API 基础地址 */

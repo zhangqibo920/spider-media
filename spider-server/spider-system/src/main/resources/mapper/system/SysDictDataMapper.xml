@@ -12,6 +12,7 @@
         <result column="list_class" property="listClass"/>
         <result column="is_default" property="isDefault"/>
         <result column="status" property="status"/>
+        <result column="del_flag" property="delFlag"/>
         <result column="remark" property="remark"/>
         <result column="create_time" property="createTime"/>
     </resultMap>
@@ -19,23 +20,23 @@
     <!-- 显式列清单，避免 SELECT * 带来的列顺序依赖和无效字段传输 -->
     <sql id="Base_Column_List">
         id, dict_sort, dict_label, dict_value, dict_type, css_class, list_class,
-        is_default, status, remark, create_time
+        is_default, status, del_flag, remark, create_time
     </sql>
 
     <select id="selectByDictType" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List"/> FROM sys_dict_data
-        WHERE dict_type = #{dictType} AND status = '0'
+        WHERE dict_type = #{dictType} AND status = '0' AND del_flag = '0'
         ORDER BY dict_sort
     </select>
 
     <select id="selectByDictTypeAndValue" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_List"/> FROM sys_dict_data
-        WHERE dict_type = #{dictType} AND dict_value = #{dictValue} AND status = '0'
+        WHERE dict_type = #{dictType} AND dict_value = #{dictValue} AND status = '0' AND del_flag = '0'
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO sys_dict_data (dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, remark, create_time)
-        VALUES (#{dictSort}, #{dictLabel}, #{dictValue}, #{dictType}, #{cssClass}, #{listClass}, #{isDefault}, #{status}, #{remark}, #{createTime})
+        INSERT INTO sys_dict_data (dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, del_flag, remark, create_time)
+        VALUES (#{dictSort}, #{dictLabel}, #{dictValue}, #{dictType}, #{cssClass}, #{listClass}, #{isDefault}, #{status}, '0', #{remark}, #{createTime})
     </insert>
 
     <update id="update">
@@ -43,15 +44,15 @@
         SET dict_label = #{dictLabel}, dict_value = #{dictValue}, dict_sort = #{dictSort},
             css_class = #{cssClass}, list_class = #{listClass}, remark = #{remark},
             update_by = #{updateBy}, update_time = #{updateTime}
-        WHERE id = #{id}
+        WHERE id = #{id} AND del_flag = '0'
     </update>
 
-    <delete id="deleteById">
-        DELETE FROM sys_dict_data WHERE id = #{id}
-    </delete>
+    <update id="deleteById">
+        UPDATE sys_dict_data SET del_flag = '2' WHERE id = #{id} AND del_flag = '0'
+    </update>
 
-    <delete id="deleteByDictType">
-        DELETE FROM sys_dict_data WHERE dict_type = #{dictType}
-    </delete>
+    <update id="deleteByDictType">
+        UPDATE sys_dict_data SET del_flag = '2' WHERE dict_type = #{dictType} AND del_flag = '0'
+    </update>
 
 </mapper>

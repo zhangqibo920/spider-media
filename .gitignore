@@ -45,6 +45,10 @@ node_modules/
 dist/
 *.local
 
+# Frontend auto-generated types
+spider-web/src/auto-imports.d.ts
+spider-web/src/components.d.ts
+
 # Environment & Secrets
 .env
 .env.*

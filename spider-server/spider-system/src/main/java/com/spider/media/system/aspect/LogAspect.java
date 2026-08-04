@@ -1,6 +1,8 @@
 package com.spider.media.system.aspect;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.spider.media.system.entity.SysOperLog;
 import com.spider.media.system.service.ISysOperLogService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * 操作日志切面
@@ -30,6 +33,13 @@ import java.time.LocalDateTime;
 public class LogAspect {
 
     private static final Logger log = LoggerFactory.getLogger(LogAspect.class);
+
+    /** 需要脱敏的敏感字段名 */
+    private static final Set<String> SENSITIVE_FIELDS = Set.of(
+            "password", "password2", "oldPassword", "newPassword",
+            "secret", "token", "apiKey", "appSecret", "cookie",
+            "accessToken", "refreshToken"
+    );
 
     /** 操作日志业务层服务 */
     private final ISysOperLogService operLogService;
@@ -79,11 +89,13 @@ public class LogAspect {
             sysOperLog.setUsername("anonymous");
         }
 
-        // 序列化请求参数
+        // 序列化请求参数（对敏感字段进行脱敏）
         try {
             Object[] args = joinPoint.getArgs();
             if (args != null && args.length > 0) {
-                sysOperLog.setParams(objectMapper.writeValueAsString(args));
+                String params = objectMapper.writeValueAsString(args);
+                params = sanitizeParams(params);
+                sysOperLog.setParams(params);
             }
         } catch (Exception e) {
             log.debug("序列化请求参数失败", e);
@@ -108,6 +120,49 @@ public class LogAspect {
         }
 
         return result;
+    }
+
+    /**
+     * 对请求参数进行脱敏处理
+     * 将敏感字段的值替换为 "******"
+     */
+    private String sanitizeParams(String params) {
+        try {
+            JsonNode node = objectMapper.readTree(params);
+            sanitizeNode(node);
+            return objectMapper.writeValueAsString(node);
+        } catch (Exception e) {
+            return params;
+        }
+    }
+
+    /**
+     * 递归处理 JSON 节点，对敏感字段脱敏
+     */
+    private void sanitizeNode(JsonNode node) {
+        if (node == null || node.isNull()) {
+            return;
+        }
+
+        if (node.isObject()) {
+            ObjectNode objectNode = (ObjectNode) node;
+            var fieldNames = objectNode.fieldNames();
+            while (fieldNames.hasNext()) {
+                String fieldName = fieldNames.next();
+                if (SENSITIVE_FIELDS.contains(fieldName)) {
+                    JsonNode value = objectNode.get(fieldName);
+                    if (value != null && !value.isNull() && !value.asText().isEmpty()) {
+                        objectNode.put(fieldName, "******");
+                    }
+                } else {
+                    sanitizeNode(objectNode.get(fieldName));
+                }
+            }
+        } else if (node.isArray()) {
+            for (JsonNode item : node) {
+                sanitizeNode(item);
+            }
+        }
     }
 
     /**

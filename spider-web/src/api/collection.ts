@@ -21,7 +21,7 @@ export function triggerCollect(id: number) {
 }
 
 export function getCollectedArticles(id: number, page = 1, size = 20) {
-  return request.get('/collection/article/page', { params: { targetAccountId: id, page, size } })
+  return request.get('/collection/article/page', { params: { targetAccountId: id, pageNo: page, pageSize: size } })
 }
 
 export function deleteCollectedArticle(id: number) {

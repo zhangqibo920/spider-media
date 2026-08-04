@@ -24,9 +24,8 @@ import java.util.List;
  * <p>实现用户注册、登录、查询、更新、删除等核心业务逻辑。
  * 注册时检查用户名唯一性并加密密码；登录时验证密码并生成 JWT Token。</p>
  *
- * <p>角色提升规则：注册接口对所有人开放（无管理员存在时需要引导创建首个管理员），
- * 因此当数据库中尚无任何用户时，新注册的用户自动赋予 ADMIN 角色，便于初始化部署；
- * 之后注册的用户均为普通 USER。管理员可通过用户管理接口手动提升其他用户。</p>
+ * <p>角色规则：所有新注册用户默认为普通 USER 角色，
+ * 管理员通过初始化 SQL 脚本预设，或由管理员通过用户管理接口手动提升。</p>
  *
  * <p>登录防爆破：通过 {@link LoginAttemptService} 记录失败次数，
  * 连续失败超过阈值后临时锁定账号，避免暴力破解。</p>
@@ -63,7 +62,7 @@ public class SysUserServiceImpl implements ISysUserService {
      * <ol>
      *   <li>检查用户名是否已存在，已存在则抛出异常</li>
      *   <li>使用 BCrypt 加密密码</li>
-     *   <li>状态为正常；角色根据是否为首用户判定（首用户=ADMIN，其余=USER）</li>
+     *   <li>状态为正常；角色默认为 USER（管理员通过初始化脚本预设）</li>
      *   <li>设置创建人和创建时间</li>
      * </ol></p>
      */
@@ -81,9 +80,8 @@ public class SysUserServiceImpl implements ISysUserService {
             throw new ServiceException(ErrorCodeEnums.SYS_USERNAME_ALREADY_EXISTS);
         }
 
-        // 数据库尚无用户时，首个注册账号自动成为管理员（便于初始化部署）
-        boolean isFirstUser = userMapper.selectList().isEmpty();
-        String role = isFirstUser ? "ADMIN" : "USER";
+        // 所有新注册用户默认为普通 USER 角色
+        String role = "USER";
 
         SysUser user = new SysUser();
         user.setUserName(userName);

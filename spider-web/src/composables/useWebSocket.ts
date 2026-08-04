@@ -13,7 +13,8 @@ export function useWebSocket(token: string) {
     if (!token || ws?.readyState === WebSocket.OPEN) return
 
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = location.hostname + ':8080'
+    // 使用当前页面的端口，而不是硬编码
+    const host = location.host
     const url = `${protocol}//${host}/ws/notification?token=${token}`
 
     ws = new WebSocket(url)

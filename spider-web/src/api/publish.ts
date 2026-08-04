@@ -71,5 +71,5 @@ export function schedulePublish(id: number, scheduledTime: string) {
 }
 
 export function getPublishTasks(page = 1, size = 20) {
-  return request.get('/publish/task/page', { params: { page, size } })
+  return request.get('/publish/task/page', { params: { pageNo: page, pageSize: size } })
 }
